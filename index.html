@@ -14,10 +14,10 @@
       line-height: 1.6;
     }
     header {
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
       color: white;
       text-align: center;
       padding: 80px 20px;
+      /* 原本的固定背景刪掉，改由 JS 動態設定 */
     }
     header h1 {
       font-size: 2.5em;
@@ -75,19 +75,19 @@
         <li>Virtual Identity & Avatars</li>
       </ul>
     </div>
-<h2>Tools</h2>
-<div class="card">
-  <p>
-    <a href="colorconvert.html" target="_blank">🎨 Color Convert Tool(RGB ⇄ CIELAB ⇄ CIELCh Converter)</a>
-  </p>
-</div>
+    <h2>Tools</h2>
+    <div class="card">
+      <p>
+        <a href="colorconvert.html" target="_blank">🎨 Color Convert Tool(RGB ⇄ CIELAB ⇄ CIELCh Converter)</a>
+      </p>
+    </div>
 
-<h2>Publications</h2>
-<div class="card">
-  <p><a href="https://orcid.org/0000-0002-6912-2757" target="_blank">ORCID Profile</a></p>
-  <p><a href="https://tchinfo.ttu.edu.tw/tchinfo.php?id=wylee" target="_blank">University Profile Page</a></p>
-  <p><a href="https://www.researchgate.net/profile/Wen-Yuan-Lee-2" target="_blank">ResearchGate Profile</a></p>
-</div>
+    <h2>Publications</h2>
+    <div class="card">
+      <p><a href="https://orcid.org/0000-0002-6912-2757" target="_blank">ORCID Profile</a></p>
+      <p><a href="https://tchinfo.ttu.edu.tw/tchinfo.php?id=wylee" target="_blank">University Profile Page</a></p>
+      <p><a href="https://www.researchgate.net/profile/Wen-Yuan-Lee-2" target="_blank">ResearchGate Profile</a></p>
+    </div>
 
     <h2>Contact</h2>
     <div class="card">
@@ -99,13 +99,20 @@
   <footer>
     <p>&copy; 2025 Color Research Lab | Designed for GitHub Pages</p>
   </footer>
+
+  <!-- 隨機底色腳本 -->
+  <script>
+    const colors = [
+      ["#6a11cb", "#2575fc"],
+      ["#ff6a00", "#ee0979"],
+      ["#11998e", "#38ef7d"],
+      ["#fc466b", "#3f5efb"],
+      ["#f7971e", "#ffd200"],
+      ["#8e2de2", "#4a00e0"]
+    ];
+    const randomPair = colors[Math.floor(Math.random() * colors.length)];
+    document.querySelector("header").style.background =
+      `linear-gradient(135deg, ${randomPair[0]}, ${randomPair[1]})`;
+  </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
