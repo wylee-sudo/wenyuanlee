@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CSUQ Bilingual (Q1–15) — Auto Scoring</title>
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --card:#111218;
+      --ink:#f8fafc;
+      --muted:#cbd5e1;
+      --accent:#22d3ee;
+      --accent-2:#60a5fa;
+      --ring: 2px solid rgba(255,255,255,.15);
+    }
+    body{margin:0;background:#0b0c10;color:var(--ink);font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans TC", Arial}
+    .wrap{max-width:1100px;margin:auto;padding:24px}
+    header{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .title{font-weight:700;font-size:clamp(20px,2.6vw,28px)}
+    .subtitle{color:var(--muted);font-size:14px}
+
+    .tabs{display:flex;gap:8px;background:rgba(255,255,255,.06);padding:6px;border-radius:999px;border:var(--ring)}
+    .tab{appearance:none;border:0;background:transparent;color:var(--muted);padding:10px 18px;border-radius:999px;font-weight:700;cursor:pointer}
+    .tab.active{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#06101a;}
+
+    .card{background:rgba(255,255,255,.05);border:var(--ring);border-radius:18px;padding:18px}
+    .scale-head{display:grid;grid-template-columns:2fr repeat(7,1fr);gap:6px;align-items:center;margin:6px 0 10px}
+    .scale-head .h{text-align:center;color:var(--muted);font-size:12px}
+
+    .q-row{display:grid;grid-template-columns:2fr repeat(7,1fr);gap:6px;align-items:center;padding:10px;border-radius:12px}
+    .q-row:nth-child(odd){background:rgba(255,255,255,.03)}
+    .q-text{font-size:15px}
+
+    .opt{display:grid;place-items:center}
+    .opt input{position:absolute;opacity:0}
+    .opt label{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);cursor:pointer;font-weight:700}
+    .opt input:checked + label{background:#fff;color:#0b0c10;border-color:#fff}
+
+    .actions{display:flex;gap:10px;margin-top:14px}
+    .btn{appearance:none;border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
+    .btn.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#081018}
+    .btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,.35);color:var(--muted)}
+
+    .result{margin-top:12px;display:none}
+    .result.show{display:block}
+    .grid{display:grid;gap:10px}
+    @media(min-width:720px){.grid{grid-template-columns:repeat(4,1fr)}}
+    .metric{background:rgba(255,255,255,.06);border:var(--ring);border-radius:14px;padding:14px}
+    .metric h4{margin:.2rem 0 .2rem;font-size:14px;color:var(--muted)}
+    .metric .val{font-weight:900;font-size:20px}
+    /* === Overrides requested by user === */
+    .q-row{grid-template-columns:minmax(260px,2fr) repeat(7,minmax(30px,1fr)) !important}
+    @media(max-width:640px){
+      .scale-head{grid-template-columns:minmax(220px,1.8fr) repeat(7,42px) !important}
+      .q-row{grid-template-columns:minmax(220px,1.8fr) repeat(7,42px) !important}
+    }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <div class="title">Computer System Usability Questionnaire, CSUQ</div>
+        <div class="subtitle">The Computer System Usability Questionnaire (Lewis, 1995) was developed to measure user satisfaction with computer system usability.</div>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Language">
+        <button id="tab-zh" class="tab active">中文</button>
+        <button id="tab-en" class="tab">English</button>
+      </div>
+    </header>
+
+    <section id="section-zh" class="section active">
+      <div class="card">
+        <div class="scale-head">
+          <div></div>
+          <div class="h">1</div><div class="h">2</div><div class="h">3</div><div class="h">4</div><div class="h">5</div><div class="h">6</div><div class="h">7</div>
+        </div>
+        <div id="zh-questions"></div>
+        <div class="actions">
+          <button class="btn primary" id="zh-calc">計算分數</button>
+          <button class="btn ghost" id="zh-reset">清除重填</button>
+        </div>
+        <div id="zh-result" class="result"></div>
+      </div>
+    </section>
+
+    <section id="section-en" class="section">
+      <div class="card">
+        <div class="scale-head">
+          <div></div>
+          <div class="h">1</div><div class="h">2</div><div class="h">3</div><div class="h">4</div><div class="h">5</div><div class="h">6</div><div class="h">7</div>
+        </div>
+        <div id="en-questions"></div>
+        <div class="actions">
+          <button class="btn primary" id="en-calc">Calculate</button>
+          <button class="btn ghost" id="en-reset">Reset</button>
+        </div>
+        <div id="en-result" class="result"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const items = {
+      zh: [
+        "整體而言，我對這個系統的易用性感到滿意。",
+        "這個系統操作起來很簡單。",
+        "使用這個系統，我能有效完成工作。",
+        "使用這個系統，我能快速完成工作。",
+        "使用這個系統，我能高效率地完成工作。",
+        "我覺得使用這個系統很自在。",
+        "學習如何使用這個系統很容易。",
+        "我認為我能很快上手並在這個系統上有生產力。",
+        "系統提供的錯誤訊息清楚告訴我如何解決問題。",
+        "當我在使用系統時出錯，我能輕鬆且迅速地修正。",
+        "系統提供的資訊（例如線上說明、螢幕訊息與其他文件）很清楚。",
+        "我能輕鬆找到我需要的資訊。",
+        "系統提供的資訊容易理解。",
+        "這些資訊能有效幫助我完成任務與情境。",
+        "系統畫面上的資訊排列很清楚。",
+      ],
+      en: [
+        "Overall, I am satisfied with how easy it is to use this system.",
+        "It was simple to use this system.",
+        "I can effectively complete my work using this system.",
+        "I am able to complete my work quickly using this system.",
+        "I am able to efficiently complete my work using this system.",
+        "I feel comfortable using this system.",
+        "It was easy to learn to use this system.",
+        "I believe I became productive quickly using this system.",
+        "The system gives error messages that clearly tell me how to fix problems.",
+        "Whenever I make a mistake using the system, I recover easily and quickly.",
+        "The information provided with this system is clear.",
+        "It is easy to find the information I needed.",
+        "The information provided for the system is easy to understand.",
+        "The information is effective in helping me complete tasks.",
+        "The organization of information on the system screens is clear.",
+      ]
+    };
+
+    const groups = { sys:[0,1,2,3,4,5], info:[6,7,8,9,10,11], inter:[12,13,14] };
+
+    function shuffle(arr){return arr.map(a=>[Math.random(),a]).sort((a,b)=>a[0]-b[0]).map(a=>a[1])}
+
+    function renderQuestions(lang){
+      const host = document.getElementById(`${lang}-questions`);
+      host.innerHTML='';
+      const order = shuffle([...Array(15).keys()]);
+      order.forEach(idx=>{
+        const row=document.createElement('div');
+        row.className='q-row';
+        const qtext=document.createElement('div');
+        qtext.className='q-text';
+        qtext.textContent = items[lang][idx];
+        row.appendChild(qtext);
+        for(let v=1; v<=7; v++){
+          const cell=document.createElement('div');
+          cell.className='opt';
+          const id=`${lang}-q${idx}-${v}`;
+          const input=document.createElement('input');
+          input.type='radio';
+          input.name=`${lang}-q${idx}`;
+          input.id=id;
+          input.value=String(v);
+          const label=document.createElement('label');
+          label.setAttribute('for',id);
+          label.textContent=v;
+          cell.appendChild(input);
+          cell.appendChild(label);
+          row.appendChild(cell);
+        }
+        host.appendChild(row);
+      });
+    }
+    renderQuestions('zh');
+    renderQuestions('en');
+
+    function scale100(x){return ((x-1)/6)*100}
+    function avg(arr){return arr.reduce((a,b)=>a+b,0)/arr.length}
+
+    function computeScores(lang){
+      const vals={};
+      for(let i=0;i<15;i++){
+        const sel=document.querySelector(`input[name="${lang}-q${i}"]:checked`);
+        vals[i]= sel? Number(sel.value):null;
+      }
+      if(Object.values(vals).some(v=>v===null)){
+        alert(lang==='zh'? '請完成所有題目':'Please complete all items');
+        return;
+      }
+      const sys=avg(groups.sys.map(i=>vals[i]));
+      const info=avg(groups.info.map(i=>vals[i]));
+      const inter=avg(groups.inter.map(i=>vals[i]));
+      const overall=avg(Object.values(vals));
+      const out=document.getElementById(`${lang}-result`);
+      out.className='result show';
+      const labels= lang==='zh'? [
+        ['系統有用性 (Q1–6)', sys],
+        ['資訊品質 (Q7–12)', info],
+        ['介面品質 (Q13–15)', inter],
+        ['總分・前15題平均', overall]
+      ]:[
+        ['System Usefulness (Q1–6)', sys],
+        ['Information Quality (Q7–12)', info],
+        ['Interface Quality (Q13–15)', inter],
+        ['Overall (Q1–15 mean)', overall]
+      ];
+      out.innerHTML='<div class="grid">'+labels.map(([n,v])=>`<div class="metric"><h4>${n}</h4><div class="val">${scale100(v).toFixed(1)}</div></div>`).join('')+'</div>';
+    }
+
+    document.getElementById('zh-calc').onclick=()=>computeScores('zh');
+    document.getElementById('en-calc').onclick=()=>computeScores('en');
+    document.getElementById('zh-reset').onclick=()=>{document.querySelectorAll('input[name^="zh-q"]').forEach(el=>el.checked=false);document.getElementById('zh-result').className='result'}
+    document.getElementById('en-reset').onclick=()=>{document.querySelectorAll('input[name^="en-q"]').forEach(el=>el.checked=false);document.getElementById('en-result').className='result'}
+
+    document.getElementById('tab-zh').onclick=()=>{document.getElementById('tab-zh').classList.add('active');document.getElementById('tab-en').classList.remove('active');document.getElementById('section-zh').style.display='block';document.getElementById('section-en').style.display='none'}
+    document.getElementById('tab-en').onclick=()=>{document.getElementById('tab-en').classList.add('active');document.getElementById('tab-zh').classList.remove('active');document.getElementById('section-en').style.display='block';document.getElementById('section-zh').style.display='none'}
+  </script>
+<script>
+// === Re‑definitions per user requests ===
+(function(){
+  // 1) Shuffle questions and remove visible numbering
+  function renderQuestions(lang){
+    const host = document.getElementById(`${lang}-questions`);
+    if(!host) return;
+    host.innerHTML = '';
+    const list = items[lang];
+    const order = Array.from({length:15}, (_,i)=>i).sort(()=>Math.random()-0.5);
+    host.dataset.order = order.join(',');
+    order.forEach((idx)=>{
+      const text = list[idx];
+      const row = document.createElement('div');
+      row.className = 'q-row';
+      const qtext = document.createElement('div');
+      qtext.className = 'q-text';
+      qtext.textContent = text; // no numbering
+      row.appendChild(qtext);
+      for(let v=1; v<=7; v++){
+        const cell = document.createElement('div');
+        cell.className = 'opt';
+        const id = `${lang}-q-${idx}-${v}`;
+        const input = document.createElement('input');
+        input.type = 'radio';
+        input.name = `${lang}-q-${idx}`; // bind by original index
+        input.id = id;
+        input.value = String(v);
+        const label = document.createElement('label');
+        label.setAttribute('for', id);
+        label.textContent = v;
+        cell.appendChild(input);
+        cell.appendChild(label);
+        row.appendChild(cell);
+      }
+      host.appendChild(row);
+    });
+  }
+
+  // Override the originals by reassigning
+  window.renderQuestions = renderQuestions;
+
+  // 2) Scoring helpers (0–100 only) and attribute grouping by original indices
+  const scale100 = x => ((x-1)/6)*100;
+  const avg = arr => arr.reduce((a,b)=>a+b,0)/arr.length;
+
+  function collectValues(lang){
+    const missing = [];
+    const vals = new Map();
+    for(let i=0;i<15;i++){
+      const sel = document.querySelector(`input[name="${lang}-q-${i}"]:checked`);
+      if(!sel){ missing.push(i+1); }
+      vals.set(i, sel ? Number(sel.value) : null);
+    }
+    return {vals, missing};
+  }
+
+  function computeScores(lang){
+    const {vals, missing} = collectValues(lang);
+    const out = document.getElementById(`${lang}-result`);
+    if(!out) return;
+    if(missing.length){
+      out.className = 'result show';
+      const tip = (lang==='zh') ? `尚有題目未作答（原始題目編號）：第 ${missing.join(', ')} 題。` : `Some items are unanswered (original item numbers): ${missing.join(', ')}.`;
+      out.innerHTML = `<div class="note warn">${tip}</div>`;
+      return;
+    }
+    const getVals = (start,end)=>{ const a=[]; for(let i=start-1;i<=end-1;i++){ a.push(vals.get(i)); } return a; };
+    const sysuse = avg(getVals(1,6));
+    const infoq  = avg(getVals(7,12));
+    const interq = avg(getVals(13,15));
+    const overall = avg(getVals(1,15));
+
+    const labels = (lang==='zh')
+      ? [
+          ['系統有用性', sysuse],
+          ['資訊品質', infoq],
+          ['介面品質', interq],
+          ['總分', overall],
+        ]
+      : [
+          ['System Usefulness', sysuse],
+          ['Information Quality', infoq],
+          ['Interface Quality', interq],
+          ['Overall', overall],
+        ];
+
+    const html = `
+      <div class="grid">
+        ${labels.map(([name,val])=>{
+          const v100 = scale100(val).toFixed(1);
+          return `<div class=\"metric\"><h4>${name}</h4><div class=\"val\">${v100}</div><div class=\"sub\">0–100 scaled score</div></div>`
+        }).join('')}
+      </div>`;
+    out.className = 'result show';
+    out.innerHTML = html;
+  }
+
+  window.computeScores = computeScores;
+
+  // 3) Re-render both languages with shuffle and rebind buttons
+  renderQuestions('zh');
+  renderQuestions('en');
+  document.getElementById('zh-calc').onclick = ()=> computeScores('zh');
+  document.getElementById('en-calc').onclick = ()=> computeScores('en');
+})();
+</script>
+<script>
+// === Ensure only Chinese is visible at first load ===
+(function(){
+  const tabZH=document.getElementById('tab-zh');
+  const tabEN=document.getElementById('tab-en');
+  const secZH=document.getElementById('section-zh');
+  const secEN=document.getElementById('section-en');
+  function setActive(isZH){
+    tabZH.classList.toggle('active',isZH);
+    tabEN.classList.toggle('active',!isZH);
+    secZH.style.display=isZH?'block':'none';
+    secEN.style.display=isZH?'none':'block';
+  }
+  setActive(true);
+  tabZH.addEventListener('click',()=>setActive(true));
+  tabEN.addEventListener('click',()=>setActive(false));
+})();
+</script>
+</body>
+</html>
