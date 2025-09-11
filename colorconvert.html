@@ -31,10 +31,7 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="btn">
-  <a class="btn" href="index.html" title="go back">← 返回 / go back to CDR Lab</a>
-</div>
-  <h1>RGB ⇄ CIELAB ⇄ CIELCh converter</h1>
+    <h1>RGB ⇄ CIELAB ⇄ CIELCh converter</h1>
   <div class="toolbar">
     <div class="sub">白點 / 轉換模式：</div>
     <select id="whitePoint">
@@ -118,8 +115,8 @@
     <div class="footer">
       • sRGB 假設：IEC 61966-2-1（D65 白點，2.4 指數/分段 Gamma）<br/>
       • CIELAB：可選 D50（含 Bradford 適應）或 D65（不適應）。<br/>
-      • 若 sRGB 超出範圍，將夾制到 0–255 並在上方顯示 <span class="note">(clamped)</span>。
-      • Developed by Color & Design Research Lab
+      • 若 sRGB 超出範圍，將夾制到 0–255 並在上方顯示 <span class="note">(clamped)</span>。<br/>
+      • Developed by <a href="index.html">Color & Design Research Lab</a>
     </div>
   </div>
 </div>
@@ -342,5 +339,6 @@ convertFromRGB();
 </script>
 </body>
 </html>
+
 
 
