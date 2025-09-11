@@ -60,9 +60,10 @@
 <body>
   <div class="wrap">
     <header>
+      <a href='index.html' class='btn ghost'>返回首頁</a>
       <div>
-        <div class="title">Computer System Usability Questionnaire, CSUQ</div>
-        <div class="subtitle">The Computer System Usability Questionnaire (Lewis, 1995) was developed to measure user satisfaction with computer system usability.</div>
+        <div class="title">CSUQ 問卷（前 15 題）— 自動計分 / CSUQ (Q1–15) Auto‑Scoring</div>
+        <div class="subtitle">僅顯示 0–100 換算分。分數包含三個分量表平均與前 15 題總平均。</div>
       </div>
       <div class="tabs" role="tablist" aria-label="Language">
         <button id="tab-zh" class="tab active">中文</button>
@@ -99,6 +100,10 @@
         <div id="en-result" class="result"></div>
       </div>
     </section>
+    <div class='actions'>
+      <a href='index.html' class='btn ghost'>返回首頁</a>
+    </div>
+    <footer style="margin-top:40px;text-align:center;color:#888;font-size:13px">Color &amp; Design Research</footer>
   </div>
 
   <script>
@@ -292,16 +297,16 @@
 
     const labels = (lang==='zh')
       ? [
-          ['系統有用性', sysuse],
-          ['資訊品質', infoq],
-          ['介面品質', interq],
-          ['總分', overall],
+          ['系統有用性 (Q1–6)', sysuse],
+          ['資訊品質 (Q7–12)', infoq],
+          ['介面品質 (Q13–15)', interq],
+          ['總分・前15題平均 (Q1–15)', overall],
         ]
       : [
-          ['System Usefulness', sysuse],
-          ['Information Quality', infoq],
-          ['Interface Quality', interq],
-          ['Overall', overall],
+          ['System Usefulness (Q1–6)', sysuse],
+          ['Information Quality (Q7–12)', infoq],
+          ['Interface Quality (Q13–15)', interq],
+          ['Overall (Avg of Q1–15)', overall],
         ];
 
     const html = `
