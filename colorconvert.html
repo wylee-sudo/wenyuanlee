@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RGB ⇄ CIELAB ⇄ CIELCh 轉換器</title>
+<title>RGB ⇄ CIELAB ⇄ CIELCh converter</title>
 <style>
   :root { --bg:#0b0c10; --card:#16181d; --muted:#7f8c99; --fg:#e7ecf2; --accent:#4da3ff; }
   html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Noto Sans,Arial;
@@ -31,7 +31,10 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>RGB ⇄ CIELAB ⇄ CIELCh 轉換器 provided by the Color Research Lab of Tatung University</h1>
+  <div class="btn">
+  <a class="btn" href="index.html" title="go back">← 返回 / go back to CDR Lab</a>
+</div>
+  <h1>RGB ⇄ CIELAB ⇄ CIELCh converter</h1>
   <div class="toolbar">
     <div class="sub">白點 / 轉換模式：</div>
     <select id="whitePoint">
@@ -69,15 +72,15 @@
       <div class="row3">
         <div>
           <label for="L">L*</label>
-          <input type="number" id="L" min="0" max="100" step="0.01" value="50">
+          <input type="number" id="L" min="0" max="100" step="1" value="50">
         </div>
         <div>
           <label for="a">a*</label>
-          <input type="number" id="a" step="0.01" value="50">
+          <input type="number" id="a" step="1" value="50">
         </div>
         <div>
           <label for="bLab">b*</label>
-          <input type="number" id="bLab" step="0.01" value="-50">
+          <input type="number" id="bLab" step="1" value="-50">
         </div>
       </div>
       <button class="btn" id="fromLab">⟲ 由此轉換</button>
@@ -90,15 +93,15 @@
       <div class="row3">
         <div>
           <label for="Lc">L*</label>
-          <input type="number" id="Lc" min="0" max="100" step="0.01" value="50">
+          <input type="number" id="Lc" min="0" max="100" step="1" value="50">
         </div>
         <div>
           <label for="Cc">C*</label>
-          <input type="number" id="Cc" min="0" step="0.01" value="70.71">
+          <input type="number" id="Cc" min="0" step="1" value="70">
         </div>
         <div>
           <label for="hc">h°</label>
-          <input type="number" id="hc" min="0" max="360" step="0.01" value="315">
+          <input type="number" id="hc" min="0" max="360" step="1" value="315">
         </div>
       </div>
       <button class="btn" id="fromLch">⟲ 由此轉換</button>
@@ -116,6 +119,7 @@
       • sRGB 假設：IEC 61966-2-1（D65 白點，2.4 指數/分段 Gamma）<br/>
       • CIELAB：可選 D50（含 Bradford 適應）或 D65（不適應）。<br/>
       • 若 sRGB 超出範圍，將夾制到 0–255 並在上方顯示 <span class="note">(clamped)</span>。
+      • Developed by Color & Design Research Lab
     </div>
   </div>
 </div>
@@ -338,4 +342,5 @@ convertFromRGB();
 </script>
 </body>
 </html>
+
 
