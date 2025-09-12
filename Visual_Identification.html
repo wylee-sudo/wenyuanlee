@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>色彩三屬性之視覺辨識練習（簡化版）</title>
+<style>
+  :root { --bg:#f7f7fb; --card:#fff; --text:#111; --muted:#6b7280; }
+  * { box-sizing: border-box; }
+  html, body { -webkit-user-select:none; user-select:none; }
+  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans TC, sans-serif; background: var(--bg); color: var(--text); }
+  .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+  h1 { margin: 0 0 12px; font-size: 28px; }
+  .tabs { display:inline-flex; gap:8px; padding:6px; background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow: 0 1px 2px rgba(0,0,0,.05); position: sticky; top: 10px; z-index:5; }
+  .tab { padding:8px 12px; border-radius:10px; font-weight:600; font-size:14px; border:none; background:#fff; color:#374151; cursor:pointer; }
+  .tab.active { background:#111; color:#fff; }
+  .card { background: var(--card); border:1px solid #e5e7eb; border-radius:16px; padding:16px; margin: 16px 0; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  .muted { color: var(--muted); font-size: 13px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; }
+  .chip { width:56px; height:56px; border-radius:12px; box-shadow: 0 1px 2px rgba(0,0,0,.2) inset, 0 1px 2px rgba(0,0,0,.05); border:1px solid rgba(0,0,0,.12); cursor:grab; position:relative; }
+  .chip.bad { outline: 3px solid rgba(220,38,38,.9); }
+  .chip.good { outline: 3px solid rgba(22,163,74,.9); }
+  .chip .tag { position:absolute; left:4px; bottom:4px; font-size:10px; background: rgba(255,255,255,.85); padding:1px 3px; border-radius:4px; border:1px solid rgba(0,0,0,.12); display:none; }
+  .chip.reveal .tag { display:inline-block; }
+  .slot { width:64px; height:64px; border:2px dashed rgba(0,0,0,.3); border-radius:12px; display:flex; align-items:center; justify-content:center; background:transparent; }
+  .slot.bad { border-color: rgba(220,38,38,.9); background: #fee2e2; }
+  .slot.good { border-color: rgba(22,163,74,.9); background:#dcfce7; }
+  .btn { padding:8px 12px; border-radius:10px; border:1px solid #e5e7eb; background:#f3f4f6; cursor:pointer; font-weight:600; }
+  .btn.primary { background:#111; color:#fff; border-color:#111; }
+  .bar { height:6px; background: linear-gradient(90deg,#e5e7eb,#d1d5db); border-radius:999px; flex:1; }
+  .scale { display:flex; align-items:center; gap:8px; margin-top:6px; font-size:12px; color:#6b7280; }
+  .banner { margin-top:10px; padding:8px 10px; border-radius:10px; font-weight:600; font-size:14px;}
+  .ok { background:#dcfce7; color:#166534; }
+  .badmsg { background:#fee2e2; color:#991b1b; }
+  .tip { font-size:12px; color:#6b7280; margin-top:6px; }
+</style>
+</head>
+<body>
+  <div class="container">
+ 
+    <h1>色彩三屬性之視覺辨識練習</h1>
+    <div class="tabs" id="tabs"></div>
+    <div id="view"></div>
+    <div class="footer">
+    <a href="index.html">Color & Design Research Lab</a>
+
+    </div>
+  </div>
+
+<script>
+/* =========================
+   CIELAB → sRGB utilities
+   ========================= */
+const REF_X=95.047, REF_Y=100.0, REF_Z=108.883;
+function labToXyz(L,a,b){
+  const fy=(L+16)/116, fx=fy+a/500, fz=fy-b/200;
+  const xr = fx**3>0.008856? fx**3 : (fx-16/116)/7.787;
+  const yr = L>903.3*0.008856? fy**3 : L/903.3;
+  const zr = fz**3>0.008856? fz**3 : (fz-16/116)/7.787;
+  return {x:xr*REF_X, y:yr*REF_Y, z:zr*REF_Z};
+}
+function xyzToLinearRgb(x,y,z){
+  let r = 3.2406*(x/100) + -1.5372*(y/100) + -0.4986*(z/100);
+  let g = -0.9689*(x/100) + 1.8758*(y/100) + 0.0415*(z/100);
+  let b = 0.0557*(x/100) + -0.2040*(y/100) + 1.0570*(z/100);
+  return {r,g,b};
+}
+function compand(v){ return v<=0.0031308? 12.92*v : 1.055*Math.pow(v,1/2.4)-0.055; }
+function labToRgb(L,a,b){
+  const {x,y,z}=labToXyz(L,a,b);
+  const {r,g,b:bb}=xyzToLinearRgb(x,y,z);
+  return {R:compand(r), G:compand(g), B:compand(bb)};
+}
+function rgbInGamut({R,G,B}){ return R>=0 && R<=1 && G>=0 && G<=1 && B>=0 && B<=1; }
+function rgbCss({R,G,B}){
+  const r=Math.round(Math.min(1,Math.max(0,R))*255);
+  const g=Math.round(Math.min(1,Math.max(0,G))*255);
+  const b=Math.round(Math.min(1,Math.max(0,B))*255);
+  return `rgb(${r},${g},${b})`;
+}
+function chroma(a,b){ return Math.hypot(a,b); }
+function hueDeg(a,b){ let h=Math.atan2(b,a)*180/Math.PI; if(h<0)h+=360; return h; }
+function rand(min,max){ return Math.random()*(max-min)+min; }
+function polarToAB(C,h){ const t=h*Math.PI/180; return {a:C*Math.cos(t), b:C*Math.sin(t)}; }
+function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
+
+/* ==============
+   Shared UI
+   ============== */
+let currentDragId = null;
+function chipTagText(c){
+  const L = Math.round(c.L);
+  const C = Math.round(chroma(c.a,c.b));
+  const H = Math.round(hueDeg(c.a,c.b));
+  return `L${L} C${C} h${H}°`;
+}
+function makeChipEl(chip, opts={}){
+  const { reveal=false, bad=false, good=false } = opts;
+  const el=document.createElement('div');
+  el.className='chip'+(bad?' bad':'')+(good?' good':'')+(reveal?' reveal':'');;
+  el.draggable=true;
+  el.style.background = rgbCss(chip.rgb);
+  el.dataset.id = chip.id;
+  el.addEventListener('dragstart',e=>{ currentDragId = chip.id; e.dataTransfer.setData('text/plain', chip.id); });
+  el.addEventListener('dragend',()=>{ currentDragId = null; });
+  const tag=document.createElement('div'); tag.className='tag'; tag.textContent=chipTagText(chip);
+  el.appendChild(tag);
+  return el;
+}
+function makeSlotEl(){
+  const el=document.createElement('div');
+  el.className='slot';
+  el.addEventListener('dragover',e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; });
+  return el;
+}
+function buildStatus(correct, slots){
+  const status = { slot:[], badIds:new Set() };
+  for(let i=0;i<correct.length;i++){
+    const right = correct[i];
+    const id=slots[i];
+    const good = (id===right);
+    status.slot[i] = good ? 'good' : 'bad';
+    if(!good && id) status.badIds.add(id);
+  }
+  return status;
+}
+
+/* Utility: circular comparisons for hue ordering */
+function rotations(arr){
+  const out=[];
+  for(let i=0;i<arr.length;i++){
+    out.push(arr.slice(i).concat(arr.slice(0,i)));
+  }
+  return out;
+}
+function reversed(arr){ return [...arr].reverse(); }
+function bestCircularAlignment(candidate, base){
+  // returns {matchOrder, status} where matchOrder is the base order (possibly rotated/reversed) with max index-wise matches
+  const candidates = rotations(base).concat(rotations(reversed(base)));
+  let best=null, bestScore=-1;
+  for(const order of candidates){
+    let score=0;
+    for(let i=0;i<order.length;i++){ if(candidate[i]===order[i]) score++; }
+    if(score>bestScore){ bestScore=score; best=order; }
+  }
+  const status = buildStatus(best, candidate);
+  return { order: best, status, score: bestScore };
+}
+function matchesAnyRotation(candidate, base){
+  const {score} = bestCircularAlignment(candidate, base);
+  return score===base.length;
+}
+
+/* ===================
+   Q1 – 彩度排序 (4)
+   =================== */
+function genQ1(){
+  const L = rand(25,80);
+  const Cs=[];
+  for(let tries=0; tries<8000 && Cs.length<3; tries++){
+    const C=rand(15,70);
+    if(Cs.every(x=>Math.abs(x-C)>=18)) Cs.push(C);
+  }
+  if(Cs.length<3) throw new Error('Q1 chroma generation failed');
+  const colored = Cs.map((C,i)=>{
+    let tries=0, rgb=null, a=0, b=0;
+    while(tries<200 && !rgb){
+      tries++;
+      const h=(Math.random()*360);
+      const ab=polarToAB(C,h);
+      const test=labToRgb(L,ab.a,ab.b);
+      if(rgbInGamut(test)){ rgb=test; a=ab.a; b=ab.b; }
+    }
+    if(!rgb){ const ab=polarToAB(Math.max(10,C-5),0); a=ab.a; b=ab.b; rgb=labToRgb(L,ab.a,ab.b); }
+    return { id:`q1_${i}`, L,a,b,rgb };
+  });
+  const achroma = { id:'q1_3', L, a:0, b:0, rgb:labToRgb(L,0,0) };
+  const chips=[...colored, achroma];
+  const correct = [...chips].sort((p,q)=>Math.hypot(p.a,p.b)-Math.hypot(q.a,q.b)).map(c=>c.id);
+  return { chips: shuffle(chips), correct };
+}
+function viewQ1(container){
+  container.innerHTML='';
+  const card=document.createElement('div'); card.className='card';
+  card.innerHTML='<h2>第 1 題｜彩度由低→高排序</h2>';
+  const poolRow=document.createElement('div'); poolRow.className='row'; card.appendChild(poolRow);
+  const scale=document.createElement('div'); scale.className='scale'; scale.innerHTML='<span>低</span><div class="bar"></div><span>高</span>'; card.appendChild(scale);
+  const slotsRow=document.createElement('div'); slotsRow.className='row'; card.appendChild(slotsRow);
+  const btns=document.createElement('div'); btns.className='row'; btns.style.marginTop='8px'; card.appendChild(btns);
+  const result=document.createElement('div'); card.appendChild(result);
+
+  let data = genQ1();
+  let slots = Array(4).fill(null);
+  let reveal = false;
+
+  function renderPool(status=null){
+    poolRow.innerHTML='';
+    data.chips.filter(c=>!slots.includes(c.id)).forEach(c=>{
+      const bad = status && status.badIds && status.badIds.has(c.id);
+      poolRow.appendChild(makeChipEl(c,{reveal, bad}));
+    });
+  }
+  function renderSlots(status=null){
+    slotsRow.innerHTML='';
+    for(let i=0;i<4;i++){
+      const s=makeSlotEl();
+      if(status && status.slot[i]) s.classList.add(status.slot[i]);
+      s.addEventListener('drop',e=>{
+        e.preventDefault(); e.stopPropagation();
+        const id=e.dataTransfer.getData('text/plain')||currentDragId;
+        if(!id) return;
+        const from=slots.indexOf(id);
+        if(from!==-1) slots[from]=null;
+        slots[i]=id;
+        currentDragId=null;
+        renderPool(status); renderSlots(status);
+      });
+      if(slots[i]){
+        const chip=data.chips.find(c=>c.id===slots[i]);
+        const st = status ? status.slot[i] : null;
+        s.appendChild(makeChipEl(chip,{reveal, good: st==='good', bad: st==='bad'}));
+      }
+      slotsRow.appendChild(s);
+    }
+  }
+
+  const checkBtn=document.createElement('button'); checkBtn.className='btn primary'; checkBtn.textContent='檢查答案';
+  checkBtn.onclick=()=>{
+    if(slots.some(v=>!v)){ result.className='banner badmsg'; result.textContent='尚有空格未填'; return; }
+    const ok = slots.join(',')===data.correct.join(',');
+    const status = buildStatus(data.correct, slots);
+    reveal = ok;
+    result.className = 'banner ' + (ok?'ok':'badmsg');
+    result.textContent = ok ? '答對！已揭示 L*、C*、h°' : '順序不正確（已標示錯誤）';
+    renderPool(status); renderSlots(status);
+  };
+
+  const showBtn=document.createElement('button'); showBtn.className='btn'; showBtn.textContent='直接看結果';
+  showBtn.onclick=()=>{
+    slots = [...data.correct];
+    const status = buildStatus(data.correct, slots);
+    reveal = true;
+    result.className='banner ok';
+    result.textContent='已顯示正確答案，並揭示 L*、C*、h°。';
+    renderPool(status); renderSlots(status);
+  };
+
+  const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換一題';
+  nextBtn.onclick=()=>{ data=genQ1(); slots=Array(4).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
+  btns.appendChild(checkBtn); btns.appendChild(showBtn); btns.appendChild(nextBtn);
+
+  renderPool(); renderSlots();
+  container.appendChild(card);
+}
+
+/* ===================
+   Q2 – 明度排序 (5)
+   =================== */
+function genQ2(){
+  const Ls=[];
+  for(let tries=0; tries<10000 && Ls.length<5; tries++){
+    const L=rand(15,90);
+    if(Ls.every(x=>Math.abs(x-L)>=12)) Ls.push(L);
+  }
+  if(Ls.length<5) throw new Error('Q2 L* generation failed');
+  const chips = Ls.map((L,i)=>{
+    let rgb=null, tries=0;
+    while(tries<400 && !rgb){
+      tries++;
+      const C=rand(15,55), h=rand(0,360);
+      const {a,b}=polarToAB(C,h);
+      const test=labToRgb(L,a,b);
+      if(rgbInGamut(test)) return { id:`q2_${i}`, L,a,b,rgb:test };
+    }
+    return { id:`q2_${i}`, L, a:0, b:0, rgb:labToRgb(L,0,0) };
+  });
+  const correct = [...chips].sort((p, q)=>p.L-q.L).map(c=>c.id);
+  return { chips: shuffle(chips), correct };
+}
+function viewQ2(container){
+  container.innerHTML='';
+  const card=document.createElement('div'); card.className='card';
+  card.innerHTML='<h2>第 2 題｜明度由低→高排序</h2>';
+  const poolRow=document.createElement('div'); poolRow.className='row'; card.appendChild(poolRow);
+  const scale=document.createElement('div'); scale.className='scale'; scale.innerHTML='<span>低</span><div class="bar"></div><span>高</span>'; card.appendChild(scale);
+  const slotsRow=document.createElement('div'); slotsRow.className='row'; card.appendChild(slotsRow);
+  const btns=document.createElement('div'); btns.className='row'; btns.style.marginTop='8px'; card.appendChild(btns);
+  const result=document.createElement('div'); card.appendChild(result);
+
+  let data=genQ2(); let slots=Array(5).fill(null); let reveal=false;
+
+  function renderPool(status=null){
+    poolRow.innerHTML='';
+    data.chips.filter(c=>!slots.includes(c.id)).forEach(c=>{
+      const bad = status && status.badIds && status.badIds.has(c.id);
+      poolRow.appendChild(makeChipEl(c,{reveal, bad}));
+    });
+  }
+  function renderSlots(status=null){
+    slotsRow.innerHTML='';
+    for(let i=0;i<5;i++){
+      const s=makeSlotEl();
+      if(status && status.slot[i]) s.classList.add(status[i]);
+      s.addEventListener('drop',e=>{
+        e.preventDefault(); e.stopPropagation();
+        const id=e.dataTransfer.getData('text/plain')||currentDragId;
+        if(!id) return;
+        const from=slots.indexOf(id);
+        if(from!==-1) slots[from]=null;
+        slots[i]=id;
+        currentDragId=null;
+        renderPool(status); renderSlots(status);
+      });
+      if(slots[i]){ 
+        const chip=data.chips.find(c=>c.id===slots[i]);
+        const st = status ? status.slot[i] : null;
+        s.appendChild(makeChipEl(chip,{reveal, good: st==='good', bad: st==='bad'})); 
+      }
+      slotsRow.appendChild(s);
+    }
+  }
+  const checkBtn=document.createElement('button'); checkBtn.className='btn primary'; checkBtn.textContent='檢查答案';
+  checkBtn.onclick=()=>{
+    if(slots.some(v=>!v)){ result.className='banner badmsg'; result.textContent='尚有空格未填'; return; }
+    const ok = slots.join(',')===data.correct.join(',');
+    const status = buildStatus(data.correct, slots);
+    reveal = ok;
+    result.className = 'banner ' + (ok?'ok':'badmsg');
+    result.textContent = ok ? '答對！已揭示 L*、C*、h°' : '順序不正確（已標示錯誤）';
+    renderPool(status); renderSlots(status);
+  };
+
+  const showBtn=document.createElement('button'); showBtn.className='btn'; showBtn.textContent='直接看結果';
+  showBtn.onclick=()=>{
+    slots = [...data.correct];
+    const status = buildStatus(data.correct, slots);
+    reveal = true;
+    result.className='banner ok';
+    result.textContent='已顯示正確答案，並揭示 L*、C*、h°。';
+    renderPool(status); renderSlots(status);
+  };
+
+  const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換一題';
+  nextBtn.onclick=()=>{ data=genQ2(); slots=Array(5).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
+  btns.appendChild(checkBtn); btns.appendChild(showBtn); btns.appendChild(nextBtn);
+  renderPool(); renderSlots(); container.appendChild(card);
+}
+
+/* ===================
+   Q3 – 色相角排序 (6, 圓周無起點)
+   =================== */
+function genQ3(){
+  const L = rand(40,75);
+  let C = rand(28,55);
+  const hues=[];
+  // ensure minimum angular separation (>= 20°) & span > 120° to avoid near-linear ambiguity
+  function farEnough(h){
+    return hues.every(x=>{
+      const d=Math.abs(h-x);
+      const wrap=Math.min(d,360-d);
+      return wrap>=20;
+    });
+  }
+  let guard=0;
+  while(hues.length<6 && guard<5000){
+    guard++;
+    const h=Math.round(rand(0,360));
+    if(farEnough(h)) hues.push(h);
+  }
+  hues.sort((a,b)=>a-b);
+  // Build chips with safe gamut check, reduce C if needed
+  const chips=hues.map((h,i)=>{
+    let tryC=C, rgb=null, a=0, b=0, tries=0;
+    while(tries<200 && !rgb){
+      tries++;
+      const ab=polarToAB(tryC,h);
+      const test=labToRgb(L,ab.a,ab.b);
+      if(rgbInGamut(test)){ rgb=test; a=ab.a; b=ab.b; break; }
+      tryC-=2;
+      if(tryC<12){ // last resort tweak L
+        tryC=18;
+      }
+    }
+    if(!rgb){ const ab=polarToAB(18,h); a=ab.a; b=ab.b; rgb=labToRgb(L,a,b); }
+    return { id:`q3_${i}`, L, a, b, h, rgb };
+  });
+  const baseOrder=[...chips].sort((p,q)=>p.h-q.h).map(c=>c.id); // increasing hue
+  return { chips: shuffle(chips), correctBase: baseOrder };
+}
+function viewQ3(container){
+  container.innerHTML='';
+  const card=document.createElement('div'); card.className='card';
+  card.innerHTML='<h2>第 3 題｜依 CIELCh 的 h° 由小到大排序（圓周任意起點，雙向皆可）</h2>';
+  const tip=document.createElement('div'); tip.className='tip';
+  tip.textContent='說明：色相角 0° = 360°。評分時接受任何起點與方向（順／逆時針），只要依角度單調遞增即可。';
+  card.appendChild(tip);
+
+  const poolRow=document.createElement('div'); poolRow.className='row'; card.appendChild(poolRow);
+  const slotsRow=document.createElement('div'); slotsRow.className='row'; card.appendChild(slotsRow);
+  const btns=document.createElement('div'); btns.className='row'; btns.style.marginTop='8px'; card.appendChild(btns);
+  const result=document.createElement('div'); card.appendChild(result);
+
+  let data=genQ3(); let slots=Array(6).fill(null); let reveal=false;
+
+  function renderPool(status=null){
+    poolRow.innerHTML='';
+    data.chips.filter(c=>!slots.includes(c.id)).forEach(c=>{
+      const bad = status && status.badIds && status.badIds.has(c.id);
+      poolRow.appendChild(makeChipEl(c,{reveal, bad}));
+    });
+  }
+  function renderSlots(status=null){
+    slotsRow.innerHTML='';
+    for(let i=0;i<6;i++){
+      const s=makeSlotEl();
+      if(status && status.slot[i]) s.classList.add(status.slot[i]);
+      s.addEventListener('drop',e=>{
+        e.preventDefault(); e.stopPropagation();
+        const id=e.dataTransfer.getData('text/plain')||currentDragId;
+        if(!id) return;
+        const from=slots.indexOf(id);
+        if(from!==-1) slots[from]=null;
+        slots[i]=id;
+        currentDragId=null;
+        renderPool(status); renderSlots(status);
+      });
+      if(slots[i]){
+        const chip=data.chips.find(c=>c.id===slots[i]);
+        const st = status ? status.slot[i] : null;
+        s.appendChild(makeChipEl(chip,{reveal, good: st==='good', bad: st==='bad'}));
+      }
+      slotsRow.appendChild(s);
+    }
+  }
+
+  function candidateIds(){ return slots.some(v=>!v)? null : [...slots]; }
+
+  const checkBtn=document.createElement('button'); checkBtn.className='btn primary'; checkBtn.textContent='檢查答案';
+  checkBtn.onclick=()=>{
+    if(slots.some(v=>!v)){ result.className='banner badmsg'; result.textContent='尚有空格未填'; return; }
+    const cand=candidateIds();
+    const ok = matchesAnyRotation(cand, data.correctBase);
+    const {status} = bestCircularAlignment(cand, data.correctBase);
+    reveal = ok;
+    result.className = 'banner ' + (ok?'ok':'badmsg');
+    result.textContent = ok ? '答對！已揭示 L*、C*、h°（任意起點與方向皆可）' : '順序不正確（已標示錯誤；提示：沿圓周單調遞增）';
+    renderPool(status); renderSlots(status);
+  };
+
+  const showBtn=document.createElement('button'); showBtn.className='btn'; showBtn.textContent='直接看結果';
+  showBtn.onclick=()=>{
+    // choose one canonical answer: increasing hue order
+    slots = [...data.correctBase];
+    const status = buildStatus(data.correctBase, slots);
+    reveal = true;
+    result.className='banner ok';
+    result.textContent='已顯示正確答案（遞增 h°，任意起點與方向皆可），並揭示 L*、C*、h°。';
+    renderPool(status); renderSlots(status);
+  };
+
+  const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換一題';
+  nextBtn.onclick=()=>{ data=genQ3(); slots=Array(6).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
+  btns.appendChild(checkBtn); btns.appendChild(showBtn); btns.appendChild(nextBtn);
+
+  renderPool(); renderSlots(); container.appendChild(card);
+}
+
+/* ===============
+   App Scaffolding
+   =============== */
+const tabsEl=document.getElementById('tabs');
+const viewEl=document.getElementById('view');
+const tabs=[
+  {id:1, label:'第1題 C*排序', render:viewQ1},
+  {id:2, label:'第2題 L*排序', render:viewQ2},
+  {id:3, label:'第3題 h°排序', render:viewQ3},
+];
+let active=1;
+function renderTabs(){
+  tabsEl.innerHTML='';
+  tabs.forEach(t=>{
+    const b=document.createElement('button');
+    b.className='tab'+(active===t.id?' active':'');;
+    b.textContent=t.label;
+    b.onclick=()=>{ active=t.id; renderTabs(); renderView(); };
+    tabsEl.appendChild(b);
+  });
+}
+function renderView(){
+  viewEl.innerHTML='';
+  const t=tabs.find(x=>x.id===active);
+  t.render(viewEl);
+}
+renderTabs(); renderView();
+</script>
+</body>
+</html>
