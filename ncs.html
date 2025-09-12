@@ -31,7 +31,7 @@
     <label>彩度 (C)</label>
     <select id="cSel"></select>
     <label>色相 (Hue)</label>
-    <select id="hueSelect"></select>
+    <select id="hueSel"></select>
     <div class="swatch" id="swatchA"></div>
     <div id="rgbA"></div>
     <div id="hexA"></div>
@@ -65,7 +65,7 @@ let DATA=[], A=null, B=null; // A=下拉式 NCS；B=RGB 近似
 
 const sSel=document.getElementById('sSel');
 const cSel=document.getElementById('cSel');
-const hSel=document.getElementById('hSel');
+const hSel=document.getElementById('hueSel');
 const swatchA=document.getElementById('swatchA');
 const infoA=document.getElementById('infoA');
 const swatchB=document.getElementById('swatchB');
@@ -192,8 +192,8 @@ function updateFromNCS(){
 }
 
 // ===== RGB → 最近 NCS（sRGB 歐氏距離，平手偏向彩度較高） =====
-function findNearestByRGB(){
-  var R=Number(document.getElementById('rIn').value), G=Number(document.getElementById('gIn').value), Bv=Number(document.getElementById('bIn').value);
+function findByRGB(){
+  var R=Number(document.getElementById('rInput').value), G=Number(document.getElementById('gInput').value), Bv=Number(document.getElementById('bInput').value);
   if(!(R>=0&&G>=0&&Bv>=0)) { infoB.textContent='請輸入 R/G/B (0–255)'; return; }
   var best=null, bestD=Infinity;
   DATA.forEach(function(d){
@@ -208,7 +208,7 @@ function findNearestByRGB(){
   redraw();
 }
 
-document.getElementById('btnFind').addEventListener('click', findNearestByRGB);
+document.getElementById('btnFind').addEventListener('click', findByRGB);
 
 // 初始底圖與資料載入
 redraw();
