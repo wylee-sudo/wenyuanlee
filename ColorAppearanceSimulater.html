@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Color Appearance Simulator｜色彩外貌模擬器</title>
+<style>
+  :root{--bg:#0b0f14;--card:#111820;--muted:#7a8899;--text:#e6edf3;--accent:#65b7ff;--danger:#ff6b6b;--ok:#5ad086;--border:#1e2a38}
+  *{box-sizing:border-box} html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans TC",sans-serif}
+  header{padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:linear-gradient(180deg,var(--bg),rgba(11,15,20,.88));backdrop-filter:saturate(1.2) blur(6px);z-index:10}
+  h1{margin:0;font-size:18px;letter-spacing:.5px} .sub{color:var(--muted);font-size:12px}
+  .wrap{display:grid;gap:16px;padding:16px;height:calc(100% - 74px);grid-template-columns: 1fr 340px 1.2fr}
+  @media (max-width:1100px){.wrap{grid-template-columns:1fr;height:auto}}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+  .card h2{margin:.2rem 0 1rem;font-size:16px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+  label{font-size:12px;color:var(--muted)}
+  input[type="number"],select,input[type="text"],.readonly{background:#0f1520;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;min-height:40px;outline:none}
+  input[type="number"]{width:110px}
+  .readonly{user-select:all}
+  .swatch{border-radius:12px;border:1px solid var(--border);height:90px;width:100%}
+  .big-swatch{height:220px}
+  .note{font-size:12px;color:var(--muted)}
+  .tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;border:1px solid var(--border);background:#0e1622}
+  .warn{color:var(--danger)} .ok{color:var(--ok)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .spacer{height:8px} .help{font-size:12px;color:#aab7c6}
+  .radio-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .muted{color:var(--muted)} .small{font-size:12px}
+  .footer{margin-top:14px;font-size:12px;color:#9aa7b5}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+</style>
+</head>
+<body>
+<header>
+  <h1>Color Appearance Simulator <span class="sub">— Color appearance after changing observation conditions</span></h1>
+</header>
+<main class="wrap">
+  <!-- LEFT -->
+  <section class="card" id="left">
+    <h2>① 選色與數值（基準：sRGB D65 / 2°）</h2>
+    <div class="grid2">
+      <div class="field">
+        <label>從色盤挑選</label>
+        <input id="colorPicker" type="color" value="#3a86ff" style="width:100%;height:48px;border:none;background:transparent"/>
+      </div>
+      <div class="field"><label>HEX</label><input id="hexInput" type="text" value="#3a86ff"/></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label>R (0–255)</label><input id="rInput" type="number" min="0" max="255" value="58"></div>
+      <div class="field"><label>G (0–255)</label><input id="gInput" type="number" min="0" max="255" value="134"></div>
+      <div class="field"><label>B (0–255)</label><input id="bInput" type="number" min="0" max="255" value="255"></div>
+    </div>
+    <div class="row" style="gap:16px;align-items:flex-start">
+      <div style="flex:1">
+        <div class="field"><label>Lab (D65 / 2°)</label><div id="labOut" class="readonly"></div></div>
+        <div class="field"><label>LCh (D65 / 2°)</label><div id="lchOut" class="readonly"></div></div>
+      </div>
+      <div style="width:180px">
+        <label>基準色預覽</label>
+        <div id="baseSwatch" class="swatch"></div>
+      </div>
+    </div>
+    <div class="note">左側數值一律以 sRGB（D65、CIE 1931 2°）為基準顯示，便於與常見軟體互比。</div>
+  </section>
+
+  <!-- MIDDLE -->
+  <section class="card" id="middle">
+    <h2>② 觀察條件</h2>
+    <div class="field">
+      <label>觀察者（Color Matching Function）</label>
+      <div class="radio-row">
+        <label><input type="radio" name="observer" value="2" checked> CIE 1931（2°）</label>
+        <label><input type="radio" name="observer" value="10"> CIE 1964（10°）</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>色溫（近似 CCT → xy → XYZ<sub>n</sub>）</label>
+      <select id="cctSelect">
+        <option value="3000">3000K</option>
+        <option value="4000">4000K</option>
+        <option value="5000">5000K (D50)</option>
+        <option value="6500" selected>6500K (D65)</option>
+        <option value="7500">7500K (D75)</option>
+        <option value="9000">9000K</option>
+      </select>
+      <div class="help">以 Bradford（Von Kries）色適應：從 D65 → 目標 CCT 白點。六種 CCT 採查表白點（教學用）。</div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>源白點（固定 sRGB D65）XYZ<sub>n</sub></label><div id="srcWp" class="readonly"></div></div>
+      <div class="field"><label>目標白點 XYZ<sub>n</sub>（取決於 CCT）</label><div id="dstWp" class="readonly"></div></div>
+    </div>
+  </section>
+
+  <!-- RIGHT -->
+  <section class="card" id="right">
+    <h2>③ 模擬顏色（以 sRGB 呈現）</h2>
+    <div class="field"><label>模擬色塊（即時更新）</label><div id="simSwatch" class="swatch big-swatch"></div></div>
+    <div class="grid3">
+      <div class="field"><label>模擬 sRGB</label><div id="simRgb" class="readonly"></div></div>
+      <div class="field"><label>HEX</label><div id="simHex" class="readonly"></div></div>
+      <div class="field"><label>超域色（是否裁切）</label><div id="gamutWarn" class="readonly"></div></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="footer">
+      <div class="tag">提醒 / Disclaimer</div>
+      <p class="small muted">
+        本工具僅供教學模擬：螢幕顯色不等於實物顏色；色彩再現受顯示器設定、環境光、ICC 管理、色度學近似法等多重因素影響。<br>
+        本頁使用 sRGB（D65、2°）為基準，CCT→白點採查表；色適應採 Bradford。結果僅供相對比較，不作為色差驗收依據。
+      </p>
+    </div>
+  </section>
+</main>
+
+<script>
+// ===== 色度學工具（教學用） =====
+const M_RGB2XYZ_2 = [
+  [0.4124564,0.3575761,0.1804375],
+  [0.2126729,0.7151522,0.0721750],
+  [0.0193339,0.1191920,0.9503041]
+];
+const M_XYZ2RGB_2 = [
+  [ 3.2404542,-1.5371385,-0.4985314],
+  [-0.9692660, 1.8760108, 0.0415560],
+  [ 0.0556434,-0.2040259, 1.0572252]
+];
+const M_BRADFORD = [
+  [ 0.8951, 0.2664,-0.1614],
+  [-0.7502, 1.7135, 0.0367],
+  [ 0.0389,-0.0685, 1.0296]
+];
+const M_BRADFORD_INV = [
+  [ 0.9869929,-0.1470543,0.1599627],
+  [ 0.4323053, 0.5183603,0.0492912],
+  [-0.0085287, 0.0400428,0.9684867]
+];
+const WHITE_D65_2  = {X:0.95047,Y:1.0,Z:1.08883};
+const WHITE_D65_10 = {X:0.94811,Y:1.0,Z:1.07304};
+
+const WP_TABLE = {
+  3000:{x:0.4360,y:0.4040},
+  4000:{x:0.3820,y:0.3830},
+  5000:{x:0.34567,y:0.35850}, // D50
+  6500:{x:0.31271,y:0.32902}, // D65
+  7500:{x:0.29902,y:0.31485}, // D75
+  9000:{x:0.28480,y:0.29320}
+};
+const getWhitepointXy = (CCT)=> WP_TABLE[CCT] || WP_TABLE[6500];
+
+const clamp01=v=>Math.min(1,Math.max(0,v));
+const round=(v,n=4)=>Number.parseFloat(v).toFixed(n);
+const mul3x1=(m,v)=>[m[0][0]*v[0]+m[0][1]*v[1]+m[0][2]*v[2],m[1][0]*v[0]+m[1][1]*v[1]+m[1][2]*v[2],m[2][0]*v[0]+m[2][1]*v[1]+m[2][2]*v[2]];
+const srgbEncode=lin=> lin<=0.0031308?12.92*lin:1.055*Math.pow(lin,1/2.4)-0.055;
+const srgbDecode=c=> c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);
+
+function rgb255ToXyz(r,g,b){
+  const rl=srgbDecode(r/255), gl=srgbDecode(g/255), bl=srgbDecode(b/255);
+  const [X,Y,Z]=mul3x1(M_RGB2XYZ_2,[rl,gl,bl]);
+  return {X,Y,Z};
+}
+function xyzToRgb255(X,Y,Z){
+  const [r,g,b]=mul3x1(M_XYZ2RGB_2,[X,Y,Z]);
+  const r8=Math.round(clamp01(srgbEncode(r))*255);
+  const g8=Math.round(clamp01(srgbEncode(g))*255);
+  const b8=Math.round(clamp01(srgbEncode(b))*255);
+  return {r:r8,g:g8,b:b8,rLin:r,gLin:g,bLin:b};
+}
+function fLab(t){return t>Math.pow(6/29,3)?Math.cbrt(t):(t*(29/6)*(29/6)/3+4/29)}
+function xyzToLab(X,Y,Z,W){
+  const xr=X/W.X, yr=Y/W.Y, zr=Z/W.Z;
+  const fx=fLab(xr), fy=fLab(yr), fz=fLab(zr);
+  const L=116*fy-16, a=500*(fx-fy), b=200*(fy-fz);
+  return {L,a,b};
+}
+function labToLch(Lab){
+  const C=Math.hypot(Lab.a,Lab.b);
+  let h=Math.atan2(Lab.b,Lab.a)*180/Math.PI; if(h<0) h+=360; return {L:Lab.L,C,h};
+}
+function xyToXyzWhite(x,y){ const X=x/y, Y=1.0, Z=(1-x-y)/y; return {X,Y,Z}; }
+function bradfordAdapt(XYZ, Ws, Wd){
+  const Ls=mul3x1(M_BRADFORD,[Ws.X,Ws.Y,Ws.Z]);
+  const Ld=mul3x1(M_BRADFORD,[Wd.X,Wd.Y,Wd.Z]);
+  const S=[Ld[0]/Ls[0],Ld[1]/Ls[1],Ld[2]/Ls[2]];
+  const LMS=mul3x1(M_BRADFORD,[XYZ.X,XYZ.Y,XYZ.Z]);
+  const LMS2=[LMS[0]*S[0],LMS[1]*S[1],LMS[2]*S[2]];
+  const XYZd=mul3x1(M_BRADFORD_INV,LMS2);
+  return {X:XYZd[0],Y:XYZd[1],Z:XYZd[2]};
+}
+
+const $=s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
+const getObserver=()=>document.querySelector('input[name="observer"]:checked').value; // '2' or '10'
+const getCCT=()=>parseInt($('#cctSelect').value,10);
+
+function updateAll(){
+  const r=parseInt($('#rInput').value||0,10), g=parseInt($('#gInput').value||0,10), b=parseInt($('#bInput').value||0,10);
+  const toHex=(r,g,b)=>`#${[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase()}`;
+  const hex=toHex(r,g,b);
+  $('#hexInput').value=hex; $('#colorPicker').value=hex; $('#baseSwatch').style.background=hex;
+
+  const XYZ_base=rgb255ToXyz(r,g,b); // sRGB 定義使用 2°
+  const Lab=xyzToLab(XYZ_base.X,XYZ_base.Y,XYZ_base.Z,WHITE_D65_2);
+  const LCh=labToLch(Lab);
+  $('#labOut').textContent = `L ${round(Lab.L,2)}, a ${round(Lab.a,2)}, b ${round(Lab.b,2)}`;
+  $('#lchOut').textContent = `L ${round(LCh.L,2)}, C ${round(LCh.C,2)}, h ${round(LCh.h,2)}°`;
+
+  const obs=getObserver();
+  const CCT=getCCT();
+  const srcW = (obs==='10') ? WHITE_D65_10 : WHITE_D65_2; // 顯示參考（sRGB 仍以 2° 定義）
+  const wpXY=getWhitepointXy(CCT);
+  const dstW=xyToXyzWhite(wpXY.x, wpXY.y);
+  $('#srcWp').textContent=`X ${round(srcW.X)}, Y ${round(srcW.Y)}, Z ${round(srcW.Z)}`;
+  $('#dstWp').textContent=`X ${round(dstW.X)}, Y ${round(dstW.Y)}, Z ${round(dstW.Z)}`;
+
+  const XYZ_sim=bradfordAdapt(XYZ_base, WHITE_D65_2, dstW); // 固定以 sRGB 的 D65/2° 為源白點
+  const rgbSim=xyzToRgb255(XYZ_sim.X,XYZ_sim.Y,XYZ_sim.Z);
+  const outOfGamut=(rgbSim.rLin<0||rgbSim.rLin>1||rgbSim.gLin<0||rgbSim.gLin>1||rgbSim.bLin<0||rgbSim.bLin>1);
+  const HEX=toHex(rgbSim.r,rgbSim.g,rgbSim.b);
+  $('#simSwatch').style.background=HEX;
+  $('#simRgb').textContent=`R ${rgbSim.r}  G ${rgbSim.g}  B ${rgbSim.b}`;
+  $('#simHex').textContent=HEX;
+  $('#gamutWarn').innerHTML= outOfGamut?'<span class="warn">超域：發生裁切（顯示近似）</span>':'<span class="ok">在 sRGB 範圍內</span>';
+}
+
+$('#colorPicker').addEventListener('input',e=>{let v=e.target.value;$('#hexInput').value=v;$('#rInput').value=parseInt(v.slice(1,3),16);$('#gInput').value=parseInt(v.slice(3,5),16);$('#bInput').value=parseInt(v.slice(5,7),16);updateAll()});
+$('#hexInput').addEventListener('change',e=>{let v=e.target.value.trim();if(!/^#?[0-9a-fA-F]{6}$/.test(v))return;if(v[0]!=='#')v='#'+v;$('#rInput').value=parseInt(v.slice(1,3),16);$('#gInput').value=parseInt(v.slice(3,5),16);$('#bInput').value=parseInt(v.slice(5,7),16);$('#colorPicker').value=v;updateAll()});
+['#rInput','#gInput','#bInput'].forEach(s=>$(s).addEventListener('input',()=>{['#rInput','#gInput','#bInput'].forEach(id=>{let el=$(id);if(el.value==='')el.value=0});let r=Math.max(0,Math.min(255,$('#rInput').value|0));let g=Math.max(0,Math.min(255,$('#gInput').value|0));let b=Math.max(0,Math.min(255,$('#bInput').value|0));$('#rInput').value=r;$('#gInput').value=g;$('#bInput').value=b;updateAll()}));
+$$('input[name="observer"]').forEach(r=>r.addEventListener('change',updateAll));
+$('#cctSelect').addEventListener('change',updateAll);
+
+updateAll();
+</script>
+</body>
+</html>
