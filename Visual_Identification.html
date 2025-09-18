@@ -390,9 +390,9 @@ function genQ3(){
 function viewQ3(container){
   container.innerHTML='';
   const card=document.createElement('div'); card.className='card';
-  card.innerHTML='<h2>第 3 題｜依 CIELCh 的 h° 由小到大排序（圓周任意起點，雙向皆可）</h2>';
+  card.innerHTML='<h2>第 3 題｜依 色相順序 排序（圓周任意起點，雙向皆可）</h2>';
   const tip=document.createElement('div'); tip.className='tip';
-  tip.textContent='說明：色相角 0° = 360°。評分時接受任何起點與方向（順／逆時針），只要依角度單調遞增即可。';
+  tip.textContent='說明：評分時接受任何起點與方向（順／逆時針），只要色相順序遞增即可。';
   card.appendChild(tip);
 
   const poolRow=document.createElement('div'); poolRow.className='row'; card.appendChild(poolRow);
@@ -471,9 +471,9 @@ function viewQ3(container){
 const tabsEl=document.getElementById('tabs');
 const viewEl=document.getElementById('view');
 const tabs=[
-  {id:1, label:'第1題 C*排序', render:viewQ1},
-  {id:2, label:'第2題 L*排序', render:viewQ2},
-  {id:3, label:'第3題 h°排序', render:viewQ3},
+  {id:1, label:'第1題 彩度 排序', render:viewQ1},
+  {id:2, label:'第2題 明度 排序', render:viewQ2},
+  {id:3, label:'第3題 色相 排序', render:viewQ3},
 ];
 let active=1;
 function renderTabs(){
