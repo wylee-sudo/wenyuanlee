@@ -245,7 +245,7 @@ function viewQ1(container){
     renderPool(status); renderSlots(status);
   };
 
-  const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換一題';
+  const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換色，再一次';
   nextBtn.onclick=()=>{ data=genQ1(); slots=Array(4).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
   btns.appendChild(checkBtn); btns.appendChild(showBtn); btns.appendChild(nextBtn);
 
@@ -340,7 +340,7 @@ function viewQ2(container){
     renderPool(status); renderSlots(status);
   };
 
-  const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換一題';
+  const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換色，再一次';
   nextBtn.onclick=()=>{ data=genQ2(); slots=Array(5).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
   btns.appendChild(checkBtn); btns.appendChild(showBtn); btns.appendChild(nextBtn);
   renderPool(); renderSlots(); container.appendChild(card);
@@ -458,7 +458,7 @@ function viewQ3(container){
     renderPool(status); renderSlots(status);
   };
 
-  const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換一題';
+  const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換色，再一次';
   nextBtn.onclick=()=>{ data=genQ3(); slots=Array(6).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
   btns.appendChild(checkBtn); btns.appendChild(showBtn); btns.appendChild(nextBtn);
 
