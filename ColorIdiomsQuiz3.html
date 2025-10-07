@@ -12,9 +12,23 @@
     html,body{height:100%}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--text);}
     .wrap{min-height:100%;display:flex;flex-direction:column}
-    header{padding:16px 20px;background:linear-gradient(180deg,#fafafe,#f2f4ff);border-bottom:1px solid #e5e7eb}
+    header{padding:16px 20px;background:linear-gradient(180deg,#fafafe,#f2f4ff);border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;}
     header .title{font-weight:700;font-size:clamp(18px,2.4vw,22px)}
     header .sub{color:var(--muted);font-size:clamp(12px,1.6vw,14px)}
+    .back-btn{
+      margin-left:auto;
+      background: #e0e7ff;
+      color: #3730a3;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s;
+    }
+    .back-btn:hover { background: #c7d2fe; }
 
     main{flex:1;display:flex;justify-content:center;align-items:flex-start;padding:24px}
     .card{width:min(760px,100%);background:var(--card);border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:20px}
@@ -27,7 +41,7 @@
     .hint{color:var(--muted);font-size:14px;margin-top:6px}
 
     form{display:grid;gap:10px;margin:14px 0}
-    .opt{display:flex;align-items:center;gap:10px;border:1px solid #e5e7eb;border-radius:14px;padding:12px 14px;background:#fff;cursor:pointer;transition:box-shadow .15s,border-color .15s,transform .05s}
+    .opt{display:flex;align-items:center;gap:10px;border:1px solid #e5e7eb;border-radius:14px;padding:12px 14px;background:#fff;cursor:pointer;transition:box-shadow .15s,border-color .15s,transform .0[...]
     .opt:hover{box-shadow:0 0 0 4px var(--ring)}
     .opt input{width:18px;height:18px}
 
@@ -49,12 +63,23 @@
     footer{padding:22px 20px;color:var(--muted);text-align:center;font-size:13px}
     a{color:var(--primary);text-decoration:none}
   </style>
+  <!-- Google tag (gtag.js) GA4，請將 G-XXXXXXXXXX 換成您的GA追蹤ID -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  </script>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="title">Color Idioms Quiz｜包含色名但不是在描述實際顏色</div>
-    <div class="sub">色彩都不色彩了 · 歡迎挑戰這些英文片語</div>
+    <div>
+      <div class="title">Color Idioms Quiz｜包含色名但不是在描述實際顏色</div>
+      <div class="sub">色彩都不色彩了 · 歡迎挑戰這些英文片語</div>
+    </div>
+    
   </header>
   <main>
     <div class="card" id="app" role="region" aria-live="polite">
@@ -72,7 +97,6 @@
 
       <div class="btnrow">
         <button class="primary" id="submitBtn" disabled>送出答案</button>
-        <button class="ghost" id="nextBtn" disabled>下一題 ⮕</button>
         <button class="secondary" id="restartBtn" title="重新開始測驗" style="display:none">重新開始</button>
       </div>
 
@@ -188,7 +212,6 @@ const progressEl = document.getElementById('progress');
 const scoreEl = document.getElementById('score');
 const optionsForm = document.getElementById('options');
 const submitBtn = document.getElementById('submitBtn');
-const nextBtn = document.getElementById('nextBtn');
 const restartBtn = document.getElementById('restartBtn');
 const feedbackEl = document.getElementById('feedback');
 const finalEl = document.getElementById('final');
@@ -209,7 +232,6 @@ function init(){
   scoreEl.style.display = 'none';
   scoreEl.textContent = '';
   finalEl.style.display = 'none';
-  nextBtn.disabled = true;
   submitBtn.disabled = true;
   restartBtn.style.display = 'none';
   feedbackEl.textContent = '';
@@ -246,7 +268,6 @@ function renderQuestion(){
 
     input.addEventListener('change',()=>{
       submitBtn.disabled = false;
-      nextBtn.disabled = true;
       // 不顯示對錯
       feedbackEl.textContent = '';
     });
@@ -284,47 +305,46 @@ submitBtn.addEventListener('click', (e)=>{
 
   answered = true;
   submitBtn.disabled = true;
-  nextBtn.disabled = false;
 
   // 鎖定選項
   optionsForm.querySelectorAll('input[type="radio"]').forEach(r=>r.disabled = true);
-});
 
-nextBtn.addEventListener('click', (e)=>{
-  e.preventDefault();
-  if(!answered) return;
-  idx++;
-  if(idx >= order.length){
-    // 完成 5 題
-    finalEl.style.display = 'block';
-    // 大字體分數 + 題目與正解清單
-    const summaryList = order.map((qIdx,i)=>{
-      const q = BANK[qIdx];
-      return `<li><code>${q.p}</code> — ${q.m}</li>`;
-    }).join('');
-    finalEl.innerHTML = `
-      <div class="bigscore">分數：${score} / ${order.length}</div>
-      <div>本次題目與正解：</div>
-      <ol class="sumlist">
-        ${summaryList}
-      </ol>
-    `;
-    qPhrase.textContent = '本次 5 題已作答完畢。';
-    optionsForm.innerHTML = '';
-    progressEl.textContent = `第 ${order.length} / ${order.length} 題`;
-    feedbackEl.textContent = '';
-    nextBtn.disabled = true;
-    submitBtn.disabled = true;
-    // 顯示重新開始按鈕
-    restartBtn.style.display = 'inline-block';
-    // 顯示小分數欄（如需）
-    scoreEl.style.display = 'block';
-    scoreEl.textContent = `分數：${score} / ${order.length}`;
-  } else {
-    submitBtn.disabled = true;
-    nextBtn.disabled = true;
-    renderQuestion();
-  }
+  // 自動切換到下一題或顯示結果
+  setTimeout(()=>{
+    idx++;
+    if(idx >= order.length){
+      // 完成 5 題
+      finalEl.style.display = 'block';
+      // 大字體分數 + 題目與正解清單
+      const summaryList = order.map((qIdx,i)=>{
+        const q = BANK[qIdx];
+        return `<li><code>${q.p}</code> — ${q.m}</li>`;
+      }).join('');
+      finalEl.innerHTML = `
+        <div class="bigscore">分數：${score} / ${order.length}</div>
+        <div>本次題目與正解：</div>
+        <ol class="sumlist">
+          ${summaryList}
+        </ol>
+        <div style="margin-top:20px; text-align:center;">
+          <a class="back-btn" href="https://wylee-sudo.github.io/wenyuanlee/" target="_blank" rel="noopener">返回 Color &amp; Design Research Lab</a>
+        </div>
+      `;
+      qPhrase.textContent = '本次 5 題已作答完畢。';
+      optionsForm.innerHTML = '';
+      progressEl.textContent = `第 ${order.length} / ${order.length} 題`;
+      feedbackEl.textContent = '';
+      submitBtn.disabled = true;
+      // 顯示重新開始按鈕
+      restartBtn.style.display = 'inline-block';
+      // 顯示小分數欄（如需）
+      scoreEl.style.display = 'block';
+      scoreEl.textContent = `分數：${score} / ${order.length}`;
+    } else {
+      renderQuestion();
+      submitBtn.disabled = true;
+    }
+  }, 400); // 0.4秒後自動切換，讓使用者感覺到有按下
 });
 
 restartBtn.addEventListener('click', (e)=>{
@@ -332,13 +352,11 @@ restartBtn.addEventListener('click', (e)=>{
   init();
 });
 
-// 鍵盤 Enter 提交，右箭頭下一題
+// 鍵盤 Enter 也能送出答案
 window.addEventListener('keydown', (e)=>{
   if(e.key==='Enter' && !submitBtn.disabled){ submitBtn.click(); }
-  if((e.key==='ArrowRight' || e.key===' ') && !nextBtn.disabled){ nextBtn.click(); }
 });
 
-// 啟動
 init();
 </script>
 </body>
