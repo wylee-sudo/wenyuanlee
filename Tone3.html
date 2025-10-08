@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Tone Distribution in the CIELAB space</title>
+
+<!-- Google Analytics: GA4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-N8QWS5JKZD');
+</script>
+
+<style>
+  :root{
+    --bg:#f7f7f9; --ink:#222; --muted:#666; --accent:#2563eb; --warn:#b91c1c;
+    --card:#fff; --grid:#e5e7eb; --chip:#eef2ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans TC",sans-serif; color:var(--ink); background:var(--bg);}
+  header{padding:12px 16px; border-bottom:1px solid var(--grid); background:#fff; position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+  .back{appearance:none; border:1px solid var(--grid); background:#fff; padding:8px 12px; border-radius:10px; cursor:pointer; font-size:14px}
+  header h1{font-size:18px; margin:0}
+  header p{margin:0; color:var(--muted); font-size:13px; width:100%}
+  .wrap{
+  display:grid;
+  width:1260px; max-width:1260px;
+  grid-template-columns:340px 1fr;
+  gap:20px; padding:12px 16px; margin:0 auto;
+}
+
+/* 不要出現捲動條（桌機固定版） */
+body{ overflow:hidden; }
+
+/* 右側圖表卡：兩張圖固定並排 */
+.charts{
+  display:grid;
+  grid-template-columns:420px 420px; /* 兩張正方形 */
+  gap:20px;
+  justify-content:center;
+  align-items:start;
+}
+
+/* 正方形容器與畫布尺寸（CSS 外觀固定） */
+.square{ width:420px; height:420px; }
+.square canvas{
+  width:100%; height:100%;
+  background:#fff; border:1px solid var(--grid); border-radius:12px; display:block;
+}
+
+
+  .card{background:var(--card); border:1px solid var(--grid); border-radius:12px; padding:14px}
+  .card h2{margin:0 0 10px; font-size:16px}
+  .row3{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+  label{font-size:12px; color:var(--muted); display:block; margin:8px 0 4px}
+  input[type="number"]{width:100%; padding:10px 12px; border:1px solid var(--grid); border-radius:10px; font-size:14px}
+  .mode{display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 12px}
+  .mode label{display:flex; align-items:center; gap:6px; background:var(--chip); padding:6px 10px; border-radius:999px; cursor:pointer; color:#334155}
+  .swatch{height:56px; border-radius:10px; border:1px solid var(--grid)}
+  .warn{margin-top:10px; padding:10px 12px; border:1px solid #fecaca; background:#fff1f2; color:var(--warn); border-radius:10px; font-size:13px; display:none}
+
+  .footer{color:var(--muted); font-size:12px; text-align:center; padding:12px}
+  .valuegrid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:8px}
+  .valbox{padding:8px; border:1px solid var(--grid); border-radius:8px; background:#fff; text-align:center; font-size:12px}
+  .valbox b{display:block; font-size:14px; margin-bottom:4px}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="index.html">← CDR Lab</a>
+  <h1>Color Tone Distribution</h1>
+  <p>Color Tone Distribution based on 黃瑜雯(2018)，<a href="https://hdl.handle.net/11296/p8nt2g" target="_blank" rel="noopener noreferrer">色調在CIELAB色彩空間之分布</a>，大同大學工業設計研究所碩士論文，指導教授：李文淵。</p>
+</header>
+
+<div class="wrap">
+  <!-- 左側控制 -->
+  <section class="card" id="controls">
+    <h2>Input color attributes</h2>
+    <div class="mode">
+      <label><input type="radio" name="mode" value="rgb" checked> RGB</label>
+      <label><input type="radio" name="mode" value="lab"> CIELAB</label>
+      <label><input type="radio" name="mode" value="lch"> CIELCh</label>
+    </div>
+
+    <div id="rgbInputs">
+      <div class="row3">
+        <div><label>R (0–255)</label><input type="number" id="R" min="0" max="255" step="1" value="120"></div>
+        <div><label>G (0–255)</label><input type="number" id="G" min="0" max="255" step="1" value="160"></div>
+        <div><label>B (0–255)</label><input type="number" id="B" min="0" max="255" step="1" value="200"></div>
+      </div>
+    </div>
+
+    <div id="labInputs" style="display:none">
+      <div class="row3">
+        <div><label>L* (0–100)</label><input type="number" id="L"  min="0" max="100"  step="1" value="70"></div>
+        <div><label>a* (−128–128)</label><input type="number" id="a" min="-128" max="128" step="1" value="-5"></div>
+        <div><label>b* (−128–128)</label><input type="number" id="b" min="-128" max="128" step="1" value="-20"></div>
+      </div>
+    </div>
+
+    <div id="lchInputs" style="display:none">
+      <div class="row3">
+        <div><label>L* (0–100)</label><input type="number" id="LL" min="0" max="100" step="1" value="70"></div>
+        <div><label>C* (0–200)</label><input type="number" id="CC" min="0" max="200" step="1" value="21"></div>
+        <div><label>h° (0–360)</label><input type="number" id="hh" min="0" max="360" step="1" value="256"></div>
+      </div>
+    </div>
+
+    <div style="margin:12px 0">
+      <label>色塊</label>
+      <div class="swatch" id="swatch"></div>
+      <div class="warn" id="warn">⚠️ 超出 sRGB 色域：已以最接近的 sRGB 顏色顯示（夾逼至 0–255）。</div>
+    </div>
+
+    <div class="valuegrid" id="readouts">
+      <div class="valbox"><b>RGB</b><span id="outRGB">—</span></div>
+      <div class="valbox"><b>L*a*b*</b><span id="outLAB">—</span></div>
+      <div class="valbox"><b>L*C*h</b><span id="outLCH">—</span></div>
+      <div class="valbox"><b>Tone</b><span id="outTone">—</span></div>
+    </div>
+  </section>
+
+  <!-- 右側：兩張互動圖（方形） -->
+  <section class="card">
+    <h2>CIELAB Color Space</h2>
+    <div class="charts">
+      <div class="square"><canvas id="abCanvas"></canvas></div>
+      <div class="square"><canvas id="lcCanvas"></canvas></div>
+    </div>
+  </section>
+</div>
+
+<div class="footer">
+  <a href="https://wylee-sudo.github.io/wenyuanlee/" target="_blank" rel="noopener noreferrer">
+    Color &amp; Design Research Lab
+  </a>
+</div>
+
+<script>
+/* ---------- Math Helpers ---------- */
+const clamp=(x,min,max)=>Math.min(max,Math.max(min,x));
+const roundInt = x => Math.round(Number(x));
+const fix2 = x => Math.round(Number(x)*100)/100;
+const deg2rad = d => d*Math.PI/180;
+const rad2deg = r => r*180/Math.PI;
+
+/* D65 reference white (2°) */
+const Xn=95.047, Yn=100.000, Zn=108.883;
+
+/* sRGB<->linear */
+function srgbToLinear(u){ u/=255; return u<=0.04045? u/12.92 : Math.pow((u+0.055)/1.055,2.4); }
+function linearToSrgb(u){ let v = u<=0.0031308 ? 12.92*u : 1.055*Math.pow(u,1/2.4)-0.055; return clamp(Math.round(v*255),0,255); }
+
+/* linear RGB <-> XYZ (D65) */
+function linrgb_to_xyz(r,g,b){ const X=r*0.4124564+g*0.3575761+b*0.1804375, Y=r*0.2126729+g*0.7151522+b*0.0721750, Z=r*0.0193339+g*0.1191920+b*0.9503041; return [X*100,Y*100,Z*100]; }
+function xyz_to_linrgb(X,Y,Z){ X/=100; Y/=100; Z/=100; const r=3.2404542*X-1.5371385*Y-0.4985314*Z, g=-0.9692660*X+1.8760108*Y+0.0415560*Z, b=0.0556434*X-0.2040259*Y+1.0572252*Z; return [r,g,b]; }
+
+/* XYZ <-> Lab */
+function fLab(t){ const e=216/24389,k=24389/27; return t>e? Math.cbrt(t):(k*t+16)/116; }
+function invfLab(ft){ const e=216/24389,k=24389/27; const t=ft*ft*ft; return t>e? t:(116*ft-16)/k; }
+function xyz_to_lab(X,Y,Z){ const fx=fLab(X/Xn), fy=fLab(Y/Yn), fz=fLab(Z/Zn); return [116*fy-16, 500*(fx-fy), 200*(fy-fz)]; }
+function lab_to_xyz(L,a,b){ const fy=(L+16)/116, fx=fy+a/500, fz=fy-b/200; return [Xn*invfLab(fx), Yn*invfLab(fy), Zn*invfLab(fz)]; }
+
+/* Lab <-> LCh */
+function lab_to_lch(L,a,b){ const C=Math.hypot(a,b); let h=Math.atan2(b,a); h=(rad2deg(h)+360)%360; return [L,C,h]; }
+function lch_to_lab(L,C,h){ const hr=deg2rad(h); return [L, C*Math.cos(hr), C*Math.sin(hr)]; }
+
+/* RGB <-> Lab */
+function rgb_to_lab(R,G,B){ const rl=srgbToLinear(R), gl=srgbToLinear(G), bl=srgbToLinear(B); const [X,Y,Z]=linrgb_to_xyz(rl,gl,bl); return xyz_to_lab(X,Y,Z); }
+function lab_to_rgb(L,a,b){ const [X,Y,Z]=lab_to_xyz(L,a,b); let [r,g,bl]=xyz_to_linrgb(X,Y,Z); const gamutOK=(r>=0&&r<=1&&g>=0&&g<=1&&bl>=0&&bl<=1); r=clamp(r,0,1); g=clamp(g,0,1); bl=clamp(bl,0,1); return {R:linearToSrgb(r), G:linearToSrgb(g), B:linearToSrgb(bl), gamutOK}; }
+
+/* Tone classification (Huang 2018) */
+function classifyTone(L,C){
+  if(C<5) return 'Achromatic';
+  if(L>=80 && C>5) return 'Pastel';
+  if(L<80 && C>50) return 'Rich';
+  if(L>=50 && L<=80 && C>=25 && C<=50) return 'Mild';
+  if(L<50 && C>=25 && C<=50) return 'Deep';
+  if(L>=50 && L<=80 && C>=5 && C<25) return 'Dusty';
+  if(L<50 && C>=5 && C<25) return 'Muddy';
+  return '—';
+}
+
+/* ---------- UI Elements ---------- */
+const modeRadios=[...document.querySelectorAll('input[name="mode"]')];
+const rgbBox=document.getElementById('rgbInputs');
+const labBox=document.getElementById('labInputs');
+const lchBox=document.getElementById('lchInputs');
+
+const R=document.getElementById('R'), G=document.getElementById('G'), B=document.getElementById('B');
+const L=document.getElementById('L'), a=document.getElementById('a'), b=document.getElementById('b');
+const LL=document.getElementById('LL'), CC=document.getElementById('CC'), hh=document.getElementById('hh');
+
+const swatch=document.getElementById('swatch');
+const warn=document.getElementById('warn');
+const outRGB=document.getElementById('outRGB');
+const outLAB=document.getElementById('outLAB');
+const outLCH=document.getElementById('outLCH');
+const outTone=document.getElementById('outTone');
+
+const abCanvas=document.getElementById('abCanvas');
+const lcCanvas=document.getElementById('lcCanvas');
+const DPR=Math.max(1, window.devicePixelRatio||1);
+
+/* === Canvas 固定像素尺寸（桌機固定版）=== */
+const SQUARE = 420; // 想更小就改 400 或 360
+
+function setFixedCanvasPixels(){
+  [abCanvas, lcCanvas].forEach(c=>{
+    c.width  = Math.max(1, Math.round(SQUARE * DPR));  // 內部像素：420 * DPR
+    c.height = Math.max(1, Math.round(SQUARE * DPR));
+  });
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  setFixedCanvasPixels();  // 固定內部像素，確保銳利
+  fromRGB(true);           // 走原本初始化（會呼叫 paint() → 繪圖）
+});
+
+// 若切到不同 DPI 螢幕或調整瀏覽器縮放，重設像素保持清晰
+window.addEventListener('resize', ()=>{
+  setFixedCanvasPixels();
+  drawAll();               // 這裡用你原本的 drawAll()：內含 drawAb()/drawCL()
+});
+
+
+
+/* === Canvas 像素尺寸同步（方形容器）=== */
+function drawAll(){ drawAb(); drawCL(); }
+
+
+/* State */
+let state = { L:70, a:-5, b:-20, h:256 };
+
+/* Mode switching */
+modeRadios.forEach(r=>{
+  r.addEventListener('change', ()=>{
+    const m=document.querySelector('input[name="mode"]:checked').value;
+    rgbBox.style.display=(m==='rgb')?'block':'none';
+    labBox.style.display=(m==='lab')?'block':'none';
+    lchBox.style.display=(m==='lch')?'block':'none';
+  });
+});
+
+/* 輸入事件：RGB 整數；LAB/LCh 允許輸入負號，於 change/blur 才套用 */
+[R,G,B].forEach(el=>{
+  el.addEventListener('change', ()=>fromRGB(true));
+  el.addEventListener('blur',   ()=>fromRGB(true));
+});
+
+[L,a,b].forEach(el=>{
+  el.addEventListener('input',  ()=>{/* 允許暫時 '-' */});
+  el.addEventListener('change', ()=>fromLAB(true));
+  el.addEventListener('blur',   ()=>fromLAB(true));
+});
+
+[LL,CC,hh].forEach(el=>{
+  el.addEventListener('change', ()=>fromLCH(true));
+  el.addEventListener('blur',   ()=>fromLCH(true));
+});
+
+/* ---------- Conversions ---------- */
+function fromRGB(forceInt=false){
+  let rv=Number(R.value||0), gv=Number(G.value||0), bv=Number(B.value||0);
+  if(forceInt){ rv=roundInt(rv); gv=roundInt(gv); bv=roundInt(bv); R.value=rv; G.value=gv; B.value=bv; }
+  rv=clamp(rv,0,255); gv=clamp(gv,0,255); bv=clamp(bv,0,255);
+  let [L_,a_,b_]=rgb_to_lab(rv,gv,bv); [L_,a_,b_]=[fix2(L_),fix2(a_),fix2(b_)];
+  const [LchL,LchC,LchH]=lab_to_lch(L_,a_,b_);
+  state={L:L_, a:a_, b:b_, h:LchH};
+  paint();
+}
+
+function fromLAB(forceInt=false){
+  if (a.value==='-' || b.value==='-') return;
+  let L_=Number(L.value), a_=Number(a.value), b_=Number(b.value);
+  if(Number.isNaN(L_) || Number.isNaN(a_) || Number.isNaN(b_)) return;
+  if(forceInt){ L_=roundInt(L_); a_=roundInt(a_); b_=roundInt(b_); L.value=L_; a.value=a_; b.value=b_; }
+  [L_,a_,b_]=[clamp(L_,0,100), clamp(a_,-128,128), clamp(b_,-128,128)];
+  const {R:r,G:g,B:bb,gamutOK}=lab_to_rgb(L_,a_,b_);
+  const [,C,h]=lab_to_lch(L_,a_,b_);
+  state={L:fix2(L_), a:fix2(a_), b:fix2(b_), h:fix2(h)};
+  R.value=roundInt(r); G.value=roundInt(g); B.value=roundInt(bb);
+  LL.value=roundInt(state.L); CC.value=roundInt(C); hh.value=roundInt(state.h);
+  paint(gamutOK===true);
+}
+
+function fromLCH(forceInt=false){
+  let L_=Number(LL.value), C=Number(CC.value), h=Number(hh.value);
+  if(Number.isNaN(L_) || Number.isNaN(C) || Number.isNaN(h)) return;
+  if(forceInt){ L_=roundInt(L_); C=roundInt(C); h=roundInt(h); LL.value=L_; CC.value=C; hh.value=h; }
+  L_=clamp(L_,0,100); C=clamp(C,0,200); h=(h%360+360)%360;
+  const [L2,a2,b2]=lch_to_lab(L_,C,h);
+  const {R:r,G:g,B:bb,gamutOK}=lab_to_rgb(L2,a2,b2);
+  state={L:fix2(L2), a:fix2(a2), b:fix2(b2), h:fix2(h)};
+  L.value=roundInt(state.L); a.value=roundInt(state.a); b.value=roundInt(state.b);
+  R.value=roundInt(r); G.value=roundInt(g); B.value=roundInt(bb);
+  paint(gamutOK===true);
+}
+
+/* ---------- Drawing ---------- */
+function drawAb(){
+  const ctx=abCanvas.getContext('2d');
+  const W=abCanvas.width, H=abCanvas.height;
+  ctx.clearRect(0,0,W,H);
+  const pad=40*DPR, min=-128, max=128;
+  const sx=(W-2*pad)/(max-min), sy=-(H-2*pad)/(max-min);
+  const ox=pad - min*sx, oy=H-pad - min*sy;
+
+  // grid
+  ctx.lineWidth=1*DPR; ctx.strokeStyle='#e5e7eb';
+  for(let v=-120; v<=120; v+=20){
+    const x=ox+v*sx; ctx.beginPath(); ctx.moveTo(x,pad); ctx.lineTo(x,H-pad); ctx.stroke();
+    const y=oy+v*sy; ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(W-pad,y); ctx.stroke();
+  }
+  // axes
+  ctx.strokeStyle='#94a3b8';
+  ctx.beginPath(); ctx.moveTo(pad,oy); ctx.lineTo(W-pad,oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox,pad); ctx.lineTo(ox,H-pad); ctx.stroke();
+  ctx.fillStyle='#475569'; ctx.font=12*DPR+'px system-ui';
+  ctx.fillText('a*', W-28*DPR, oy-6*DPR);
+  ctx.fillText('b*', ox+6*DPR, pad+14*DPR);
+
+  // point
+  const x=ox+state.a*sx, y=oy+state.b*sy;
+  ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(x,y,5*DPR,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#111'; ctx.lineWidth=1*DPR; ctx.beginPath(); ctx.arc(x,y,7*DPR,0,Math.PI*2); ctx.stroke();
+
+  abCanvas._ab={pad,sx,sy,ox,oy,min,max};
+}
+
+/* C*-L*（橫軸 C*，縱軸 L*） */
+function drawCL(){
+  const ctx=lcCanvas.getContext('2d');
+  const W=lcCanvas.width, H=lcCanvas.height;
+  ctx.clearRect(0,0,W,H);
+  const pad=40*DPR, Cmin=0,Cmax=100, Lmin=0,Lmax=100;
+  const sx=(W-2*pad)/(Cmax-Cmin), sy=-(H-2*pad)/(Lmax-Lmin);
+  const ox=pad - Cmin*sx, oy=H-pad - Lmin*sy;
+
+  // grid
+  ctx.lineWidth=1*DPR; ctx.strokeStyle='#e5e7eb';
+  for(let C=0; C<=100; C+=10){ const x=ox+C*sx; ctx.beginPath(); ctx.moveTo(x,pad); ctx.lineTo(x,H-pad); ctx.stroke(); }
+  for(let L=0; L<=100; L+=10){ const y=oy+L*sy; ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(W-pad,y); ctx.stroke(); }
+
+  // tone boundaries（僅邊界線）
+  ctx.strokeStyle='#6b7280'; ctx.lineWidth=1.2*DPR; ctx.setLineDash([6*DPR, 5*DPR]);
+  strokeRect(0,100,0,5,   'Achromatic', 'vcenter'); // 垂直寫在帶狀中央
+strokeRect(80,100,5,100,'Pastel',      'tr');      // 右上角，遠離左上
+strokeRect(0,80,50,100, 'Rich',        'tr');      // 右上角
+strokeRect(50,80,25,50, 'Mild',        'center');  // 中央
+strokeRect(0,50,25,50,  'Deep',        'center');  // 中央
+strokeRect(50,80,5,25,  'Dusty',       'center');  // 中央
+strokeRect(0,50,5,25,   'Muddy',       'center');  // 中央
+
+  ctx.setLineDash([]);
+
+  // axes
+  ctx.strokeStyle='#94a3b8';
+  ctx.beginPath(); ctx.moveTo(pad,oy); ctx.lineTo(W-pad,oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox,pad); ctx.lineTo(ox,H-pad); ctx.stroke();
+  ctx.fillStyle='#475569'; ctx.font=12*DPR+'px system-ui';
+  // C*：底部中間或原樣都可，這裡移到底部中央更不易撞到
+ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+ctx.fillText('C*', (W)/2, oy + 28*DPR);
+
+// L*：沿 y 軸垂直置中、直書
+ctx.save();
+ctx.translate(ox - 18*DPR, (H - pad + pad)/2); // y 軸左外側
+ctx.rotate(-Math.PI/2);
+ctx.textAlign='center'; ctx.textBaseline='middle';
+ctx.fillText('L*', 0, 0);
+ctx.restore();
+
+
+  // current point
+  const [Lval,Cval]=lab_to_lch(state.L,state.a,state.b).slice(0,2);
+  const x=ox+clamp(Cval,0,100)*sx, y=oy+clamp(Lval,0,100)*sy;
+  ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(x,y,5*DPR,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#111'; ctx.lineWidth=1*DPR; ctx.beginPath(); ctx.arc(x,y,7*DPR,0,Math.PI*2); ctx.stroke();
+
+  lcCanvas._cl={pad,sx,sy,ox,oy};
+
+  function strokeRect(L0,L1,C0,C1,label, place='tl'){
+  // 由 L、C 轉成像素矩形
+  const x = ox + C0*sx, y = oy + L1*sy;
+  const w = (C1-C0)*sx, h = (L1-L0)*(-sy);
+
+  ctx.strokeRect(x, y, w, h);
+
+  // 決定標籤放哪
+  ctx.fillStyle = '#111';
+  ctx.font = 12*DPR + 'px system-ui';
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+
+  if (place === 'tr'){ // 右上角
+    ctx.textAlign='right';
+    ctx.fillText(label, x + w - 6*DPR, y + 16*DPR);
+  } else if (place === 'center'){ // 區塊中央
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(label, x + w/2, y + h/2);
+  } else if (place === 'vcenter'){ // 垂直置中，沿 C* 方向直書
+    ctx.save();
+    ctx.translate(x + 10*DPR, y + h/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(label, 0, 0);
+    ctx.restore();
+  } else { // 'tl' 左上角（預設）
+    ctx.fillText(label, x + 6*DPR, y + 16*DPR);
+  }
+}
+
+}
+
+function paint(gamutOKFlag){
+  const {R:r,G:g,B:bb,gamutOK}=lab_to_rgb(state.L,state.a,state.b);
+  const warnFlag=(gamutOKFlag===false || gamutOK===false);
+  swatch.style.background=`rgb(${r},${g},${bb})`;
+  warn.style.display=warnFlag?'block':'none';
+
+  const [L_,a_,b_]=[state.L,state.a,state.b];
+  const [LchL,LchC,LchH]=lab_to_lch(L_,a_,b_);
+  outRGB.textContent=`${roundInt(r)}, ${roundInt(g)}, ${roundInt(bb)}`;
+  outLAB.textContent=`${roundInt(L_)}, ${roundInt(a_)}, ${roundInt(b_)}`;
+  outLCH.textContent=`${roundInt(LchL)}, ${roundInt(LchC)}, ${roundInt(LchH)}`;
+  outTone.textContent=classifyTone(LchL,LchC);
+
+  // 不覆蓋正在輸入中的 '-'（LAB 在 change/blur 才同步）
+  R.value=roundInt(r); G.value=roundInt(g); B.value=roundInt(bb);
+  LL.value=roundInt(LchL); CC.value=roundInt(LchC); hh.value=roundInt(LchH);
+
+  drawAll();
+}
+
+/* ---------- Dragging ---------- */
+// a*-b* drag: keep L*, move a*, b*
+(function(){
+  let dragging=false;
+  abCanvas.addEventListener('pointerdown', e=>{ dragging=true; abCanvas.setPointerCapture(e.pointerId); handle(e); });
+  abCanvas.addEventListener('pointermove', e=>{ if(dragging) handle(e); });
+  abCanvas.addEventListener('pointerup', ()=>dragging=false);
+  function handle(e){
+    const tr=abCanvas._ab; if(!tr) return;
+    const rect=abCanvas.getBoundingClientRect();
+    const x=(e.clientX-rect.left)*DPR, y=(e.clientY-rect.top)*DPR;
+    const av=(x-tr.ox)/tr.sx, bv=(y-tr.oy)/tr.sy;
+    state.a=fix2(clamp(av,-128,128));
+    state.b=fix2(clamp(bv,-128,128));
+    const [, , h]=lab_to_lch(state.L,state.a,state.b);
+    state.h=fix2(h);
+    paint();
+  }
+})();
+
+// C*-L* drag: keep hue h, move C*, L*
+(function(){
+  let dragging=false;
+  lcCanvas.addEventListener('pointerdown', e=>{ dragging=true; lcCanvas.setPointerCapture(e.pointerId); handle(e); });
+  lcCanvas.addEventListener('pointermove', e=>{ if(dragging) handle(e); });
+  lcCanvas.addEventListener('pointerup', ()=>dragging=false);
+  function handle(e){
+    const tr=lcCanvas._cl; if(!tr) return;
+    const rect=lcCanvas.getBoundingClientRect();
+    const x=(e.clientX-rect.left)*DPR, y=(e.clientY-rect.top)*DPR;
+    let C=(x-tr.ox)/tr.sx, L=(y-tr.oy)/tr.sy;
+    C=clamp(C,0,100); L=clamp(L,0,100);
+    const [L2,a2,b2]=lch_to_lab(L,C,state.h||0);
+    state.L=fix2(L2); state.a=fix2(a2); state.b=fix2(b2);
+    paint();
+  }
+})();
+</script>
+</body>
+</html>
