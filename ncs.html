@@ -273,26 +273,44 @@
     const list=Array.from(set).filter(x=>Number.isFinite(x)).sort((a,b)=>a-b);
     sSel.innerHTML=list.map(v=>`<option value="${v}">${v}</option>`).join('');
   }
-  function updateA(){
-    const hue=(hSel.value||'').toUpperCase();
-    const C=Number(cSel.value), S=Number(sSel.value);
-    const W=Math.max(0,100-(S+C));
-    const rec=DATA.find(d=>String(d.hue||'').toUpperCase()===hue && Number(d.C)===C && Number(d.S)===S) || null;
-    lastA={W,S,C,hue};
-    if(rec){
-      const bg=rec.hex || `rgb(${rec.R},${rec.G},${rec.B})`;
-      swatchA.style.background=bg;
-      infoA.textContent=`NCS=${rec.ncs}，RGB=(${rec.R},${rec.G},${rec.B})，Hue=${rec.hue}，W/S/C=${rec.W}/${rec.S}/${rec.C}`;
-    }else{
-      swatchA.style.background='#fff';
-      infoA.textContent=`Hue=${hue}，W/S/C=${W}/${S}/${C}`;
-    }
-    redraw();
+ function updateA(){
+  const hue=(hSel.value||'').toUpperCase();
+  const C=Number(cSel.value), S=Number(sSel.value);
+  const W=Math.max(0,100-(S+C));
+  const rec=DATA.find(d=>String(d.hue||'').toUpperCase()===hue && Number(d.C)===C && Number(d.S)===S) || null;
+
+  lastA={W,S,C,hue};
+
+  if(rec){
+    const bg = rec.hex || `rgb(${rec.R},${rec.G},${rec.B})`;
+    const ncsStr = getNCS(rec) || formatNCS(hue,S,C);
+    swatchA.style.background = bg;
+    infoA.textContent = `NCS=${ncsStr}，RGB=(${rec.R},${rec.G},${rec.B})，Hue=${rec.hue}，W/S/C=${rec.W}/${rec.S}/${rec.C}`;
+  }else{
+    swatchA.style.background = '#fff';
+    infoA.textContent = `Hue=${hue}，W/S/C=${W}/${S}/${C}`;
   }
+  redraw();
+}
+
   hSel.addEventListener('change',()=>{ fillC(); fillS(); updateA(); });
   cSel.addEventListener('change',()=>{ fillS(); updateA(); });
   sSel.addEventListener('change',updateA);
 
+// 取出記錄的 NCS 欄位（相容 ncs / NCS / code）
+function getNCS(rec){
+  if(!rec) return null;
+  return rec.ncs || rec.NCS || rec.code || rec.Code || null;
+}
+
+// 後備字串：把 S/C 轉成 2 位數，再接 `-HUE`
+function formatNCS(hue, S, C){
+  const s = String(Math.round(S||0)).padStart(2,'0');
+  const c = String(Math.round(C||0)).padStart(2,'0');
+  return `${s}${c}-${String(hue||'').toUpperCase()}`;
+}
+
+  
   // --- RGB → 最近 NCS ---
   function nearestNCS(R,G,B){
     let best=null, bestD=Infinity;
@@ -304,15 +322,17 @@
     return best;
   }
   document.getElementById('btnFind').addEventListener('click',()=>{
-    const R=+rIn.value||0, G=+gIn.value||0, B=+bIn.value||0;
-    const rec=nearestNCS(R,G,B);
-    if(rec){
-      lastB={W:rec.W,S:rec.S,C:rec.C,hue:rec.hue};
-      swatchB.style.background = rec.hex || `rgb(${rec.R},${rec.G},${rec.B})`;
-      infoB.textContent=`最近 NCS=${rec.ncs}，RGB=(${rec.R},${rec.G},${rec.B})，Hue=${rec.hue}，W/S/C=${rec.W}/${rec.S}/${rec.C}`;
-      redraw();
-    }
-  });
+  const R=+rIn.value||0, G=+gIn.value||0, B=+bIn.value||0;
+  const rec=nearestNCS(R,G,B);
+  if(rec){
+    lastB={W:rec.W,S:rec.S,C:rec.C,hue:rec.hue};
+    const ncsStr = getNCS(rec) || formatNCS(rec.hue, rec.S, rec.C);
+    swatchB.style.background = rec.hex || `rgb(${rec.R},${rec.G},${rec.B})`;
+    infoB.textContent = `最近 NCS=${ncsStr}，RGB=(${rec.R},${rec.G},${rec.B})，Hue=${rec.hue}，W/S/C=${rec.W}/${rec.S}/${rec.C}`;
+    redraw();
+  }
+});
+
 
   // --- 載入外部 JSON（失敗→fallback） ---
   async function loadData(){
