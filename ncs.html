@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>NCS ↔ RGB 工具（穩定版）</title>
+<title>NCS ↔ RGB</title>
 <style>
   :root{--bg:#808080;--card:#f4f4f4;--ink:#111}
   *{box-sizing:border-box}
@@ -29,27 +29,27 @@
 </head>
 <body>
 <header>
-  <h1>NCS ↔ RGB 工具（穩定版）</h1>
-  <p class="note">Hue→C→S 級聯；RGB 最近色用 sRGB 歐氏距離。色相環不著色、完整刻度；W–S–C 正三角（WS 垂直），C/S 僅外側數字（每 10）。</p>
+  <h1>NCS ↔ RGB</h1>
+  <p class="note">Choose a color by Hue→Chroma→Blackness or enter RGB to see the nearest match with a live swatch and numeric values. It uses sRGB Euclidean distance for RGB→NCS matching.</p>
 </header>
 
 <div class="container">
   <div id="err"></div>
   <div class="grid">
     <div class="card">
-      <h2>輸入 NCS（級聯下拉）</h2>
+      <h2>A: 輸入 NCS</h2>
       <label>色相 (Hue)</label><select id="hSel"></select>
-      <label>彩度 (C)</label><select id="cSel"></select>
-      <label>黑度 (S)</label><select id="sSel"></select>
+      <label>含色度 (C)</label><select id="cSel"></select>
+      <label>含黑度 (S)</label><select id="sSel"></select>
       <div class="swatch" id="swatchA"></div>
       <div id="infoA" class="note"></div>
     </div>
     <div class="card">
-      <h2>輸入 RGB → 最近 NCS</h2>
+      <h2>B: 輸入 RGB → 最近 NCS</h2>
       <label>R</label><input id="rIn" type="number" min="0" max="255" value="120"/>
       <label>G</label><input id="gIn" type="number" min="0" max="255" value="120"/>
       <label>B</label><input id="bIn" type="number" min="0" max="255" value="120"/>
-      <button id="btnFind">查詢</button>
+      <button id="btnFind">GO</button>
       <div class="swatch" id="swatchB"></div>
       <div id="infoB" class="note"></div>
     </div>
@@ -60,8 +60,8 @@
     <div><canvas id="triCanvas" width="460" height="460" aria-label="NCS W-S-C Triangle"></canvas></div>
   </div>
   <div class="legend">
-    <span class="dot dotA"></span> A 點：下拉選單 NCS　
-    <span class="dot dotB"></span> B 點：RGB 近似 NCS
+    <span class="dot dotA"></span> A 點　
+    <span class="dot dotB"></span> B 點
   </div>
 </div>
 <footer>Developed by <a href="#">Color & Design Research Lab</a></footer>
