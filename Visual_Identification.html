@@ -245,19 +245,10 @@ function viewQ1(container){
     renderPool(status); renderSlots(status);
   };
 
-  const showBtn=document.createElement('button'); showBtn.className='btn'; showBtn.textContent='直接看結果';
-  showBtn.onclick=()=>{
-    slots = [...data.correct];
-    const status = buildStatus(data.correct, slots);
-    reveal = true;
-    result.className='banner ok';
-    result.textContent='已顯示正確答案，並揭示 L*、C*、h°。';
-    renderPool(status); renderSlots(status);
-  };
-
   const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換色，再一次';
   nextBtn.onclick=()=>{ data=genQ1(); slots=Array(4).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
-  btns.appendChild(checkBtn); btns.appendChild(showBtn); btns.appendChild(nextBtn);
+  btns.appendChild(checkBtn); 
+  btns.appendChild(nextBtn);
 
   renderPool(); renderSlots();
   container.appendChild(card);
@@ -310,7 +301,7 @@ function viewQ2(container){
     slotsRow.innerHTML='';
     for(let i=0;i<5;i++){
       const s=makeSlotEl();
-      if(status && status.slot[i]) s.classList.add(status[i]);
+      if(status && status.slot[i]) s.classList.add(status.slot[i]);
       s.addEventListener('drop',e=>{
         e.preventDefault(); e.stopPropagation();
         const id=e.dataTransfer.getData('text/plain')||currentDragId;
@@ -340,19 +331,10 @@ function viewQ2(container){
     renderPool(status); renderSlots(status);
   };
 
-  const showBtn=document.createElement('button'); showBtn.className='btn'; showBtn.textContent='直接看結果';
-  showBtn.onclick=()=>{
-    slots = [...data.correct];
-    const status = buildStatus(data.correct, slots);
-    reveal = true;
-    result.className='banner ok';
-    result.textContent='已顯示正確答案，並揭示 L*、C*、h°。';
-    renderPool(status); renderSlots(status);
-  };
-
   const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換色，再一次';
   nextBtn.onclick=()=>{ data=genQ2(); slots=Array(5).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
-  btns.appendChild(checkBtn); btns.appendChild(showBtn); btns.appendChild(nextBtn);
+  btns.appendChild(checkBtn); 
+  btns.appendChild(nextBtn);
   renderPool(); renderSlots(); container.appendChild(card);
 }
 
@@ -457,20 +439,10 @@ function viewQ3(container){
     renderPool(status); renderSlots(status);
   };
 
-  const showBtn=document.createElement('button'); showBtn.className='btn'; showBtn.textContent='直接看結果';
-  showBtn.onclick=()=>{
-    // choose one canonical answer: increasing hue order
-    slots = [...data.correctBase];
-    const status = buildStatus(data.correctBase, slots);
-    reveal = true;
-    result.className='banner ok';
-    result.textContent='已顯示正確答案（遞增 h°，任意起點與方向皆可），並揭示 L*、C*、h°。';
-    renderPool(status); renderSlots(status);
-  };
-
   const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換色，再一次';
   nextBtn.onclick=()=>{ data=genQ3(); slots=Array(6).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
-  btns.appendChild(checkBtn); btns.appendChild(showBtn); btns.appendChild(nextBtn);
+  btns.appendChild(checkBtn); 
+  btns.appendChild(nextBtn);
 
   renderPool(); renderSlots(); container.appendChild(card);
 }
