@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Odd-One-Out</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #151a22;
+      --text: #e6e8eb;
+      --muted: #9aa3ad;
+      --accent: #59c4ff;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.5 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", Helvetica, Arial;
+      min-height: 100dvh;
+      overflow: hidden;                 /* 不捲動 */
+      display: grid;
+      grid-template-rows: 1fr;
+      padding: 0 env(safe-area-inset-right) calc(64px + env(safe-area-inset-bottom)) env(safe-area-inset-left); /* 預留底部 HUD 空間 */
+    }
+
+    /* ====== 底部 HUD（不遮住棋盤） ====== */
+    .hud {
+      position: fixed;
+      left: 50%;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+      z-index: 10;
+      backdrop-filter: blur(6px);
+      background: #0b1220b3;
+      padding: 8px 12px; border-radius: 12px; border: 1px solid #2a3446;
+      box-shadow: 0 8px 30px #0007;
+    }
+    .badge { background:#1c2330; padding:6px 10px; border-radius:10px; border:1px solid #2a3446; }
+    .accent { color: var(--accent); font-weight: 800; }
+
+    /* ====== 主遊戲區（置中、方形） ====== */
+    main { display: grid; place-items: center; padding: 0; }
+    .board-wrap {
+      width: min(86vmin, 860px);        /* 比原本 92vmin 再縮，避免被 HUD 碰到 */
+      aspect-ratio: 1 / 1;
+      display: grid; place-items: center;
+    }
+    .board {
+      display:grid; gap:10px;
+      background:#121722; padding:12px; border-radius:16px;
+      width: 100%; height: 100%;
+      box-shadow:0 18px 60px #0009, inset 0 0 0 1px #0006;
+    }
+    .cell {
+      aspect-ratio: 1 / 1;
+      border-radius: 12px;
+      border: 1px solid #0006;
+      transition: transform .08s ease, box-shadow .08s ease, outline .08s ease;
+      cursor: pointer;
+      outline: none;                    /* 移除瀏覽器預設的灰色框線 */
+    }
+    .cell:hover { transform: translateY(-2px); box-shadow: 0 6px 16px #0008; }
+    .cell:focus { outline: none; }      /* 無灰框 */
+    .cell:focus-visible {               /* 只有鍵盤導覽才顯示的輕量外框 */
+      box-shadow: 0 0 0 3px #ffffff33, 0 0 0 1px #ffffff55 inset;
+    }
+
+    /* ====== 全畫面蓋版（開始／結束） ====== */
+    .overlay {
+      position: fixed; inset: 0; z-index: 20;
+      display: grid; place-items: center;
+      background: radial-gradient(1200px 800px at 50% -10%, #20304a80, transparent 60%), #0f1115f2;
+      padding: 24px;
+    }
+    .card {
+      width: min(92vw, 720px);
+      background: var(--panel);
+      border: 1px solid #2a3446;
+      border-radius: 20px;
+      box-shadow: 0 30px 120px #000c;
+      padding: clamp(16px, 4vw, 32px);
+      text-align: center;
+    }
+    .card h1 { margin: 0 0 6px 0; font-size: clamp(22px, 4.8vw, 42px); }
+    .card p { margin: 0 0 18px 0; color: var(--muted); font-size: clamp(14px, 2.4vw, 18px); }
+    .btn {
+      cursor:pointer; border:none; padding:16px 22px; border-radius:14px;
+      font-weight:800; color:#0b1220; background: var(--accent);
+      font-size: clamp(16px, 3.2vw, 20px);
+      box-shadow: 0 10px 30px #59c4ff55, inset 0 -2px 0 #0003;
+    }
+    .stats { display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0 20px 0; }
+    .stat { background:#1b2330; border:1px solid #2a3446; border-radius:14px; padding:12px; }
+    .stat .k { display:block; font-size: clamp(22px, 4vw, 36px); font-weight: 900; }
+    .stat .t { color: var(--muted); font-size: 13px; }
+
+    /* 提示放到左上角，避免與底部 HUD 打架 */
+    .hint {
+      position: fixed; top: 10px; left: 10px;
+      color: var(--muted); font-size: 12px; text-align: left; z-index: 9;
+      padding: 4px 10px; background: #0b1220aa; border: 1px solid #2a3446; border-radius: 10px;
+    }
+
+    /* ====== 響應式微調 ====== */
+    @media (max-width: 640px) {
+      .board { gap:8px; padding:10px; border-radius:14px; }
+      .hud { gap:8px; padding:6px 10px; }
+      .badge { padding:5px 8px; }
+      .board-wrap { width: min(92vmin, 720px); } /* 小螢幕允許更滿 */
+    }
+    @media (max-width: 400px) {
+      body { font-size: 15px; }
+      .board { gap:6px; padding:8px; }
+      .hud { bottom: calc(8px + env(safe-area-inset-bottom)); }
+    }
+  </style>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N8QWS5JKZD');
+</script>
+</head>
+<body>
+  <!-- 底部 HUD（不遮住棋盤） -->
+  <div class="hud" aria-live="polite">
+    <div class="badge">等級 <span id="level" class="accent">1</span></div>
+    <div class="badge">分數 <span id="score" class="accent">0</span></div>
+    <div class="badge">剩餘 <span id="time" class="accent">60</span>s</div>
+  </div>
+
+  <!-- 主畫面 -->
+  <main>
+    <div class="board-wrap">
+      <div id="board" class="board" aria-label="色塊棋盤" role="group"></div>
+    </div>
+  </main>
+
+  <div class="hint">提示：方向鍵移動、Enter 選取；Esc 結束一局。</div>
+
+  <!-- 開始蓋版 -->
+  <section id="intro" class="overlay" aria-modal="true">
+    <div class="card">
+      <h1>找出不同色 Odd-One-Out</h1>
+      <p>試試看，你的眼力好不好</p>
+      <button id="start-btn" class="btn" autofocus>Start</button>
+    </div>
+  </section>
+
+  <!-- 結束蓋版 -->
+  <section id="gameover" class="overlay" aria-modal="true" style="display:none">
+    <div class="card">
+      <h1>時間到！</h1>
+      <div class="stats" style="grid-template-columns:1fr;">
+  <div class="stat"><span id="st-clears" class="k">0</span><span class="t">通關數</span></div>
+</div>
+      <button id="restart-btn" class="btn">再玩一次</button>
+      <p id="comment" style="margin-top:10px;color:var(--muted);font-weight:600"></p>
+    </div>
+  </section>
+
+  <script>
+  // ====== 遊戲核心參數 ======
+  const GAME_TIME = 30;           // 總秒數
+  const START_GRID = 2;           // 起始 NxN
+  const GRID_STEP_EVERY = 3;      // 每幾關增加一次棋盤大小
+  const DELTA_START = 18;         // 起始顏色差（HSL）
+  const DELTA_MIN = 3;            // 最小顏色差
+  const DELTA_DECAY = .88;        // 每關遞減倍率
+
+  // ====== 狀態 ======
+  let level=1, score=0, timeLeft=GAME_TIME, timer=null;
+  let gridN=START_GRID, delta=DELTA_START;
+  let specialIndex=0; // 正解索引
+  let focusIndex=0;   // 鍵盤導覽
+
+  const boardEl = document.getElementById('board');
+  const levelEl = document.getElementById('level');
+  const scoreEl = document.getElementById('score');
+  const timeEl = document.getElementById('time');
+
+  const introEl = document.getElementById('intro');
+  const overEl = document.getElementById('gameover');
+  const startBtn = document.getElementById('start-btn');
+  const restartBtn = document.getElementById('restart-btn');
+
+  const stClears = document.getElementById('st-clears');
+  const stLevel  = document.getElementById('st-level');
+  const stScore  = document.getElementById('st-score');
+
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+  function hsl(h,s,l){ return `hsl(${h} ${s}% ${l}%)`; }
+
+  function nextRound(){
+    // 每過 GRID_STEP_EVERY 關擴大棋盤
+    if ((level-1) % GRID_STEP_EVERY === 0 && level>1) {
+      gridN = clamp(gridN+1, 2, 9);
+    }
+    // 顏色差逐步縮小
+    delta = clamp(Math.round(delta*DELTA_DECAY), DELTA_MIN, 200);
+
+    // 產生基底顏色（避免太暗/太亮）
+    const baseH = randInt(0, 359);
+    const baseS = randInt(55, 80);
+    const baseL = randInt(40, 65);
+
+    // 決定差異方向（H 或 L）
+    const varyH = Math.random() < 0.6; // 多半改色相
+    const sign = Math.random() < 0.5 ? -1 : 1;
+    let oddH = baseH, oddL = baseL;
+    if (varyH) oddH = (baseH + sign*delta + 360) % 360; else oddL = clamp(baseL + sign* Math.round(delta*0.6), 15, 80);
+
+    // 建立棋盤
+    boardEl.style.gridTemplateColumns = `repeat(${gridN}, 1fr)`;
+    boardEl.innerHTML = '';
+
+    const total = gridN*gridN;
+    specialIndex = randInt(0, total-1);
+
+    for (let i=0;i<total;i++){
+      const cell = document.createElement('button');
+      cell.className = 'cell';
+      cell.type = 'button';
+      cell.setAttribute('aria-label', `格子 ${i+1} / ${total}`);
+
+      const isOdd = i===specialIndex;
+      const color = isOdd ? hsl(oddH, baseS, oddL) : hsl(baseH, baseS, baseL);
+      cell.style.background = color;
+
+      cell.addEventListener('click',()=> choose(i));
+      cell.addEventListener('keydown', (e)=>{
+        const x = i % gridN, y = Math.floor(i / gridN);
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(i); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); focusCell(x<gridN-1 ? i+1 : i); }
+        if (e.key === 'ArrowLeft')  { e.preventDefault(); focusCell(x>0 ? i-1 : i); }
+        if (e.key === 'ArrowDown')  { e.preventDefault(); focusCell(y<gridN-1 ? i+gridN : i); }
+        if (e.key === 'ArrowUp')    { e.preventDefault(); focusCell(y>0 ? i-gridN : i); }
+      });
+
+      boardEl.appendChild(cell);
+    }
+
+    // ⚠️ 不再自動聚焦第一格（避免左上角出現框線）
+    levelEl.textContent = level;
+  }
+
+  function focusCell(idx){
+    const cells = boardEl.querySelectorAll('.cell');
+    idx = clamp(idx, 0, cells.length-1);
+    focusIndex = idx;
+    if (cells[idx]) cells[idx].focus({preventScroll:true});
+  }
+
+  function choose(idx){
+    const correct = idx === specialIndex;
+    if (correct){
+      score += Math.max(1, Math.round(6 - Math.log(level+1)));
+      level++;
+      scoreEl.textContent = score;
+      nextRound();
+    } else {
+      score = Math.max(0, score-1);
+      scoreEl.textContent = score;
+    }
+  }
+
+  function startGame(){
+    introEl.style.display = 'none';
+    overEl.style.display = 'none';
+    level = 1; score = 0; timeLeft = GAME_TIME; gridN = START_GRID; delta = DELTA_START;
+    levelEl.textContent = level; scoreEl.textContent = score; timeEl.textContent = timeLeft;
+    nextRound();
+    clearInterval(timer);
+    timer = setInterval(()=>{
+      timeLeft--; timeEl.textContent = timeLeft;
+      if (timeLeft<=0){ endGame(); }
+    }, 1000);
+  }
+
+  function endGame(){
+    clearInterval(timer); timer=null;
+    boardEl.innerHTML = '';
+const clears = Math.max(0, level - 1);
+stClears.textContent = clears;
+    overEl.style.display = 'grid';
+
+// 顯示評語
+const commentEl = document.getElementById('comment');
+let msg = '';
+if (clears < 5) msg = '你要檢查一下你的眼睛，或是螢幕是不是該換新的了。';
+else if (clears <= 8) msg = '眼力還不錯喔！';
+else if (clears <= 10) msg = '讚喔！';
+else msg = '辨色力超強！';
+commentEl.textContent = msg;
+
+
+  }
+
+  // 事件綁定
+  document.getElementById('start-btn').addEventListener('click', startGame);
+  document.getElementById('restart-btn').addEventListener('click', startGame);
+
+  // 鍵盤快捷：在開始或結束畫面按 Enter/Space 開始；遊戲中 Esc 結束
+  window.addEventListener('keydown', (e)=>{
+    const onIntro = introEl.style.display !== 'none';
+    const onOver  = overEl.style.display !== 'none';
+    if ((e.key==='Enter' || e.key===' ') && (onIntro || onOver)) { e.preventDefault(); startGame(); return; }
+    if (e.key==='Escape' && timer) { e.preventDefault(); endGame(); return; }
+
+    // 若遊戲中且尚未聚焦任何格子，按方向鍵先聚焦左上（但由於 :focus-visible，這時才會見到輕量外框）
+    if (!onIntro && !onOver && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+      const anyFocused = document.activeElement && document.activeElement.classList && document.activeElement.classList.contains('cell');
+      if (!anyFocused) { focusCell(0); }
+    }
+  });
+  </script>
+</body>
+</html>
