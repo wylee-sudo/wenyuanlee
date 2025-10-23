@@ -38,8 +38,20 @@
     .stack{display:flex;flex-wrap:wrap;gap:8px}
     .spacer{height:8px}
   </style>
-  <!-- QRCode library (small, MIT). Loaded from jsDelivr CDN. -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" integrity="sha256-+4wZ2jQYcVW7jq2nBfKxtS8hkcw3Nobw0cB8G9e1k7U=" crossorigin="anonymous"></script>
+  <!-- QRCode library loader: try jsDelivr → unpkg. No SRI to avoid CDN hash mismatch on GitHub Pages. -->
+  <script>
+    (function loadQRCodeLib(){
+      function inject(src){
+        return new Promise(function(res,rej){
+          var s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s);
+        });
+      }
+      // try jsDelivr first, then unpkg fallback
+      inject('https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js')
+        .catch(function(){ return inject('https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js'); })
+        .catch(function(){ console.error('Failed to load qrcode library from CDNs.'); alert('無法載入 QR 函式庫，請確認網路或改用離線版。'); });
+    })();
+  </script>
   <!-- Google Analytics (replace G-N8QWS5JKZD if needed) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
   <script>
