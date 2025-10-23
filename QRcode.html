@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QR Code 產生器 | CDR Lab</title>
+  <meta name="description" content="單一檔案的 QR Code 產生器，支援錯誤修正等級、尺寸、邊界、前景/背景色、PNG 與 SVG 下載。" />
+  <style>
+    :root{
+      --bg:#0b0c10; --card:#111318; --text:#e6e7eb; --muted:#9aa0a6; --brand:#6ee7b7; --accent:#60a5fa;
+      --ring: rgba(96,165,250,.45);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,Noto Sans TC,Arial,"Apple Color Emoji","Segoe UI Emoji";background:var(--bg);color:var(--text)}
+    .wrap{max-width:1100px;margin:24px auto;padding:16px}
+    .grid{display:grid;gap:16px;grid-template-columns:1.2fr .8fr}
+    @media (max-width:960px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--card);border:1px solid #1b1f2a;border-radius:18px;padding:16px 18px;box-shadow:0 6px 30px rgba(0,0,0,.25)}
+    .title{font-size:22px;margin:0 0 8px}
+    label{display:block;margin:10px 0 6px;color:var(--muted);font-size:14px}
+    input[type="text"], textarea, select, input[type="number"]{
+      width:100%;padding:10px 12px;border-radius:12px;border:1px solid #252a36;background:#0f1117;color:var(--text);
+      outline:none;transition:box-shadow .15s,border-color .15s
+    }
+    textarea{min-height:120px;resize:vertical}
+    input:focus, textarea:focus, select:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--ring)}
+    .row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    @media (max-width:720px){.row{grid-template-columns:repeat(2,1fr)}}
+    button{cursor:pointer;border:1px solid #273246;background:#131a24;color:var(--text);padding:10px 14px;border-radius:12px;font-weight:600}
+    button.primary{background:linear-gradient(135deg,var(--accent),#22d3ee);border:none}
+    button.ghost{background:transparent;border-color:#2a3142}
+    button:focus-visible{outline:3px solid var(--ring)}
+    .preview{display:grid;place-items:center;background:#0c0f16;border-radius:16px;border:1px dashed #2a3142;min-height:380px}
+    .hint{font-size:13px;color:var(--muted)}
+    .footer{opacity:.8;font-size:12px;margin-top:10px;color:var(--muted)}
+    .badge{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;background:#10151f;border:1px solid #223049;color:#a6b3c6;font-size:12px}
+    .stack{display:flex;flex-wrap:wrap;gap:8px}
+    .spacer{height:8px}
+  </style>
+  <!-- QRCode library (small, MIT). Loaded from jsDelivr CDN. -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" integrity="sha256-+4wZ2jQYcVW7jq2nBfKxtS8hkcw3Nobw0cB8G9e1k7U=" crossorigin="anonymous"></script>
+  <!-- Google Analytics (replace G-N8QWS5JKZD if needed) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-N8QWS5JKZD');
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="stack" style="justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div class="stack" style="align-items:center">
+        <span class="badge">QR Code 產生器 · 單檔版</span>
+      </div>
+      <div class="stack">
+        <button id="btnSampleCDR" class="ghost" title="快速帶入 CDR Lab 網站">CDR Lab 範例</button>
+        <button id="btnClear" class="ghost">清空</button>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Left: form -->
+      <section class="card">
+        <h2 class="title">內容</h2>
+        <label for="content">輸入要編碼的內容（網址 / 文字 / vCard / Wi‑Fi 等）</label>
+        <textarea id="content" placeholder="例如：https://wylee-sudo.github.io/wenyuanlee/"></textarea>
+        <div class="spacer"></div>
+
+        <div class="row">
+          <div>
+            <label for="ecLevel">錯誤修正</label>
+            <select id="ecLevel">
+              <option value="L">L（7%）</option>
+              <option value="M" selected>M（15%）</option>
+              <option value="Q">Q（25%）</option>
+              <option value="H">H（30%）</option>
+            </select>
+          </div>
+          <div>
+            <label for="size">尺寸（px）</label>
+            <input id="size" type="number" min="128" max="2048" step="32" value="512"/>
+          </div>
+          <div>
+            <label for="margin">邊界（modules）</label>
+            <input id="margin" type="number" min="0" max="16" step="1" value="4"/>
+          </div>
+          <div>
+            <label for="format">格式</label>
+            <select id="format">
+              <option value="png" selected>PNG（位圖）</option>
+              <option value="svg">SVG（向量）</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <div>
+            <label for="fg">前景色</label>
+            <input id="fg" type="text" value="#000000" />
+          </div>
+          <div>
+            <label for="bg">背景色</label>
+            <input id="bg" type="text" value="#ffffff" />
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:8px">
+            <button id="btnGenerate" class="primary" style="width:100%">生成 / 更新</button>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:8px">
+            <button id="btnDownload">下載</button>
+          </div>
+        </div>
+
+        <details style="margin-top:12px">
+          <summary>📄 快速組合模板（點擊展開）</summary>
+          <div style="display:grid;gap:10px;margin-top:10px">
+            <div class="row">
+              <button class="ghost" id="tplURL">URL 範本</button>
+              <button class="ghost" id="tplVCF">vCard 名片</button>
+              <button class="ghost" id="tplWIFI">Wi‑Fi 設定</button>
+              <button class="ghost" id="tplMAIL">Email</button>
+            </div>
+            <div class="hint">vCard 例：<code>BEGIN:VCARD\nVERSION:3.0\nN:Lee;Wen-Yuan;;;\nFN:Wen-Yuan LEE\nORG:CDR Lab\nTITLE:Professor\nEMAIL;TYPE=INTERNET:sample@example.com\nTEL;TYPE=CELL:+886-900-000-000\nURL:https://wylee-sudo.github.io/wenyuanlee/\nEND:VCARD</code></div>
+            <div class="hint">Wi‑Fi 例：<code>WIFI:T:WPA;S:CDR-Lab;P:your_password;H:false;;</code></div>
+          </div>
+        </details>
+        <p class="footer">小提醒：務必保留足夠 <em>Quiet Zone</em>（邊界），並以實機距離 20–30 cm 測試掃描可靠度。</p>
+      </section>
+
+      <!-- Right: preview -->
+      <section class="card">
+        <h2 class="title">即時預覽</h2>
+        <div id="preview" class="preview"><div class="hint">按「生成 / 更新」以產生 QR Code</div></div>
+        <p class="hint">完成後可按「下載」輸出 PNG 或 SVG。</p>
+      </section>
+    </div>
+
+    <p class="footer">© <span id="year"></span> Color & Design Research Lab · 單檔版（可直接放到 GitHub Pages）。</p>
+  </div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const content = $('#content');
+    const ecLevel = $('#ecLevel');
+    const size = $('#size');
+    const margin = $('#margin');
+    const fmt = $('#format');
+    const fg = $('#fg');
+    const bg = $('#bg');
+    const preview = $('#preview');
+    const btnGen = $('#btnGenerate');
+    const btnDl = $('#btnDownload');
+
+    // helpers
+    const YEAR = new Date().getFullYear();
+    document.getElementById('year').textContent = YEAR;
+    $('#btnSampleCDR').addEventListener('click',()=>{content.value='https://wylee-sudo.github.io/wenyuanlee/';});
+    $('#btnClear').addEventListener('click',()=>{content.value='';preview.innerHTML='<div class="hint">已清空。請輸入內容後再生成。</div>';});
+
+    // Templates
+    $('#tplURL').addEventListener('click',()=>{content.value='https://example.com';});
+    $('#tplVCF').addEventListener('click',()=>{
+      content.value = [
+        'BEGIN:VCARD','VERSION:3.0','N:Lee;Wen-Yuan;;;','FN:Wen-Yuan LEE','ORG:CDR Lab','TITLE:Professor',
+        'EMAIL;TYPE=INTERNET:sample@example.com','TEL;TYPE=CELL:+886-900-000-000','URL:https://wylee-sudo.github.io/wenyuanlee/','END:VCARD'
+      ].join('\n');
+    });
+    $('#tplWIFI').addEventListener('click',()=>{content.value='WIFI:T:WPA;S:CDR-Lab;P:your_password;H:false;;';});
+    $('#tplMAIL').addEventListener('click',()=>{content.value='mailto:sample@example.com?subject=Hello%20CDR%20Lab&body=Hi';});
+
+    let lastBlobURL = null; // for revoking
+
+    async function renderQR(){
+      const text = content.value.trim();
+      if(!text){
+        preview.innerHTML = '<div class="hint">請先輸入內容。</div>';
+        return;
+      }
+      const opts = {
+        errorCorrectionLevel: ecLevel.value,
+        margin: Number(margin.value)||0,
+        color: { dark: fg.value || '#000000', light: bg.value || '#ffffff' },
+        width: Number(size.value)||512
+      };
+
+      if(fmt.value === 'svg'){
+        const svg = await QRCode.toString(text, { ...opts, type:'svg' });
+        preview.innerHTML = svg; // inline SVG
+      } else {
+        // Canvas bitmap
+        preview.innerHTML = '';
+        const canvas = document.createElement('canvas');
+        preview.appendChild(canvas);
+        await QRCode.toCanvas(canvas, text, opts);
+      }
+    }
+
+    async function downloadQR(){
+      const text = content.value.trim();
+      if(!text){ alert('請先輸入內容並生成 QR Code'); return; }
+      const baseName = 'qrcode';
+      if(lastBlobURL){ URL.revokeObjectURL(lastBlobURL); lastBlobURL = null; }
+
+      if(fmt.value === 'svg'){
+        const svgStr = await QRCode.toString(text, { type:'svg', errorCorrectionLevel: ecLevel.value, margin:Number(margin.value)||0, color:{dark:fg.value, light:bg.value}, width:Number(size.value)||512 });
+        const blob = new Blob([svgStr], {type:'image/svg+xml'});
+        lastBlobURL = URL.createObjectURL(blob);
+        triggerDownload(lastBlobURL, baseName + '.svg');
+      } else {
+        const dataURL = await QRCode.toDataURL(text, { errorCorrectionLevel: ecLevel.value, margin:Number(margin.value)||0, color:{dark:fg.value, light:bg.value}, width:Number(size.value)||512 });
+        triggerDownload(dataURL, baseName + '.png');
+      }
+    }
+
+    function triggerDownload(url, filename){
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.style.display='none';
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    btnGen.addEventListener('click', renderQR);
+    btnDl.addEventListener('click', downloadQR);
+
+    // Auto-generate when parameters change (debounced)
+    const debounce = (fn,ms=250)=>{let t;return (...args)=>{clearTimeout(t);t=setTimeout(()=>fn(...args),ms)}};
+    [content,ecLevel,size,margin,fmt,fg,bg].forEach(el=>{
+      el.addEventListener('input', debounce(renderQR,300));
+      el.addEventListener('change', debounce(renderQR,0));
+    });
+  </script>
+</body>
+</html>
