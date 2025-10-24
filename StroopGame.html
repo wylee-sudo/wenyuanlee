@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Stroop Effect</title>
+<meta name="description" content="Stroop Effect web game with 4 levels: text-only, color patches, congruent, incongruent. Free order, cumulative stats, no scrolling." />
+<style>
+  :root{
+    --bg:#0b0c10;
+    --panel:#111218;
+    --ink:#e8e8ea;
+    --muted:#a7a7ad;
+    --accent:#7aa2ff;       /* neon blue */
+    --accent2:#a78bfa;      /* neon violet */
+    --line:#232433;
+    --slot:#0e101a;
+
+    --elev-shadow: 0 6px 20px rgba(0,0,0,.35);
+    --elev-hover:  0 12px 30px rgba(0,0,0,.45), 0 0 24px rgba(122,162,255,.15);
+    --elev-press:  0 4px 12px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+
+    --glow: drop-shadow(0 0 10px rgba(122,162,255,.35)) drop-shadow(0 0 24px rgba(167,139,250,.25));
+
+    --glass-bg: linear-gradient(135deg, rgba(18,22,35,.72), rgba(20,23,40,.56));
+    --glass-border1: rgba(122,162,255,.55);
+    --glass-border2: rgba(167,139,250,.55);
+    --glass-ring: 0 0 0 1px rgba(255,255,255,.06) inset, 0 0 0 1px rgba(255,255,255,.06);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%; margin:0}
+  body{
+    background:radial-gradient(1200px 800px at 15% 10%, #0f1120 0%, var(--bg) 60%),
+               radial-gradient(800px 600px at 85% 90%, #0d1021 0%, transparent 60%),
+               var(--bg);
+    color:var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif;
+    overflow:hidden;
+  }
+
+  /* Subtle animated grain */
+  body::after{
+    content:"";
+    position:fixed; inset:0; pointer-events:none;
+    background-image:url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'>\
+<filter id='n'><feTurbulence baseFrequency='0.8' numOctaves='2' seed='3'/><feColorMatrix type='saturate' values='0'/><feComponentTransfer><feFuncA type='table' tableValues='0 0.05'/></feComponentTransfer></filter>\
+<rect width='100%' height='100%' filter='url(#n)'/>\
+</svg>");
+    opacity:.18; mix-blend-mode:soft-light;
+    animation:grain 10s linear infinite;
+  }
+  @keyframes grain{ 0%{transform:translate(0,0)} 25%{transform:translate(-2%,1%)} 50%{transform:translate(1%,-1%)} 75%{transform:translate(2%,2%)} 100%{transform:translate(0,0)} }
+
+  .wrap{
+    height:100%; width:100%;
+    display:flex; align-items:center; justify-content:center;
+    padding:2vh 2vw;
+  }
+  .card{
+    width:min(94vw, 1200px);
+    height:min(90vh, 760px);
+    background:linear-gradient(180deg, rgba(18,20,30,.9), rgba(14,16,26,.9));
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:24px;
+    box-shadow:var(--elev-shadow);
+    display:grid; grid-template-rows:auto 1fr auto;
+    padding:2vh 2vw; gap:1.6vh; position:relative;
+    backdrop-filter: blur(6px);
+  }
+
+  header, footer{
+    display:flex; align-items:center; justify-content:space-between;
+    font-size:clamp(12px, 1.6vh, 16px);
+  }
+  header h1{
+    margin:0; font-size:clamp(16px, 2.4vh, 24px);
+    letter-spacing:.3px;
+    filter:var(--glow);
+  }
+  a{color:var(--accent); text-decoration:none}
+
+  .stage{
+    display:grid; grid-template-rows:auto 1fr auto auto; gap:1.6vh;
+    place-items:center;
+  }
+
+  /* 4-way segmented toggle */
+  .toggle{
+    display:inline-grid; grid-template-columns:repeat(4, 1fr);
+    border:1px solid rgba(255,255,255,.08); border-radius:999px; overflow:hidden;
+    background:linear-gradient(180deg, rgba(23,24,38,.85), rgba(20,22,35,.85));
+    box-shadow:var(--elev-shadow);
+    backdrop-filter: blur(8px) saturate(140%);
+  }
+  .toggle button{
+    border:none; background:transparent; color:var(--ink);
+    padding:.75em 1.2em; cursor:pointer; font-weight:750;
+    font-size:clamp(12px,1.8vh,18px); letter-spacing:.2px;
+    transition:transform .08s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .toggle button:hover{ transform:translateY(-1px); box-shadow:var(--elev-hover) }
+  .toggle button:active{ transform:translateY(0); box-shadow:var(--elev-press) }
+  .toggle button:focus-visible{ outline:0; box-shadow:0 0 0 2px rgba(122,162,255,.6) inset, 0 0 0 2px rgba(122,162,255,.6) }
+  .toggle button.active{
+    background:linear-gradient(135deg, var(--accent), var(--accent2));
+    color:#0b0c10;
+  }
+
+  /* CLEAN stimulus area (flat, no border/radius/shadow/background) */
+  .stimulus {
+    width:90%;
+    height:42%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:none !important;
+    border:none !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    backdrop-filter:none !important;
+    font-weight:900;
+    letter-spacing:1px;
+    font-size:clamp(28px, 12vh, 12vw);
+    text-transform:uppercase;
+    text-align:center;
+    padding:1rem;
+    color:var(--ink);
+  }
+
+  /* Color patch (L2) */
+  .patch{
+    width:min(40vh, 40vw); height:min(24vh, 24vw);
+    border-radius:14px; border:1px solid rgba(0,0,0,.35);
+    box-shadow:inset 0 0 18px rgba(255,255,255,.08), 0 8px 30px rgba(0,0,0,.35);
+  }
+
+  .controls{display:flex; gap:1vw; align-items:center; justify-content:center}
+  .btn{
+    border-radius:14px; padding:.9em 1.3em; font-weight:850; cursor:pointer;
+    background:linear-gradient(180deg, #1a1b2a, #141626);
+    color:var(--ink); border:1px solid rgba(255,255,255,.08);
+    font-size:clamp(12px, 2.1vh, 18px);
+    transition:transform .08s ease, box-shadow .2s ease, filter .2s ease, background .2s ease;
+    box-shadow:var(--elev-shadow);
+  }
+  .btn:hover{ transform:translateY(-2px); box-shadow:var(--elev-hover) }
+  .btn:active{ transform:translateY(0); box-shadow:var(--elev-press) }
+  .btn:focus-visible{ outline:0; box-shadow:0 0 0 2px rgba(122,162,255,.6), 0 0 18px rgba(122,162,255,.35) }
+  .btn.primary{
+    background:linear-gradient(135deg, rgba(122,162,255,.95), rgba(167,139,250,.95));
+    color:#0b0c10; border:1px solid rgba(255,255,255,.12);
+    filter:var(--glow);
+  }
+
+  .answers{
+    width:90%;
+    display:grid; grid-template-columns:repeat(4, auto); gap:1.2vw;
+    justify-content:center; align-items:center;
+  }
+  .answers button{
+    width:clamp(90px, 14vw, 140px);
+    height:min(7.5vh, 64px);
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.08);
+    background:linear-gradient(180deg, #1a1b2a, #141626);
+    color:#e8e8ea; font-weight:850; font-size:clamp(12px, 1.9vh, 18px);
+    cursor:pointer; letter-spacing:.2px;
+    transition:transform .08s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+    box-shadow:var(--elev-shadow);
+  }
+  .answers button:hover{ transform:translateY(-2px); box-shadow:var(--elev-hover) }
+  .answers button:active{ transform:translateY(0); box-shadow:var(--elev-press) }
+  .answers button:focus-visible{ outline:0; box-shadow:0 0 0 2px rgba(122,162,255,.6), 0 0 18px rgba(122,162,255,.35) }
+
+  /* ====== Glassmorphism overlays ====== */
+  .overlay{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(900px 700px at 20% 10%, rgba(122,162,255,.08), transparent 60%),
+      radial-gradient(900px 700px at 80% 90%, rgba(167,139,250,.08), transparent 60%),
+      rgba(0,0,0,.42);
+    padding:2vh 2vw;
+    animation:overlayIn .25s ease-out;
+  }
+  @keyframes overlayIn{ from{opacity:0} to{opacity:1} }
+
+  .dialog{
+    width:min(86vw, 820px); max-width:92vw;
+    background:var(--glass-bg);
+    border-radius:18px;
+    padding:2vh 2vw;
+    position:relative;
+    box-shadow: 0 18px 50px rgba(0,0,0,.5);
+    backdrop-filter: blur(14px) saturate(150%);
+  }
+  .dialog::before{
+    content:""; position:absolute; inset:0; border-radius:18px; padding:1px;
+    background:linear-gradient(135deg, var(--glass-border1), var(--glass-border2));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    pointer-events:none; filter:var(--glow);
+  }
+  .dialog h2{
+    margin:0 0 .6em; font-size:clamp(16px,2.4vh,22px);
+    letter-spacing:.3px; filter:var(--glow);
+  }
+  .dialog table{width:100%; border-collapse:collapse; font-size:clamp(12px,1.9vh,16px)}
+  .dialog th,.dialog td{
+    padding:.65em .55em; border-bottom:1px solid rgba(255,255,255,.08); text-align:left
+  }
+  .dialog .row{display:flex; gap:1vw; justify-content:flex-end; margin-top:1.2em}
+  .hidden{display:none}
+
+  .muted{color:var(--muted)}
+  .footer-left{max-width:60%; line-height:1.45; display:flex; gap:.6em; align-items:center; flex-wrap:wrap}
+  .footer-right{display:flex; gap:.6em; align-items:center}
+
+  /* ---------- FLAT overrides for central gameplay buttons ---------- */
+  .flat,
+  .flat:hover,
+  .flat:active,
+  .flat:focus-visible {
+    transform: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+  }
+  .flat {
+    background: #171826 !important;
+    border: 1px solid rgba(255,255,255,.08) !important;
+    color: var(--ink) !important;
+    transition: background .2s ease, color .2s ease, border-color .2s ease !important;
+  }
+  .flat:focus-visible {
+    outline: 2px solid rgba(255,255,255,.25) !important;
+    outline-offset: 2px !important;
+  }
+  .answers .flat {
+    width: clamp(90px, 14vw, 140px);
+    height: min(7.5vh, 64px);
+    border-radius: 12px;
+  }
+
+  /* --- Enlarge stimulus text for Levels 1, 3, and 4 --- */
+  .level-1 .stimulus,
+  .level-3 .stimulus,
+  .level-4 .stimulus {
+    font-size: clamp(28px, 12vh, 12vw) !important;
+  }
+</style>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-N8QWS5JKZD');
+</script>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" role="application" aria-label="Stroop Effect Game (4 Levels)">
+    <header>
+      <h1>Stroop Effect ‧ 叫色測驗</h1>
+      <!-- right empty -->
+    </header>
+
+    <section class="stage">
+      <!-- Level toggle -->
+      <div class="toggle" role="tablist" aria-label="Level selector">
+        <button id="btnL1" class="active" role="tab" aria-selected="true">L1: text only</button>
+        <button id="btnL2" role="tab" aria-selected="false">L2: color patch</button>
+        <button id="btnL3" role="tab" aria-selected="false">L3: congruent (colored words)</button>
+        <button id="btnL4" role="tab" aria-selected="false">L4: incongruent (colored words)</button>
+      </div>
+
+      <!-- Stimulus -->
+      <div id="stimulus" class="stimulus" aria-live="assertive">Choose a level, then press Start</div>
+
+      <!-- Start (FLAT) -->
+      <div class="controls">
+        <button id="startBtn" class="btn primary flat">Start</button>
+      </div>
+
+      <!-- Answer buttons: Red / Green / Blue / Yellow (FLAT) -->
+      <div class="answers" id="answersBox" aria-label="Answer buttons">
+        <button class="flat" data-ans="red">RED</button>
+        <button class="flat" data-ans="green">GREEN</button>
+        <button class="flat" data-ans="blue">BLUE</button>
+        <button class="flat" data-ans="yellow">YELLOW</button>
+      </div>
+    </section>
+
+    <footer>
+      <span class="muted footer-left">
+        Stroop effect (expected): <b>Incongruent</b> trials are slower and less accurate than <b>Congruent</b> because reading is more automatic than color naming.
+        ΔRT = RT<sub>incongruent</sub> − RT<sub>congruent</sub> &gt; 0 s.
+        <button id="seeReportBtn" class="btn" style="padding:.4em .8em">See the final report</button>
+      </span>
+      <span class="footer-right">
+        <a href="https://wylee-sudo.github.io/wenyuanlee/" target="_blank" rel="noopener">Color &amp; Design Research Lab →</a>
+      </span>
+    </footer>
+
+    <!-- Per-level overlay -->
+    <div id="levelOverlay" class="overlay hidden" aria-hidden="true">
+      <div class="dialog" role="dialog" aria-modal="true" aria-label="Level result">
+        <h2>Level result</h2>
+        <table>
+          <tbody>
+            <tr><th>This run — Accuracy</th><td id="ovAcc">—</td></tr>
+            <tr><th>This run — Avg RT (s, correct)</th><td id="ovRt">—</td></tr>
+            <tr><th>This run — Total time (s)</th><td id="ovTime">—</td></tr>
+            <tr><th>Mode</th><td id="ovMode">—</td></tr>
+            <tr><th colspan="2" style="border:none"></th></tr>
+            <tr><th>Cumulative — Plays / Trials</th><td id="cumPlaysTrials">—</td></tr>
+            <tr><th>Cumulative — Accuracy</th><td id="cumAcc">—</td></tr>
+            <tr><th>Cumulative — Avg RT (s, correct)</th><td id="cumRt">—</td></tr>
+            <tr><th>Cumulative — Total time (s)</th><td id="cumTime">—</td></tr>
+          </tbody>
+        </table>
+        <div class="row">
+          <button id="closeLevelBtn" class="btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final overlay -->
+    <div id="finalOverlay" class="overlay hidden" aria-hidden="true">
+      <div class="dialog" role="dialog" aria-modal="true" aria-label="Final report">
+        <h2>Final report (cumulative)</h2>
+        <table>
+          <thead>
+            <tr><th>Level</th><th>Mode</th><th>Plays</th><th>Trials</th><th>Accuracy</th><th>Avg RT (s)</th><th>Total time (s)</th></tr>
+          </thead>
+          <tbody id="finalTbody"></tbody>
+        </table>
+        <div class="row">
+          <button id="restartBtn" class="btn">Reset all</button>
+          <button id="closeReportBtn" class="btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  /* Colors */
+  const COLORS = [
+    {name:'red',    css:'#FF0000'},
+    {name:'green',  css:'#008000'},
+    {name:'yellow', css:'#FFFF00'},
+    {name:'blue',   css:'#0000FF'}
+  ];
+  const byName = n => COLORS.find(c=>c.name===n);
+
+  /* Levels */
+  const LEVELS = [
+    { id:1, key:'text',        label:'L1 text-only (white words)',     trials:8, palette:COLORS.map(c=>c.name) },
+    { id:2, key:'patch',       label:'L2 color patch (no text)',       trials:8, palette:COLORS.map(c=>c.name) },
+    { id:3, key:'congruent',   label:'L3 congruent (colored words)',   trials:8, palette:COLORS.map(c=>c.name) },
+    { id:4, key:'incongruent', label:'L4 incongruent (colored words)', trials:8, palette:COLORS.map(c=>c.name) },
+  ];
+
+  /* Audio */
+  let audioCtx; const soundOn = true;
+  function beep(freq, duration=110, type='sine', gain=0.06){
+    if(!soundOn) return;
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+    o.type = type; o.frequency.value = freq; g.gain.value = gain;
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); setTimeout(()=>o.stop(), duration);
+  }
+  function sfxCorrect(){ beep(880,100,'triangle',0.05); setTimeout(()=>beep(1200,120,'triangle',0.05),90); }
+  function sfxWrong(){   beep(180,150,'sawtooth',0.07); setTimeout(()=>beep(140,170,'sawtooth',0.07),150); }
+
+  /* DOM refs */
+  const stimulus = document.getElementById('stimulus');
+  const answersBox = document.getElementById('answersBox');
+  const startBtn = document.getElementById('startBtn');
+
+  const btnL1 = document.getElementById('btnL1');
+  const btnL2 = document.getElementById('btnL2');
+  const btnL3 = document.getElementById('btnL3');
+  const btnL4 = document.getElementById('btnL4');
+
+  const levelOverlay = document.getElementById('levelOverlay');
+  const ovAcc   = document.getElementById('ovAcc');
+  const ovRt    = document.getElementById('ovRt');
+  const ovTime  = document.getElementById('ovTime');
+  const ovMode  = document.getElementById('ovMode');
+  const cumPlaysTrials = document.getElementById('cumPlaysTrials');
+  const cumAcc  = document.getElementById('cumAcc');
+  const cumRt   = document.getElementById('cumRt');
+  const cumTime = document.getElementById('cumTime');
+  const closeLevelBtn = document.getElementById('closeLevelBtn');
+
+  const finalOverlay = document.getElementById('finalOverlay');
+  const finalTbody   = document.getElementById('finalTbody');
+  const restartBtn   = document.getElementById('restartBtn');
+  const closeReportBtn = document.getElementById('closeReportBtn');
+  const seeReportBtn = document.getElementById('seeReportBtn');
+
+  /* State */
+  let levelIndex = 0; // 0..3
+  let running = false, trialIndex = 0;
+  let tStartTrial = 0, tStartLevel = 0;
+  let log = []; let prevKey = null; let current = null;
+
+  // cumulative per level
+  const cumul = {1:baseC(),2:baseC(),3:baseC(),4:baseC()};
+  function baseC(){ return {plays:0,trials:0,correct:0,sumRtMsCorrect:0,totalMs:0}; }
+
+  /* Helpers */
+  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function meanMs(arr){ return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : NaN; }
+  function toS(ms){ return (ms/1000).toFixed(2); }
+  function fmtAvgS(ms){ return Number.isFinite(ms) ? (ms/1000).toFixed(2) : '—'; }
+
+  function setLevel(idx){
+    levelIndex = idx;
+    [btnL1,btnL2,btnL3,btnL4].forEach((b,i)=>{
+      b.classList.toggle('active', i===idx);
+      b.setAttribute('aria-selected', i===idx ? 'true':'false');
+    });
+    document.body.className = `level-${idx+1}`;   // 依關卡加 class，驅動文字放大
+  }
+  btnL1.addEventListener('click', ()=> setLevel(0));
+  btnL2.addEventListener('click', ()=> setLevel(1));
+  btnL3.addEventListener('click', ()=> setLevel(2));
+  btnL4.addEventListener('click', ()=> setLevel(3));
+
+  // Answer buttons
+  answersBox.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click', ()=> answer(b.dataset.ans));
+  });
+
+  /* Stimulus generation */
+  function nextStimulus(){
+    const L = LEVELS[levelIndex];
+    const pal = L.palette;
+    let word=null, ink=null, inkCss=null, target=null, key=null;
+
+    if(L.key==='text'){
+      word = pick(pal); ink = 'white'; inkCss = '#FFFFFF'; target = word; key=`text:${word}`;
+    }else if(L.key==='patch'){
+      word = ''; ink = pick(pal); inkCss = byName(ink).css; target = ink; key=`patch:${ink}`;
+    }else if(L.key==='congruent'){
+      ink = pick(pal); word = ink; inkCss = byName(ink).css; target = ink; key=`cg:${word}-${ink}`;
+    }else{ // incongruent
+      ink = pick(pal); const others = pal.filter(n=>n!==ink);
+      word = pick(others); inkCss = byName(ink).css; target = ink; key=`ic:${word}-${ink}`;
+    }
+
+    if(prevKey && prevKey===key) return nextStimulus(); // avoid immediate repeat
+    prevKey = key; return { word, ink, inkCss, target, mode:L.key };
+  }
+
+  function renderStimulus(st){
+    if(st.mode==='patch'){
+      stimulus.style.color = '#e8e8ea';
+      stimulus.innerHTML = `<div class="patch" style="background:${st.inkCss}"></div>`;
+    }else{
+      stimulus.style.color = (st.mode==='text') ? '#FFFFFF' : st.inkCss;
+      stimulus.textContent = st.word.toUpperCase();
+    }
+  }
+
+  /* Flow */
+  function start(){
+    if(running) return;
+    const L = LEVELS[levelIndex];
+    trialIndex = 0; log = []; prevKey = null; running = true;
+
+    levelOverlay.classList.add('hidden'); finalOverlay.classList.add('hidden');
+    levelOverlay.setAttribute('aria-hidden','true'); finalOverlay.setAttribute('aria-hidden','true');
+
+    stimulus.textContent = '...'; stimulus.style.color = '#e8e8ea';
+    tStartLevel = performance.now(); nextTrial();
+  }
+
+  function nextTrial(){
+    const L = LEVELS[levelIndex];
+    if(trialIndex >= L.trials){ return endLevel(); }
+    current = nextStimulus(); renderStimulus(current);
+    trialIndex++; tStartTrial = performance.now();
+  }
+
+  function answer(ans){
+    if(!running) return;
+    const rt = Math.max(0, Math.round(performance.now() - tStartTrial));
+    const correct = (ans === current.target);
+    log.push({ ...current, ans, correct, rt });
+    if(correct){ sfxCorrect(); } else { sfxWrong(); }
+    nextTrial();
+  }
+
+  function endLevel(){
+    running = false;
+    const L = LEVELS[levelIndex];
+    const totalMs = Math.round(performance.now() - tStartLevel);
+    const nTrials = log.length, nCorrect = log.filter(x=>x.correct).length;
+    const rtMeanMs = meanMs(log.filter(x=>x.correct).map(x=>x.rt));
+
+    // Cumulative
+    const c = cumul[L.id];
+    c.plays += 1; c.trials += nTrials; c.correct += nCorrect;
+    if(Number.isFinite(rtMeanMs)){
+      c.sumRtMsCorrect += log.filter(x=>x.correct).reduce((a,b)=>a+b.rt,0);
+    }
+    c.totalMs += totalMs;
+
+    // Per-level overlay
+    ovAcc.textContent   = `${Math.round(100*nCorrect/nTrials)}% (${nCorrect}/${nTrials})`;
+    ovRt.textContent    = fmtAvgS(rtMeanMs);
+    ovTime.textContent  = toS(totalMs) + ' s';
+    ovMode.textContent  = L.label;
+
+    const cumAccPct = c.trials ? Math.round(100*c.correct/c.trials) : 0;
+    const cumAvgRtS = c.correct ? (c.sumRtMsCorrect / c.correct / 1000).toFixed(2) : '—';
+    cumPlaysTrials.textContent = `${c.plays} plays / ${c.trials} trials`;
+    cumAcc.textContent  = `${cumAccPct}% (${c.correct}/${c.trials})`;
+    cumRt.textContent   = cumAvgRtS;
+    cumTime.textContent = toS(c.totalMs) + ' s';
+
+    levelOverlay.classList.remove('hidden');
+    levelOverlay.setAttribute('aria-hidden','false');
+
+    stimulus.textContent = 'Choose a level, then press Start';
+    stimulus.style.color = '#e8e8ea';
+  }
+
+  function buildFinal(){
+    finalTbody.innerHTML = '';
+    LEVELS.forEach(L=>{
+      const c = cumul[L.id];
+      const accPct = c.trials ? Math.round(100*c.correct/c.trials) : 0;
+      const avgRtS = c.correct ? (c.sumRtMsCorrect / c.correct / 1000).toFixed(2) : '—';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${L.id}</td>
+        <td>${L.label}</td>
+        <td>${c.plays}</td>
+        <td>${c.trials}</td>
+        <td>${accPct}% (${c.correct}/${c.trials})</td>
+        <td>${avgRtS}</td>
+        <td>${toS(c.totalMs)}</td>`;
+      finalTbody.appendChild(tr);
+    });
+    finalOverlay.classList.remove('hidden');
+    finalOverlay.setAttribute('aria-hidden','false');
+  }
+
+  function resetAll(){
+    for(const k of Object.keys(cumul)) cumul[k]=baseC();
+    stimulus.textContent = 'Choose a level, then press Start';
+    stimulus.style.color = '#e8e8ea';
+    finalOverlay.classList.add('hidden'); finalOverlay.setAttribute('aria-hidden','true');
+    levelOverlay.classList.add('hidden'); levelOverlay.setAttribute('aria-hidden','true');
+  }
+
+  /* Wire up */
+  setLevel(0);
+  startBtn.addEventListener('click', start);
+  seeReportBtn.addEventListener('click', buildFinal);
+  closeReportBtn.addEventListener('click', ()=>{ finalOverlay.classList.add('hidden'); finalOverlay.setAttribute('aria-hidden','true'); });
+  restartBtn.addEventListener('click', resetAll);
+  closeLevelBtn.addEventListener('click', ()=>{ levelOverlay.classList.add('hidden'); levelOverlay.setAttribute('aria-hidden','true'); });
+
+  window.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !running) start(); });
+</script>
+</body>
+</html>
