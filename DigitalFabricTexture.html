@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Digital Fabric Texture — Generative Art</title>
+<style>
+  :root { --bg:#0b0c0f; --panel:#101218; --text:#e6e6e6; --muted:#9aa3ad; --accent:#64b5ff; }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{display:grid;grid-template-columns:1fr 320px;height:100%}
+  canvas{width:100%;height:100%;display:block;cursor:grab}
+  canvas:active{cursor:grabbing}
+  aside{background:linear-gradient(180deg,var(--panel),#0b0d13);border-left:1px solid #151928;padding:16px 14px;overflow:auto}
+  h1{font-size:18px;margin:0 0 12px;font-weight:700;letter-spacing:.2px}
+  .sub{font-size:12px;color:var(--muted);margin-bottom:16px}
+  fieldset{border:1px solid #1b2135;border-radius:14px;padding:12px;margin:0 0 12px}
+  legend{padding:0 8px;color:#cdd7e1;font-size:12px}
+  label{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;margin:8px 0;color:#cfd8e3}
+  input[type="range"]{width:160px}
+  input[type="color"]{width:42px;height:26px;border:0;background:none}
+  select,button,.mini{
+    background:#0f1422;border:1px solid #1b2135;color:#e9f0f7;border-radius:10px;
+    padding:8px 10px;font-size:13px
+  }
+  .row{display:flex;align-items:center;gap:8px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .muted{color:var(--muted)}
+  .footer{font-size:12px;color:#8ea2b7;margin-top:10px;line-height:1.5}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  a.link{color:var(--accent);text-decoration:none}
+  @media (max-width: 860px){ .wrap{grid-template-columns:1fr} aside{order:-1} }
+
+  /* 固定的返回按鈕 */
+  .back {
+    position: fixed; top: 12px; left: 12px; z-index: 9;
+    background: rgba(15,20,34,.8); backdrop-filter: blur(4px);
+    border: 1px solid #1b2135; color: #e9f0f7; text-decoration: none;
+    padding: 8px 12px; border-radius: 999px; font-size: 13px;
+  }
+  .back:hover{ border-color:#2a3552 }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <canvas id="gl"></canvas>
+  <aside>
+    <h1>Digital Fabric Texture</h1>
+    <div class="sub">This generative art piece visualizes harmonic interference as a digital fabric texture, where waves weave together to form rhythmic patterns resembling woven textiles.</div>
+
+    <fieldset>
+      <legend>色彩</legend>
+      <label>顏色 A <input type="color" id="colA" value="#0a5fff" /></label>
+      <label>顏色 B <input type="color" id="colB" value="#fb5c86" /></label>
+      <div class="row muted" style="justify-content:space-between;">
+        <span class="muted">模式</span>
+        <select id="mode">
+          <option value="0">相加 Add</option>
+          <option value="1">相乘 Multiply</option>
+          <option value="2">差值 Difference</option>
+          <option value="3">條紋 Stripes</option>
+        </select>
+      </div>
+      <label>對比 <input id="contrast" type="range" min="0" max="2" step="0.01" value="1.2" /></label>
+      <label>柔順 <input id="smooth" type="range" min="0" max="0.5" step="0.001" value="0.08" /></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>頻率與角度</legend>
+      <label>freq₁ <input id="f1" type="range" min="0.2" max="20" step="0.01" value="7.5" /></label>
+      <label>freq₂ <input id="f2" type="range" min="0.2" max="20" step="0.01" value="9.0" /></label>
+      <label>angle₁ (°) <input id="a1" type="range" min="0" max="180" step="0.1" value="20" /></label>
+      <label>angle₂ (°) <input id="a2" type="range" min="0" max="180" step="0.1" value="110" /></label>
+      <label>尺度 scale <input id="scale" type="range" min="0.3" max="3" step="0.001" value="1.0" /></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>動畫</legend>
+      <label>啟用動畫
+        <select id="anim">
+          <option value="1">On</option>
+          <option value="0">Off</option>
+        </select>
+      </label>
+      <label>速度 <input id="speed" type="range" min="-2" max="2" step="0.001" value="0.25" /></label>
+      <label>相位 phase <input id="phase" type="range" min="-6.283" max="6.283" step="0.001" value="0.0" /></label>
+    </fieldset>
+
+    <fieldset>
+      <legend>操作</legend>
+      <div class="actions">
+        <button id="random">隨機化</button>
+        <button id="export">匯出 PNG</button>
+        <button id="reset">重設</button>
+      </div>
+      <div class="footer">
+        互動：<br>
+        ・點擊畫布：隨機化參數<br>
+        ・拖曳畫布：左右拖動調整相位 φ<br>
+        ・滾輪：縮放（scale）
+      </div>
+    </fieldset>
+
+    <div class="footer">
+      <em>兩組正弦干涉，生成如織物般的視覺紋理。點擊隨機，拖曳改變相位。</em>
+      <br><br>
+      Made by <a class="link" href="https://wylee-sudo.github.io/wenyuanlee/" target="_blank" rel="noopener">Color & Design Research Lab</a>
+    </div>
+  </aside>
+</div>
+
+<script>
+/* ---------- Utility ---------- */
+const $ = sel => document.querySelector(sel);
+function hexToRgbNorm(hex){
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if(!m) return [1,1,1];
+  return [parseInt(m[1],16)/255, parseInt(m[2],16)/255, parseInt(m[3],16)/255];
+}
+
+/* ---------- WebGL Setup ---------- */
+const canvas = $("#gl");
+const gl = canvas.getContext("webgl", {antialias:false, preserveDrawingBuffer:true});
+if(!gl){ alert("Your browser does not support WebGL."); }
+
+const vertSrc = `
+attribute vec2 a_pos;
+void main(){ gl_Position = vec4(a_pos,0.0,1.0); }
+`;
+
+const fragSrc = `
+precision highp float;
+uniform vec2  u_res;
+uniform float u_time;
+uniform float u_scale;
+uniform vec3  u_colA, u_colB;
+uniform float u_f1, u_f2;
+uniform float u_a1, u_a2; // radians
+uniform float u_phase;
+uniform float u_contrast;
+uniform float u_smooth;
+uniform int   u_mode;
+
+float sat(float x){ return clamp(x,0.0,1.0); }
+
+// Map value v (-1..1) -> mix factor (0..1) with contrast and smoothness
+float tonemap(float v, float k, float s){
+  float t = 0.5 + 0.5 * v * k;       // contrast
+  t = smoothstep(0.0 + s, 1.0 - s, t); // soften edges
+  return t;
+}
+
+void main(){
+  vec2 uv = (gl_FragCoord.xy - 0.5*u_res) / min(u_res.x,u_res.y);
+  uv *= u_scale;
+
+  vec2 d1 = vec2(cos(u_a1), sin(u_a1));
+  vec2 d2 = vec2(cos(u_a2), sin(u_a2));
+
+  float x1 = dot(uv, d1);
+  float x2 = dot(uv, d2);
+
+  float s1 = sin(u_f1 * x1 + u_phase + u_time);
+  float s2 = sin(u_f2 * x2 + 0.73*u_phase - 0.5*u_time);
+
+  float v;
+  if(u_mode==0){
+    v = (s1 + s2) * 0.5;            // add
+  }else if(u_mode==1){
+    v = s1 * s2;                    // multiply
+  }else if(u_mode==2){
+    v = (abs(s1) - abs(s2));        // difference (signed)
+  }else{
+    float g = sin(3.14159265*(s1 + s2));
+    v = g;                          // stripes
+  }
+
+  float t = tonemap(v, u_contrast, u_smooth);
+  vec3 col = mix(u_colA, u_colB, t);
+
+  gl_FragColor = vec4(col, 1.0);
+}
+`;
+
+function compile(type, src){
+  const sh = gl.createShader(type);
+  gl.shaderSource(sh, src);
+  gl.compileShader(sh);
+  if(!gl.getShaderParameter(sh, gl.COMPILE_STATUS)){
+    console.error(gl.getShaderInfoLog(sh)); throw new Error("Shader compile failed");
+  }
+  return sh;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, compile(gl.VERTEX_SHADER, vertSrc));
+gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fragSrc));
+gl.linkProgram(prog);
+if(!gl.getProgramParameter(prog, gl.LINK_STATUS)){
+  console.error(gl.getProgramInfoLog(prog)); throw new Error("Link failed");
+}
+gl.useProgram(prog);
+
+const quad = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1,  -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+const a_pos = gl.getAttribLocation(prog,"a_pos");
+gl.enableVertexAttribArray(a_pos);
+gl.vertexAttribPointer(a_pos, 2, gl.FLOAT, false, 0, 0);
+
+/* ---------- Uniforms ---------- */
+const U = {
+  res: gl.getUniformLocation(prog,"u_res"),
+  time: gl.getUniformLocation(prog,"u_time"),
+  scale: gl.getUniformLocation(prog,"u_scale"),
+  colA: gl.getUniformLocation(prog,"u_colA"),
+  colB: gl.getUniformLocation(prog,"u_colB"),
+  f1: gl.getUniformLocation(prog,"u_f1"),
+  f2: gl.getUniformLocation(prog,"u_f2"),
+  a1: gl.getUniformLocation(prog,"u_a1"),
+  a2: gl.getUniformLocation(prog,"u_a2"),
+  phase: gl.getUniformLocation(prog,"u_phase"),
+  contrast: gl.getUniformLocation(prog,"u_contrast"),
+  smooth: gl.getUniformLocation(prog,"u_smooth"),
+  mode: gl.getUniformLocation(prog,"u_mode"),
+};
+
+function resize(){
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.floor(canvas.clientWidth * dpr);
+  const h = Math.floor(canvas.clientHeight * dpr);
+  if(canvas.width!==w || canvas.height!==h){
+    canvas.width = w; canvas.height = h;
+    gl.viewport(0,0,w,h);
+  }
+  gl.uniform2f(U.res, canvas.width, canvas.height);
+}
+window.addEventListener('resize', resize);
+
+/* ---------- Controls & State ---------- */
+const state = {
+  colA: $("#colA").value,
+  colB: $("#colB").value,
+  mode: +$("#mode").value,
+  contrast: +$("#contrast").value,
+  smooth: +$("#smooth").value,
+  f1: +$("#f1").value,
+  f2: +$("#f2").value,
+  a1: (+$("#a1").value) * Math.PI/180,
+  a2: (+$("#a2").value) * Math.PI/180,
+  scale: +$("#scale").value,
+  anim: +$("#anim").value,
+  speed: +$("#speed").value,
+  phase: +$("#phase").value,
+};
+
+const inputs = ["colA","colB","mode","contrast","smooth","f1","f2","a1","a2","scale","anim","speed","phase"];
+inputs.forEach(id=>{
+  const el = $("#"+id);
+  el.addEventListener("input", ()=>{
+    if(id==="a1"||id==="a2"){ state[id] = (+el.value)*Math.PI/180; }
+    else if(id==="mode"||id==="anim"){ state[id] = +el.value; }
+    else { state[id] = (id==="colA"||id==="colB") ? el.value : +el.value; }
+    persist();
+  });
+});
+
+function persist(){ localStorage.setItem("weaves_v1", JSON.stringify({
+  ...state,
+  a1_deg: $("#a1").value, a2_deg: $("#a2").value
+})); }
+function restore(){
+  const raw = localStorage.getItem("weaves_v1");
+  if(!raw) return;
+  try{
+    const s = JSON.parse(raw);
+    Object.assign(state, s);
+    $("#colA").value = state.colA;
+    $("#colB").value = state.colB;
+    $("#mode").value = state.mode;
+    $("#contrast").value = state.contrast;
+    $("#smooth").value = state.smooth;
+    $("#f1").value = state.f1;
+    $("#f2").value = state.f2;
+    $("#a1").value = s.a1_deg ?? (state.a1*180/Math.PI).toFixed(1);
+    $("#a2").value = s.a2_deg ?? (state.a2*180/Math.PI).toFixed(1);
+    $("#scale").value = state.scale;
+    $("#anim").value = state.anim;
+    $("#speed").value = state.speed;
+    $("#phase").value = state.phase;
+    state.a1 = (+$("#a1").value)*Math.PI/180;
+    state.a2 = (+$("#a2").value)*Math.PI/180;
+  }catch(e){}
+}
+restore();
+
+/* ---------- Interaction (click/drag/wheel) ---------- */
+let dragging = false, lastX = 0;
+canvas.addEventListener("mousedown", e=>{ dragging = true; lastX = e.clientX; });
+window.addEventListener("mouseup", ()=> dragging=false);
+window.addEventListener("mousemove", e=>{
+  if(!dragging) return;
+  const dx = e.clientX - lastX; lastX = e.clientX;
+  state.phase += dx * 0.01;
+  $("#phase").value = state.phase.toFixed(3);
+  persist();
+});
+canvas.addEventListener("wheel", e=>{
+  e.preventDefault();
+  const s = state.scale * Math.exp(-e.deltaY * 0.0015);
+  state.scale = Math.min(3, Math.max(0.3, s));
+  $("#scale").value = state.scale.toFixed(3);
+  persist();
+}, {passive:false});
+
+canvas.addEventListener("click", ()=>{
+  if(dragging) return;
+  randomize();
+});
+
+function randomize(){
+  const H = ()=>Math.random()*360|0;
+  const S = ()=>60+Math.random()*35|0;
+  const L = ()=>50+Math.random()*20|0;
+  function hsl(h,s,l){
+    s/=100; l/=100; const k=n=> (n+h/30)%12;
+    const a = s*Math.min(l,1-l);
+    const f = n => l - a*Math.max(-1, Math.min(k(n)-3, Math.min(9-k(n),1)));
+    const r = Math.round(255*f(0)), g=Math.round(255*f(8)), b=Math.round(255*f(4));
+    return "#"+[r,g,b].map(v=>v.toString(16).padStart(2,"0")).join("");
+  }
+  $("#colA").value = hsl(H(), S(), L());
+  $("#colB").value = hsl((H()+60)%360, S(), L());
+  $("#mode").value = (Math.random()*4|0);
+  $("#f1").value = (0.5 + Math.random()*18.5).toFixed(2);
+  $("#f2").value = (0.5 + Math.random()*18.5).toFixed(2);
+  $("#a1").value = (Math.random()*180).toFixed(1);
+  $("#a2").value = (Math.random()*180).toFixed(1);
+  $("#contrast").value = (0.8 + Math.random()*1.2).toFixed(2);
+  $("#smooth").value = (0.02 + Math.random()*0.18).toFixed(3);
+  $("#scale").value = (0.6 + Math.random()*1.6).toFixed(3);
+  $("#speed").value = (-0.6 + Math.random()*1.2).toFixed(3);
+
+  ["colA","colB","mode","f1","f2","contrast","smooth","scale","speed"].forEach(id=>{
+    state[id] = (id==="colA"||id==="colB") ? $("#"+id).value : +$("#"+id).value;
+  });
+  state.a1 = (+$("#a1").value)*Math.PI/180;
+  state.a2 = (+$("#a2").value)*Math.PI/180;
+  state.phase = (Math.random()*Math.PI*2 - Math.PI);
+  $("#phase").value = state.phase.toFixed(3);
+  state.anim = +$("#anim").value;
+  persist();
+}
+
+/* ---------- Export & Reset ---------- */
+$("#export").addEventListener("click", ()=>{
+  const link = document.createElement("a");
+  const ts = new Date().toISOString().replace(/[:.]/g,"-");
+  link.download = `harmonic-weaves-${ts}.png`;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+});
+$("#reset").addEventListener("click", ()=>{
+  localStorage.removeItem("weaves_v1");
+  location.reload();
+});
+$("#random").addEventListener("click", randomize);
+
+/* ---------- Render Loop ---------- */
+let start = performance.now();
+function render(){
+  resize();
+  const t = (performance.now()-start) / 1000;
+
+  gl.uniform1f(U.time, state.anim ? state.speed * t : 0.0);
+  gl.uniform1f(U.scale, state.scale);
+  gl.uniform3fv(U.colA, new Float32Array(hexToRgbNorm(state.colA)));
+  gl.uniform3fv(U.colB, new Float32Array(hexToRgbNorm(state.colB)));
+  gl.uniform1f(U.f1, state.f1);
+  gl.uniform1f(U.f2, state.f2);
+  gl.uniform1f(U.a1, state.a1);
+  gl.uniform1f(U.a2, state.a2);
+  gl.uniform1f(U.phase, state.phase);
+  gl.uniform1f(U.contrast, state.contrast);
+  gl.uniform1f(U.smooth, state.smooth);
+  gl.uniform1i(U.mode, state.mode|0);
+
+  gl.drawArrays(gl.TRIANGLES, 0, 6);
+  requestAnimationFrame(render);
+}
+render();
+</script>
+
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-N8QWS5JKZD');
+</script>
+</body>
+</html>
