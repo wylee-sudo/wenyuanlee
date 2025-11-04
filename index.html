@@ -7,304 +7,257 @@
 
   <style>
     :root{
-      --brand-1:#6a11cb;
+      --maxw: 1200px;
+      --radius: 14px;
+      --shadow: 0 2px 10px rgba(0,0,0,.08);
       --text:#333;
+      --muted:#5b5b5b;
       --bg:#fafafa;
       --card:#fff;
-      --shadow:0 2px 10px rgba(0,0,0,.08);
-      --radius:14px;
-      --maxw:1100px;
+      --link:#0d60ff;
+      --brand:#6a11cb;
+      --border:#e7e7e7;
     }
-
-    /* 基本設定 */
-    *{box-sizing:border-box}
-    html,body{margin:0;padding:0}
+    *{box-sizing:border-box} html,body{margin:0;padding:0}
     body{
       font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,"Noto Sans TC","PingFang TC",sans-serif;
-      color:var(--text);
-      background:var(--bg);
-      line-height:1.7;
-      -webkit-font-smoothing:antialiased;
-      text-rendering:optimizeLegibility;
+      color:var(--text); background:var(--bg); line-height:1.7;
+      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
     }
 
-    /* 版頭：背景由 JS 動態隨機設定 */
-    header{
-      color:#fff;
-      text-align:center;
-      padding:clamp(56px,8vw,96px) 20px;
-    }
-    header h1{
-      font-weight:800;
-      letter-spacing:.2px;
-      font-size:clamp(28px,5vw,44px);
-      margin:0 0 10px 0;
-    }
-    header p{
-      margin:0;
-      opacity:.95;
-      font-size:clamp(15px,2.4vw,20px);
-    }
+    /* Header */
+    header{ padding: clamp(28px,4vw,48px) 16px 10px; text-align:center; }
+    header h1{ margin:0 0 6px 0; font-size: clamp(26px,4.2vw,38px); font-weight:800; letter-spacing:.2px; }
+    header p{ margin:0; color:var(--muted) }
 
-    /* 主要內容容器 */
-    .container{
-      width:100%;
-      max-width:var(--maxw);
-      margin:0 auto;
-      padding:40px 20px 56px;
+    /* Layout: 左內容 + 右工具（tabs） */
+    .wrap{
+      width:100%; max-width:var(--maxw); margin: 0 auto; padding: 0 16px 56px;
+      display:grid; gap:20px; grid-template-columns: 1fr;
     }
-
-    /* 區塊標題 */
-    h2{
-      color:var(--brand-1);
-      font-size:clamp(20px,3.5vw,26px);
-      margin:36px 0 14px;
+    @media (min-width: 980px){
+      .wrap{ grid-template-columns: 460px 1fr; align-items:start; }
     }
 
     /* 卡片 */
-    .card{
-      background:var(--card);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:22px;
-      margin:14px 0 22px;
-    }
+    .card{ background:var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding:22px; }
+    h2{ color:var(--brand); font-size: clamp(20px,3.4vw,26px); margin: 6px 0 12px; }
+    a{ color:var(--link); }
 
-    /* 兩欄自適應網格：在寬螢幕排兩欄，手機自動一欄 */
-    .grid{
-      display:grid;
-      gap:18px;
-      grid-template-columns:1fr;
-    }
-    @media (min-width:720px){
-      .grid{ grid-template-columns:1fr 1fr; }
-    }
-
-    /* Tools 專用樣式 */
-    .tools-group{
-      display:grid;
-      gap:12px;
-    }
-    .tool-link{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:14px 16px;
-      border-radius:12px;
+    /* 右欄：Tabs（無搜尋框） */
+    .tabs-card{ padding:0; overflow:hidden; }
+    .tabs-header{
+      display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+      border-bottom:1px solid var(--border);
+      padding:10px 10px 8px;
       background:#fff;
-      box-shadow:var(--shadow);
-      text-decoration:none;
-      color:var(--text);
-      transition:transform .12s ease, box-shadow .12s ease;
     }
-    .tool-link:hover{
-      transform:translateY(-1px);
-      box-shadow:0 6px 16px rgba(0,0,0,.12);
+    .tab{
+      appearance:none; border:1px solid var(--border); background:#fff; color:#333;
+      padding:10px 14px; border-radius:999px; cursor:pointer; font-size:14px;
     }
-    .tool-emoji{ font-size:20px; line-height:1; }
-
-    /* 列表 */
-    ul{ padding-left:18px; margin:0 }
-    li{ margin:6px 0 }
-
-    /* 頁尾 */
-    footer{
-      text-align:center;
-      background:#333;
-      color:#fff;
-      padding:18px 14px;
+    .tab[aria-selected="true"]{
+      background:#f5f5f5; border-color:#cfcfcf; font-weight:600;
     }
 
-    /* 無障礙：鍵盤焦點 */
-    a:focus-visible, .tool-link:focus-visible{
-      outline:2px solid #0000ff80;
-      outline-offset:3px;
+    .tabs-panel{
+      display:none; padding:16px;
     }
-    </style>
- <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    .tabs-panel[aria-hidden="false"]{ display:block; }
 
-  gtag('config', 'G-N8QWS5JKZD');
-</script>
+    /* 工具卡：改成 2 欄（手機 1 欄） */
+    .tools-grid{
+      display:grid; gap:12px; grid-template-columns:1fr;
+    }
+    @media (min-width: 680px){
+      .tools-grid{ grid-template-columns:1fr 1fr; }
+    }
+    .tool{
+      display:flex; gap:10px; align-items:flex-start; padding:14px; border:1px solid #eee; border-radius:12px; background:#fff;
+      text-decoration:none; color:var(--text);
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .tool:hover{ transform: translateY(-1px); box-shadow: 0 8px 16px rgba(0,0,0,.08); border-color:#e2e2e2; }
+    .emoji{ font-size:20px; line-height:1; }
+    .tool b{ display:block; margin-bottom:2px }
+    .muted{ color:#777; font-size:13px; }
+
+    footer{ text-align:center; color:#fff; background:#333; padding: 18px 14px; margin-top:30px; }
+
+    a:focus-visible, button:focus-visible, .tool:focus-visible{
+      outline:2px solid #0d60ff77; outline-offset:3px;
+    }
+  </style>
+
+  <!-- GA: G-N8QWS5JKZD -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date()); gtag('config', 'G-N8QWS5JKZD');
+  </script>
 </head>
-  
 <body>
+
   <header>
     <h1>Color & Design Research Lab</h1>
     <p>Exploring Color, Design, and UI/UX Design</p>
   </header>
 
-  <main class="container">
-    
-    <!-- Tools 區：分為 for Color 與 for UX test -->
-    <section>
-      <h2>Tools · for Color</h2>
-      <div class="tools-group">
-        <a class="tool-link" href="Visual_Identification.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">🎨</span>
-          <span>Visual Identification</span>
-        </a>
-        <a class="tool-link" href="Tone3.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">🎨</span>
-          <span>Color Tone distributed in the CIELAB Space</span>
-        </a>
-        <a class="tool-link" href="colorconvert.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">🎨</span>
-          <span>Color Convert (RGB ⇄ CIELAB ⇄ CIELCh)</span>
-        </a>
-        <a class="tool-link" href="MunsellColorOrderSystem.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">🎨</span>
-          <span>Munsell Color Order System (Munsell ⇄ sRGB)</span>
-        </a>
-        <a class="tool-link" href="ncs.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">🎨</span>
-          <span>Natural Color System (NCS)</span>
-        </a>
-        <a class="tool-link" href="ColorAppearanceSimulater.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">🎨</span>
-          <span>Color Appearance Simulater</span>
-        </a>
-      </div>
-
-      <h2 style="margin-top:28px;">Tools · for UX test</h2>
-      <div class="tools-group">
-        <a class="tool-link" href="sus_measurment.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">📏</span>
-          <span>System Usability Scale (SUS) Measurement</span>
-        </a>
-         <a class="tool-link" href="csuq.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">📏</span>
-          <span>Computer System Usability Questionnaire, CSUQ</span>
-        </a>
-        <!-- 之後可在此新增更多 UX 測試工具連結 -->
-      </div>
-<h2 style="margin-top:28px;">Quiz/Game · for fun</h2>
-      <div class="tools-group">
-        <a class="tool-link" href="ColorIdiomsQuiz3.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">🙆🏼‍♂️</span>
-          <span>Color Idioms Quiz · 色彩都不色彩了</span>
-        </a>
-        <a class="tool-link" href="diffColor.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">🙆🏼‍♂️</span>
-          <span> Odd-One-Out · 找出不同色</span>
-        </a>
-         <a class="tool-link" href="StroopGame.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">🙆🏼‍♂️</span>
-          <span> Stroop Effect Game · 叫色遊戲</span>
-        </a>
-        <!-- 之後可在此新增更多 Quiz and game工具連結 -->
-      </div>
-      <h2 style="margin-top:28px;">Generative Art</h2>
-      <div class="tools-group">
-        <a class="tool-link" href="DigitalFabricTexture.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">👨‍🎨</span>
-          <span>Digital Fabric Texture (using Harmonic Weaves)</span>
-        </a>
-         <a class="tool-link" href="flow.html" target="_blank" rel="noopener">
-          <span class="tool-emoji">👨‍🎨</span>
-          <span>Flow Field</span>
-        </a>
-        <!-- 之後可在此新增更多 程式藝術 連結 -->
-      </div>
-    </section>
-
-    <section class="grid">
-      <div>
+  <div class="wrap">
+    <!-- 左欄：完整內容 -->
+    <aside>
+      <section class="card">
         <h2>About Us</h2>
-        <div class="card">
-          <p>
-            We are dedicated to advancing knowledge in color science, color emotion, harmony, and interaction design.
-            Our lab bridges <b>engineering</b> and <b>design</b>, exploring both the technical foundations of color
-            systems and their applications in digital media, UI/UX, and cultural expression.
-          </p>
-        </div>
-      </div>
+        <p>
+          We are dedicated to advancing knowledge in color science, color emotion, harmony, and interaction design.
+          Our lab bridges <b>engineering</b> and <b>design</b>, exploring both the technical foundations of color
+          systems and their applications in digital media, UI/UX, and cultural expression.
+        </p>
+      </section>
 
-      <div>
-        <h2>Research Areas</h2>
-        <div class="card">
-          <ul>
-            <li>Color Emotion & Harmony in Design</li>
-            <li>Graphical User Interface & Experience Design (GUI/UX)</li>
-            <li>Virtual Identity & Avatars</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-    <section class="grid">
-      <div>
+       <section class="card">
         <h2>Leader of Color & Design Research Lab</h2>
-        <div class="card">
-          <p><b>Wen-Yuan LEE</b> received his Ph.D. in Color Science from the University of Leeds, UK, in 2007. He is currently a Professor in the Department of Digital Media Design at Tatung University, Taipei, Taiwan.</p>
-          <p>His research interests encompass design thinking, color emotion, color harmony, and graphical user interface/experience (GUI/UX) design. He teaches courses in digital product design, interaction design, color design, and user experience design. With a strong background bridging color science and interaction design, he is dedicated to advancing the integration of aesthetics, technology, and human-centered innovation.</p>
-        </div>
-      </div>
+        <p><b>Wen-Yuan LEE</b> received his Ph.D. in Color Science from the University of Leeds, UK, in 2007. He is currently a Professor in the Department of Digital Media Design at Tatung University, Taipei, Taiwan.</p>
+        <p>His research interests encompass design thinking, color emotion, color harmony, and graphical user interface/experience (GUI/UX) design. He teaches courses in digital product design, interaction design, color design, and user experience design. With a strong background bridging color science and interaction design, he is dedicated to advancing the integration of aesthetics, technology, and human-centered innovation.</p>
+      </section>
 
-      <div>
+      <section class="card">
         <h2>Publications</h2>
-        <div class="card">
-          <p><a href="https://orcid.org/0000-0002-6912-2757" target="_blank" rel="noopener">ORCID Profile</a></p>
-          <p><a href="https://tchinfo.ttu.edu.tw/tchinfo.php?id=wylee" target="_blank" rel="noopener">University Profile Page</a></p>
-          <p><a href="https://www.researchgate.net/profile/Wen-Yuan-Lee-2" target="_blank" rel="noopener">ResearchGate Profile</a></p>
+        <p><a href="https://orcid.org/0000-0002-6912-2757" target="_blank" rel="noopener">ORCID Profile</a></p>
+        <p><a href="https://tchinfo.ttu.edu.tw/tchinfo.php?id=wylee" target="_blank" rel="noopener">University Profile Page</a></p>
+        <p><a href="https://www.researchgate.net/profile/Wen-Yuan-Lee-2" target="_blank" rel="noopener">ResearchGate Profile</a></p>
+      </section>
+
+      <section class="card">
+        <h2>Contact</h2>
+        <p>Email: <a href="mailto:wylee@gm.ttu.edu.tw">wylee@gm.ttu.edu.tw</a></p>
+        <p>Location: Tatung University, Taipei, Taiwan</p>
+      </section>
+    </aside>
+
+    <!-- 右欄：Tabs（頁籤面板，兩欄工具） -->
+    <main>
+      <section class="card tabs-card" aria-label="Tools">
+        <div class="tabs-header" role="tablist" aria-label="Tool categories">
+          <button class="tab" role="tab" aria-selected="true" aria-controls="panel-color" id="tab-color" data-tab="color">for Color</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-ux" id="tab-ux" data-tab="ux">for UX test</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-quiz" id="tab-quiz" data-tab="quiz">Quiz & Game</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-gen" id="tab-gen" data-tab="gen">Generative Art</button>
         </div>
 
-        <h2>Contact</h2>
-        <div class="card">
-          <p>Email: <a href="mailto:wylee@gm.ttu.edu.tw">wylee@gm.ttu.edu.tw</a></p>
-          <p>Location: Tatung University, Taipei, Taiwan</p>
+        <!-- Panels -->
+        <div id="panel-color" class="tabs-panel" role="tabpanel" aria-labelledby="tab-color" aria-hidden="false">
+          <div class="tools-grid">
+            <a class="tool" href="Visual_Identification.html" target="_blank" rel="noopener">
+              <span class="emoji">👁️</span>
+              <div><b>Visual Identification</b><span class="muted">Visual identify three color attributes</span></div>
+            </a>
+            <a class="tool" href="Tone3.html" target="_blank" rel="noopener">
+              <span class="emoji">🎨</span>
+              <div><b>Color Tone</b><span class="muted">Color tone boundaries in the CIELAB</span></div>
+            </a>
+            <a class="tool" href="colorconvert.html" target="_blank" rel="noopener">
+              <span class="emoji">🧮</span>
+              <div><b>Color Convert</b><span class="muted">RGB ⇄ CIELAB ⇄ CIELCh</span></div>
+            </a>
+            <a class="tool" href="MunsellColorOrderSystem.html" target="_blank" rel="noopener">
+              <span class="emoji">🏷️</span>
+              <div><b>Munsell System</b><span class="muted">Munsell ⇄ sRGB</span></div>
+            </a>
+            <a class="tool" href="ncs.html" target="_blank" rel="noopener">
+              <span class="emoji">🎯</span>
+              <div><b>Natural Color System (NCS)</b><span class="muted">NCS quick lookup</span></div>
+            </a>
+            <a class="tool" href="ColorAppearanceSimulater.html" target="_blank" rel="noopener">
+              <span class="emoji">🕹️</span>
+              <div><b>Color Appearance Simulator</b><span class="muted">Change the measurement condition to see the difference</span></div>
+            </a>
+          </div>
         </div>
-      </div>
-    </section>
-  </main>
+
+        <div id="panel-ux" class="tabs-panel" role="tabpanel" aria-labelledby="tab-ux" aria-hidden="true">
+          <div class="tools-grid">
+            <a class="tool" href="sus_measurment.html" target="_blank" rel="noopener">
+              <span class="emoji">💯</span>
+              <div><b>System Usability Scale (SUS)</b><span class="muted">One score to see how the user experience</span></div>
+            </a>
+            <a class="tool" href="csuq.html" target="_blank" rel="noopener">
+              <span class="emoji">💻</span>
+              <div><b>CSUQ</b><span class="muted">Computer System Usability Questionnaire</span></div>
+            </a>
+          </div>
+        </div>
+
+        <div id="panel-quiz" class="tabs-panel" role="tabpanel" aria-labelledby="tab-quiz" aria-hidden="true">
+          <div class="tools-grid">
+            <a class="tool" href="ColorIdiomsQuiz3.html" target="_blank" rel="noopener">
+              <span class="emoji">🤔</span>
+              <div><b>Color Idioms Quiz</b><span class="muted">色彩都不色彩了。英文片語測驗</span></div>
+            </a>
+            <a class="tool" href="diffColor.html" target="_blank" rel="noopener">
+              <span class="emoji">🟦</span>
+              <div><b>Odd-One-Out</b><span class="muted">找出不同色</span></div>
+            </a>
+            <a class="tool" href="StroopGame.html" target="_blank" rel="noopener">
+              <span class="emoji">🔤</span>
+              <div><b>Stroop Effect Game</b><span class="muted">叫色遊戲</span></div>
+            </a>
+          </div>
+        </div>
+
+        <div id="panel-gen" class="tabs-panel" role="tabpanel" aria-labelledby="tab-gen" aria-hidden="true">
+          <div class="tools-grid">
+            <a class="tool" href="DigitalFabricTexture.html" target="_blank" rel="noopener">
+              <span class="emoji">🧵</span>
+              <div><b>Digital Fabric Texture</b><span class="muted">Harmonic Weaves</span></div>
+            </a>
+            <a class="tool" href="flow.html" target="_blank" rel="noopener">
+              <span class="emoji">🌬️</span>
+              <div><b>Flow Field</b><span class="muted">particle-free version</span></div>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <footer>
     <p>&copy; 2025 Color & Design Research Lab | Designed for GitHub Pages</p>
   </footer>
 
-  <!-- 隨機底色腳本（每次載入顯示不同漸層） -->
   <script>
-    const palettes = [
-      ["#6a11cb","#2575fc"],
-      ["#ff6a00","#ee0979"],
-      ["#11998e","#38ef7d"],
-      ["#fc466b","#3f5efb"],
-      ["#f7971e","#ffd200"],
-      ["#8e2de2","#4a00e0"]
-    ];
-    const pair = palettes[Math.floor(Math.random()*palettes.length)];
+    // Tabs interaction + accessibility（已移除搜尋框相關程式）
+    const tabs = [...document.querySelectorAll('.tab')];
+    const panels = [...document.querySelectorAll('.tabs-panel')];
 
-    const header = document.querySelector("header");
-    header.style.background = `linear-gradient(135deg, ${pair[0]}, ${pair[1]})`;
+    function activateTab(name){
+      tabs.forEach(btn=>{
+        const on = btn.dataset.tab === name;
+        btn.setAttribute('aria-selected', on ? 'true':'false');
+        btn.tabIndex = on ? 0 : -1;
+      });
+      panels.forEach(p=>{
+        const on = p.id === `panel-${name}`;
+        p.setAttribute('aria-hidden', on ? 'false':'true');
+      });
+    }
 
-    /* 可選：首次淡入（更柔和的體驗） */
-    header.style.opacity = "0";
-    header.style.transition = "opacity .35s ease";
-    requestAnimationFrame(()=> header.style.opacity = "1");
+    tabs.forEach(btn=>{
+      btn.addEventListener('click', ()=> activateTab(btn.dataset.tab));
+      btn.addEventListener('keydown', (e)=>{
+        if(e.key==='ArrowRight' || e.key==='ArrowLeft'){
+          const i = tabs.indexOf(document.activeElement);
+          const next = e.key==='ArrowRight' ? (i+1)%tabs.length : (i-1+tabs.length)%tabs.length;
+          tabs[next].focus();
+          activateTab(tabs[next].dataset.tab);
+          e.preventDefault();
+        }
+      });
+    });
+
+    // 初始化：顯示第一個分頁
+    activateTab('color');
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
