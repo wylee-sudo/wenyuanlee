@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Color Cube</title>
+  <meta name="description" content="color cube。" />
+  <style>
+    html, body { height: 100%; margin: 0; background: #ffffff; color: #111; font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; }
+    #app { position: fixed; inset: 0; }
+    .footer { position: fixed; right: 16px; bottom: 16px; z-index: 10; display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); border: 1px solid rgba(0,0,0,0.08); border-radius: 12px; padding: 10px 12px; }
+    .link { color: #111; text-decoration: none; font-weight: 600; border-bottom: 1px dotted #999; }
+    .status { position: fixed; left: 16px; bottom: 16px; z-index: 10; font-size: 12px; color: #333; background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.08); border-radius: 10px; padding: 6px 10px; backdrop-filter: blur(8px); }
+  </style>
+  <!-- GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-N8QWS5JKZD');
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+  <div class="footer">
+    <a class="link" href="https://wylee-sudo.github.io/wenyuanlee/" target="_blank" rel="noopener">↩︎ Back to CDR Lab</a>
+  </div>
+  <div class="status" id="status">Status: Initializing…</div>
+
+  <script type="module">
+    // Surface errors to UI
+    const statusEl = document.getElementById('status');
+    window.addEventListener('error', (e)=>{ statusEl.textContent = 'Status: ❌ ' + (e?.error?.message || e.message); });
+    window.addEventListener('unhandledrejection', (e)=>{ statusEl.textContent = 'Status: ❌ ' + (e?.reason?.message || e.reason); });
+
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js';
+    import { GUI } from 'https://cdn.jsdelivr.net/npm/lil-gui@0.19/+esm';
+
+    function ok(name, cond){ console.assert(cond, name + ' failed'); if(!cond){ throw new Error(name + ' failed'); } }
+
+    // Renderer
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    document.getElementById('app').appendChild(renderer.domElement);
+
+    // Scene & Camera
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xffffff);
+    scene.fog = new THREE.Fog(0xffffff, 26, 60);
+
+    const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
+    camera.position.set(6, 5, 10);
+
+    // Constants
+    const FLOOR_SIZE = 140.0;
+    const cubeSize = 2.2;
+    const half = cubeSize * 0.5;
+
+    // Helpers
+    function cctToLinearRGB(K){
+      const T = K; let x; if(T <= 4000.0){ x = -0.2661239*(1e9/Math.pow(T,3)) - 0.2343580*(1e6/Math.pow(T,2)) + 0.8776956*(1e3/T) + 0.179910; } else { x = -3.0258469*(1e9/Math.pow(T,3)) + 2.1070379*(1e6/Math.pow(T,2)) + 0.2226347*(1e3/T) + 0.240390; } const y = -1.1063814*Math.pow(x,3) - 1.34811020*Math.pow(x,2) + 2.18555832*x - 0.20219683; const Y = 1.0; const z = 1.0 - x - y; const X = (Y / y) * x; const Z = (Y / y) * z; const r =  3.2406*X + (-1.5372)*Y + (-0.4986)*Z; const g = (-0.9689)*X +  1.8758*Y +  0.0415*Z; const b =  0.0557*X + (-0.2040)*Y +  1.0570*Z; const maxc = Math.max(r,g,b,1e-6); return new THREE.Color(Math.max(0,r/maxc), Math.max(0,g/maxc), Math.max(0,b/maxc));
+    }
+
+    // Floor shader: additive colored light on white paper + edge blur + distance fade
+    const floorGeo = new THREE.PlaneGeometry(FLOOR_SIZE, FLOOR_SIZE, 1, 1);
+    const floorMat = new THREE.ShaderMaterial({
+      uniforms: {
+        uLightPos: { value: new THREE.Vector3() },
+        uLightColor: { value: new THREE.Color() },
+        uIntensity: { value: 3.2 },
+        uAddGain: { value: 2.0 },      // 彩光增益（染色權重）
+        uBlur: { value: 0.08 },        // 邊緣模糊（世界座標，地板 XZ 平面）
+        uDistFade: { value: 0.05 },    // 距離衰減強度（越大越淡）
+        uCubeInvMatrix: { value: new THREE.Matrix4() },
+        uHalf: { value: half },
+        uPassRGB: { value: new THREE.Vector3(1.0, 1.0, 1.0) }, // 面色純透
+        uLeak: { value: 0.0 } // 無他色漏光，保純度
+      },
+      vertexShader: /* glsl */`
+        varying vec3 vWorldPos;
+        void main(){
+          vec4 wp = modelMatrix * vec4(position, 1.0);
+          vWorldPos = wp.xyz;
+          gl_Position = projectionMatrix * viewMatrix * wp;
+        }
+      `,
+      fragmentShader: /* glsl */`
+        precision highp float;
+        varying vec3 vWorldPos;
+        uniform vec3 uLightPos; uniform vec3 uLightColor; uniform float uIntensity; uniform float uAddGain; 
+        uniform float uBlur; uniform float uDistFade;
+        uniform mat4 uCubeInvMatrix; uniform float uHalf; uniform vec3 uPassRGB; uniform float uLeak;
+
+        struct Glow { vec3 color; bool hit; float thickness; };
+
+        bool segmentBoxIntersect(vec3 ro, vec3 rd, float segLen, out float tNear, out float tFar, out int aNear, out int aFar){
+          vec3 t1 = (-uHalf - ro) / rd; vec3 t2 = (uHalf - ro) / rd;
+          vec3 tmin = min(t1, t2); vec3 tmax = max(t1, t2);
+          tNear = max(max(tmin.x, tmin.y), tmin.z);
+          tFar  = min(min(tmax.x, tmax.y), tmax.z);
+          if(tFar < 0.0 || tNear > tFar || tNear > segLen) return false;
+          aNear = (tNear == tmin.x) ? 0 : ((tNear == tmin.y) ? 1 : 2);
+          aFar  = (tFar  == tmax.x) ? 0 : ((tFar  == tmax.y) ? 1 : 2);
+          return true;
+        }
+        vec3 perAxisPass(int axis){
+          if(axis==0) return vec3(uPassRGB.x, uLeak, uLeak); // X→R
+          if(axis==1) return vec3(uLeak, uPassRGB.y, uLeak); // Y→G
+          return vec3(uLeak, uLeak, uPassRGB.z);             // Z→B
+        }
+
+        Glow glowAtPoint(vec3 P){
+          vec3 roW = uLightPos; vec3 Pwp = P; // world
+          // distance fade (approx inverse-square)
+          float d = length(roW - Pwp);
+          float distAtten = 1.0 / (1.0 + uDistFade * d * d);
+
+          // transform into cube local
+          vec3 ro = (uCubeInvMatrix * vec4(roW, 1.0)).xyz; 
+          vec3 p1 = (uCubeInvMatrix * vec4(Pwp, 1.0)).xyz; 
+          vec3 seg = p1 - ro; 
+          float segLen = length(seg);
+          vec3 rd = seg / max(segLen, 1e-5);
+
+          float tN, tF; int aN, aF; bool hit = segmentBoxIntersect(ro, rd, segLen, tN, tF, aN, aF);
+          if(!hit) return Glow(vec3(0.0), false, 0.0);
+
+          vec3 passIn = perAxisPass(aN); vec3 passOut = perAxisPass(aF);
+          vec3 trans = clamp(passIn + passOut, 0.0, 1.0);
+
+          float tEnter = max(tN, 0.0);
+          float tExit  = min(tF, segLen);
+          float thickness = max(tExit - tEnter, 0.0);
+
+          float falloff = 1.0;
+          vec3 glow = uLightColor * (uIntensity * falloff) * trans * distAtten;
+          glow = pow(glow, vec3(0.9));
+          return Glow(glow, true, thickness);
+        }
+
+        void main(){
+          vec3 paper = vec3(1.0);
+          // 5-point PCF-like sampling on XZ plane (floor), to soften edges
+          vec3 P0 = vWorldPos;
+          vec3 P1 = P0 + vec3( uBlur, 0.0, 0.0);
+          vec3 P2 = P0 + vec3(-uBlur, 0.0, 0.0);
+          vec3 P3 = P0 + vec3(0.0, 0.0,  uBlur);
+          vec3 P4 = P0 + vec3(0.0, 0.0, -uBlur);
+
+          Glow g0 = glowAtPoint(P0);
+          Glow g1 = glowAtPoint(P1);
+          Glow g2 = glowAtPoint(P2);
+          Glow g3 = glowAtPoint(P3);
+          Glow g4 = glowAtPoint(P4);
+
+          vec3 glow = (g0.color + g1.color + g2.color + g3.color + g4.color) / 5.0;
+          float luma = dot(glow, vec3(0.2126, 0.7152, 0.0722));
+          float w = 1.0 - exp(-luma * uAddGain);
+          vec3 colorN = glow / max(max(glow.r, max(glow.g, glow.b)), 1e-6);
+          vec3 outCol = mix(paper, colorN, clamp(w, 0.0, 1.0));
+
+          gl_FragColor = vec4(outCol, 1.0);
+        }
+      `
+    });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI/2; floor.position.y = 0.0; scene.add(floor);
+
+    // Cube on the floor (RGB faces)
+    const boxGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+    const makeFace = (hex) => new THREE.MeshPhysicalMaterial({
+      color: hex, transparent: true, opacity: 0.35,
+      roughness: 0.12, metalness: 0.0,
+      transmission: 0.82, ior: 1.1, thickness: 0.28, side: THREE.DoubleSide
+    });
+    const mats = [
+      makeFace(0xff0000), makeFace(0xff0000), // +X/-X → R
+      makeFace(0x00ff00), makeFace(0x00ff00), // +Y/-Y → G
+      makeFace(0x0000ff), makeFace(0x0000ff)  // +Z/-Z → B
+    ];
+    const cube = new THREE.Mesh(boxGeo, mats);
+    cube.position.set(0, half, 0);
+    scene.add(cube);
+
+    // Low ambient to keep floor white while letting colors pop
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xffffff, 0.18));
+
+    // Single point light: D50 (with emoji sprite gizmo 💡)
+    const D50 = cctToLinearRGB(5000);
+    const point = new THREE.PointLight(D50, 3.6, 0, 2.0);
+    scene.add(point);
+
+    // Replace sphere gizmo with emoji sprite
+    (function(){
+      const size = 96; // px
+      const cvs = document.createElement('canvas');
+      cvs.width = cvs.height = size;
+      const ctx = cvs.getContext('2d');
+      ctx.clearRect(0,0,size,size);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '72px system-ui, Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji';
+      ctx.fillText('💡', size/2, size/2 + 2);
+      const tex = new THREE.CanvasTexture(cvs);
+      tex.needsUpdate = true;
+      const mat = new THREE.SpriteMaterial({ map: tex, depthTest: false, depthWrite: false, transparent: true });
+      const sprite = new THREE.Sprite(mat);
+      sprite.scale.set(0.6, 0.6, 0.6); // world units
+      point.add(sprite);
+    })();
+
+    // GUI (add blur & fade)
+    const params = { azimuth: 35, elevation: 35, radius: 6.5, addGain: 1.5, edgeBlur: 0.08, distFade: 0.05, autoSpin: true, spinSpeed: 0.75 };
+    const gui = new GUI({ title: 'Light setting' });
+    gui.add(params, 'azimuth', -180, 180, 1).name('方位角°');
+    gui.add(params, 'elevation', 5, 85, 1).name('仰角°');
+    gui.add(params, 'radius', 2, 18, 0.1).name('距離');
+    gui.add(params, 'addGain', 0.0, 3.0, 0.01).name('彩光增益').onChange(v=>{ floorMat.uniforms.uAddGain.value = v; });
+    gui.add(params, 'edgeBlur', 0.0, 0.25, 0.005).name('邊緣模糊').onChange(v=>{ floorMat.uniforms.uBlur.value = v; });
+    gui.add(params, 'distFade', 0.0, 0.2, 0.005).name('距離衰減').onChange(v=>{ floorMat.uniforms.uDistFade.value = v; });
+    gui.add(params, 'autoSpin').name('立方體自轉');
+    gui.add(params, 'spinSpeed', 0.05, 1.5, 0.01).name('自轉速度');
+
+    // Drag: only horizontal rotation
+    let isDragging = false; let lastX = 0; let slow = 1.0;
+    renderer.domElement.addEventListener('pointerdown', (e)=>{ if(e.button !== 0) return; isDragging = true; lastX = e.clientX; slow = e.shiftKey ? 0.3 : 1.0; renderer.domElement.setPointerCapture?.(e.pointerId); });
+    renderer.domElement.addEventListener('pointermove', (e)=>{ if(!isDragging) return; const dx=(e.clientX-lastX)/window.innerWidth; cube.rotation.y -= dx*Math.PI*slow; lastX = e.clientX; });
+    renderer.domElement.addEventListener('pointerup',   (e)=>{ isDragging = false; renderer.domElement.releasePointerCapture?.(e.pointerId); });
+
+    // Update light & uniforms
+    function updateLight(){
+      const az = THREE.MathUtils.degToRad(params.azimuth); const el = THREE.MathUtils.degToRad(params.elevation);
+      const dir = new THREE.Vector3(Math.cos(el)*Math.cos(az), Math.sin(el), Math.cos(el)*Math.sin(az)).normalize();
+      const target = new THREE.Vector3(0, half, 0);
+      point.position.copy(target).addScaledVector(dir, params.radius);
+
+      floorMat.uniforms.uLightPos.value.copy(point.position);
+      floorMat.uniforms.uLightColor.value.copy(D50);
+      point.color.copy(D50);
+
+      cube.updateMatrixWorld();
+      const inv = new THREE.Matrix4().copy(cube.matrixWorld).invert();
+      floorMat.uniforms.uCubeInvMatrix.value.copy(inv);
+    }
+
+    // Animation
+    function tick(){
+      requestAnimationFrame(tick);
+      if(params.autoSpin){ cube.rotation.y += params.spinSpeed * 0.01; }
+      updateLight();
+      camera.lookAt(0, half, 0);
+      renderer.render(scene, camera);
+    }
+
+    // Tests
+    ok('THREE loaded', !!THREE && !!THREE.WebGLRenderer);
+    ok('GUI loaded', typeof GUI === 'function');
+    ok('Floor shader uniforms ready', !!floorMat.uniforms && !!floorMat.uniforms.uLightPos && !!floorMat.uniforms.uCubeInvMatrix && !!floorMat.uniforms.uAddGain && !!floorMat.uniforms.uBlur && !!floorMat.uniforms.uDistFade);
+
+    // init
+    floorMat.uniforms.uAddGain.value = params.addGain;
+    floorMat.uniforms.uBlur.value = params.edgeBlur;
+    floorMat.uniforms.uDistFade.value = params.distFade;
+    tick();
+
+    // Resize
+    window.addEventListener('resize', ()=>{ camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+
+    statusEl.textContent = 'Status: ✅ Ready';
+  </script>
+</body>
+</html>
