@@ -17,8 +17,10 @@
       --link:#0d60ff;
       --brand:#6a11cb;
       --border:#e7e7e7;
+      --border2:#d6d6d6;
     }
-    *{box-sizing:border-box} html,body{margin:0;padding:0}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
     body{
       font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,"Noto Sans TC","PingFang TC",sans-serif;
       color:var(--text); background:var(--bg); line-height:1.7;
@@ -30,7 +32,7 @@
     header h1{ margin:0 0 6px 0; font-size: clamp(26px,4.2vw,38px); font-weight:800; letter-spacing:.2px; }
     header p{ margin:0; color:var(--muted) }
 
-    /* Layout: 左內容 + 右工具（tabs） */
+    /* Layout: 左內容 + 右工具 */
     .wrap{
       width:100%; max-width:var(--maxw); margin: 0 auto; padding: 0 16px 56px;
       display:grid; gap:20px; grid-template-columns: 1fr;
@@ -44,31 +46,27 @@
     h2{ color:var(--brand); font-size: clamp(20px,3.4vw,26px); margin: 6px 0 12px; }
     a{ color:var(--link); }
 
-    /* 右欄：Tabs（無搜尋框） */
-    .tabs-card{ padding:0; overflow:hidden; }
-    .tabs-header{
-      display:flex; flex-wrap:wrap; gap:8px; align-items:center;
-      border-bottom:1px solid var(--border);
-      padding:10px 10px 8px;
-      background:#fff;
-    }
-    .tab{
+    /* 右欄：Groups + Chips */
+    .groups-card{ padding:16px; }
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+    .chip{
       appearance:none; border:1px solid var(--border); background:#fff; color:#333;
-      padding:10px 14px; border-radius:999px; cursor:pointer; font-size:14px;
+      padding:8px 12px; border-radius:999px; cursor:pointer; font-size:14px;
     }
-    .tab[aria-selected="true"]{
-      background:#f5f5f5; border-color:#cfcfcf; font-weight:600;
+    .chip.is-active{ background:#f5f5f5; border-color:#cfcfcf; font-weight:600; }
+
+    .tool-group{ margin-top:14px; border:1px solid var(--border); border-radius:12px; background:#fff; }
+    .group-head{
+      display:flex; align-items:center; gap:8px; padding:12px 14px; border-bottom:1px solid var(--border);
+    }
+    .group-head h3{ margin:0; font-size:18px; color:var(--brand); }
+    .group-head .count{ margin-left:6px; color:#777; font-size:13px; }
+    .group-head .toggle{
+      margin-left:auto; font-size:13px; padding:6px 10px; border:1px solid #ddd; border-radius:8px; background:#fff; cursor:pointer;
     }
 
-    .tabs-panel{
-      display:none; padding:16px;
-    }
-    .tabs-panel[aria-hidden="false"]{ display:block; }
-
-    /* 工具卡：改成 2 欄（手機 1 欄） */
-    .tools-grid{
-      display:grid; gap:12px; grid-template-columns:1fr;
-    }
+    /* 工具卡：兩欄（手機一欄） */
+    .tools-grid{ display:grid; gap:12px; grid-template-columns:1fr; padding:12px; }
     @media (min-width: 680px){
       .tools-grid{ grid-template-columns:1fr 1fr; }
     }
@@ -82,8 +80,13 @@
     .tool b{ display:block; margin-bottom:2px }
     .muted{ color:#777; font-size:13px; }
 
+    /* 收合狀態（僅隱藏內容區） */
+    .tool-group[aria-hidden="true"] .tools-grid{ display:none; }
+
+    /* Footer */
     footer{ text-align:center; color:#fff; background:#333; padding: 18px 14px; margin-top:30px; }
 
+    /* A11y */
     a:focus-visible, button:focus-visible, .tool:focus-visible{
       outline:2px solid #0d60ff77; outline-offset:3px;
     }
@@ -116,7 +119,16 @@
         </p>
       </section>
 
-       <section class="card">
+      <section class="card">
+        <h2>Research Areas</h2>
+        <ul style="margin:0">
+          <li>Color Emotion & Harmony in Design</li>
+          <li>Graphical User Interface & Experience Design (GUI/UX)</li>
+          <li>Virtual Identity & Avatars</li>
+        </ul>
+      </section>
+
+      <section class="card">
         <h2>Leader of Color & Design Research Lab</h2>
         <p><b>Wen-Yuan LEE</b> received his Ph.D. in Color Science from the University of Leeds, UK, in 2007. He is currently a Professor in the Department of Digital Media Design at Tatung University, Taipei, Taiwan.</p>
         <p>His research interests encompass design thinking, color emotion, color harmony, and graphical user interface/experience (GUI/UX) design. He teaches courses in digital product design, interaction design, color design, and user experience design. With a strong background bridging color science and interaction design, he is dedicated to advancing the integration of aesthetics, technology, and human-centered innovation.</p>
@@ -136,92 +148,99 @@
       </section>
     </aside>
 
-    <!-- 右欄：Tabs（頁籤面板，兩欄工具） -->
+    <!-- 右欄：一目了然 + 分類 chips -->
     <main>
-      <section class="card tabs-card" aria-label="Tools">
-        <div class="tabs-header" role="tablist" aria-label="Tool categories">
-          <button class="tab" role="tab" aria-selected="true" aria-controls="panel-color" id="tab-color" data-tab="color">for Color</button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-ux" id="tab-ux" data-tab="ux">for UX test</button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-quiz" id="tab-quiz" data-tab="quiz">Quiz & Game</button>
-          <button class="tab" role="tab" aria-selected="false" aria-controls="panel-gen" id="tab-gen" data-tab="gen">Generative Art</button>
+      <section class="card groups-card" aria-label="Tools">
+        <div class="chips" role="tablist" aria-label="Tool categories">
+          <button class="chip is-active" data-filter="all" aria-pressed="true">All</button>
+          <button class="chip" data-filter="color" aria-pressed="false">for Color</button>
+          <button class="chip" data-filter="ux" aria-pressed="false">for UX test</button>
+          <button class="chip" data-filter="quiz" aria-pressed="false">Quiz &amp; Game</button>
+          <button class="chip" data-filter="gen" aria-pressed="false">Generative Art</button>
         </div>
 
-        <!-- Panels -->
-        <div id="panel-color" class="tabs-panel" role="tabpanel" aria-labelledby="tab-color" aria-hidden="false">
+        <!-- Group: for Color -->
+        <section class="tool-group" data-group="color" aria-hidden="false">
+          <div class="group-head">
+            <h3>for Color</h3>
+            <span class="count" data-count></span>
+            <button class="toggle" type="button" aria-expanded="true">收合</button>
+          </div>
           <div class="tools-grid">
             <a class="tool" href="Visual_Identification.html" target="_blank" rel="noopener">
-              <span class="emoji">👁️</span>
-              <div><b>Visual Identification</b><span class="muted">Visual identify three color attributes</span></div>
+              <span class="emoji">🎨</span><div><b>Visual Identification</b><span class="muted">Color naming / ID</span></div>
             </a>
             <a class="tool" href="Tone3.html" target="_blank" rel="noopener">
-              <span class="emoji">🎨</span>
-              <div><b>Color Tone</b><span class="muted">Color tone boundaries in the CIELAB</span></div>
+              <span class="emoji">🎨</span><div><b>Color Tone in CIELAB</b><span class="muted">Tone distribution visualizer</span></div>
             </a>
             <a class="tool" href="colorconvert.html" target="_blank" rel="noopener">
-              <span class="emoji">🧮</span>
-              <div><b>Color Convert</b><span class="muted">RGB ⇄ CIELAB ⇄ CIELCh</span></div>
+              <span class="emoji">🎨</span><div><b>Color Convert</b><span class="muted">RGB ⇄ CIELAB ⇄ CIELCh</span></div>
             </a>
             <a class="tool" href="MunsellColorOrderSystem.html" target="_blank" rel="noopener">
-              <span class="emoji">🏷️</span>
-              <div><b>Munsell System</b><span class="muted">Munsell ⇄ sRGB</span></div>
+              <span class="emoji">🧭</span><div><b>Munsell System</b><span class="muted">Munsell ⇄ sRGB</span></div>
             </a>
             <a class="tool" href="ncs.html" target="_blank" rel="noopener">
-              <span class="emoji">🎯</span>
-              <div><b>Natural Color System (NCS)</b><span class="muted">NCS quick lookup</span></div>
+              <span class="emoji">🎯</span><div><b>Natural Color System (NCS)</b><span class="muted">NCS quick lookup</span></div>
             </a>
             <a class="tool" href="ColorAppearanceSimulater.html" target="_blank" rel="noopener">
-              <span class="emoji">🕹️</span>
-              <div><b>Color Appearance Simulator</b><span class="muted">Change the measurement condition to see the difference</span></div>
+              <span class="emoji">👁️</span><div><b>Color Appearance Simulator</b><span class="muted">appearance models demo</span></div>
             </a>
           </div>
-        </div>
+        </section>
 
-        <div id="panel-ux" class="tabs-panel" role="tabpanel" aria-labelledby="tab-ux" aria-hidden="true">
+        <!-- Group: for UX test -->
+        <section class="tool-group" data-group="ux" aria-hidden="false">
+          <div class="group-head">
+            <h3>for UX test</h3>
+            <span class="count" data-count></span>
+            <button class="toggle" type="button" aria-expanded="true">收合</button>
+          </div>
           <div class="tools-grid">
             <a class="tool" href="sus_measurment.html" target="_blank" rel="noopener">
-              <span class="emoji">💯</span>
-              <div><b>System Usability Scale (SUS)</b><span class="muted">One score to see how the user experience</span></div>
+              <span class="emoji">📏</span><div><b>System Usability Scale (SUS)</b><span class="muted">10 items · quick score</span></div>
             </a>
             <a class="tool" href="csuq.html" target="_blank" rel="noopener">
-              <span class="emoji">💻</span>
-              <div><b>CSUQ</b><span class="muted">Computer System Usability Questionnaire</span></div>
+              <span class="emoji">🧪</span><div><b>CSUQ</b><span class="muted">Computer System Usability Questionnaire</span></div>
             </a>
           </div>
-        </div>
+        </section>
 
-        <div id="panel-quiz" class="tabs-panel" role="tabpanel" aria-labelledby="tab-quiz" aria-hidden="true">
+        <!-- Group: Quiz & Game -->
+        <section class="tool-group" data-group="quiz" aria-hidden="false">
+          <div class="group-head">
+            <h3>Quiz &amp; Game</h3>
+            <span class="count" data-count></span>
+            <button class="toggle" type="button" aria-expanded="true">收合</button>
+          </div>
           <div class="tools-grid">
             <a class="tool" href="ColorIdiomsQuiz3.html" target="_blank" rel="noopener">
-              <span class="emoji">🤔</span>
-              <div><b>Color Idioms Quiz</b><span class="muted">色彩都不色彩了。英文片語測驗</span></div>
+              <span class="emoji">🧩</span><div><b>Color Idioms Quiz</b><span class="muted">色彩都不色彩了</span></div>
             </a>
             <a class="tool" href="diffColor.html" target="_blank" rel="noopener">
-              <span class="emoji">🟦</span>
-              <div><b>Odd-One-Out</b><span class="muted">找出不同色</span></div>
+              <span class="emoji">🟦</span><div><b>Odd-One-Out</b><span class="muted">找出不同色</span></div>
             </a>
             <a class="tool" href="StroopGame.html" target="_blank" rel="noopener">
-              <span class="emoji">🔤</span>
-              <div><b>Stroop Effect Game</b><span class="muted">叫色遊戲</span></div>
+              <span class="emoji">🔤</span><div><b>Stroop Effect Game</b><span class="muted">叫色遊戲</span></div>
             </a>
           </div>
-        </div>
+        </section>
 
-        <div id="panel-gen" class="tabs-panel" role="tabpanel" aria-labelledby="tab-gen" aria-hidden="true">
+        <!-- Group: Generative Art -->
+        <section class="tool-group" data-group="gen" aria-hidden="false">
+          <div class="group-head">
+            <h3>Generative Art</h3>
+            <span class="count" data-count></span>
+            <button class="toggle" type="button" aria-expanded="true">收合</button>
+          </div>
           <div class="tools-grid">
             <a class="tool" href="DigitalFabricTexture.html" target="_blank" rel="noopener">
-              <span class="emoji">🧵</span>
-              <div><b>Digital Fabric Texture</b><span class="muted">Harmonic Weaves</span></div>
-            </a>
-            <a class="tool" href="flow.html" target="_blank" rel="noopener">
-              <span class="emoji">🌬️</span>
-              <div><b>Flow Field</b><span class="muted">particle-free version</span></div>
+              <span class="emoji">🧵</span><div><b>Digital Fabric Texture</b><span class="muted">Harmonic Weaves</span></div>
             </a>
             <a class="tool" href="ColorCube.html" target="_blank" rel="noopener">
-              <span class="emoji">🧵</span>
-              <div><b>Color cube</b><span class="muted">Light through a colored 3D cube</span></div>
+              <span class="emoji">🌬️</span><div><b>Color Cub</b><span class="muted">Light through a colored cube</span></div>
             </a>
           </div>
-        </div>
+        </section>
       </section>
     </main>
   </div>
@@ -231,38 +250,42 @@
   </footer>
 
   <script>
-    // Tabs interaction + accessibility（已移除搜尋框相關程式）
-    const tabs = [...document.querySelectorAll('.tab')];
-    const panels = [...document.querySelectorAll('.tabs-panel')];
+    // 晶片篩選
+    const chips = [...document.querySelectorAll('.chip')];
+    const groups = [...document.querySelectorAll('.tool-group')];
 
-    function activateTab(name){
-      tabs.forEach(btn=>{
-        const on = btn.dataset.tab === name;
-        btn.setAttribute('aria-selected', on ? 'true':'false');
-        btn.tabIndex = on ? 0 : -1;
+    function applyFilter(key){
+      // 狀態樣式
+      chips.forEach(c=>{
+        const active = c.dataset.filter === key || (key==='all' && c.dataset.filter==='all');
+        c.classList.toggle('is-active', active);
+        c.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
-      panels.forEach(p=>{
-        const on = p.id === `panel-${name}`;
-        p.setAttribute('aria-hidden', on ? 'false':'true');
+      // 顯示/隱藏群組
+      groups.forEach(g=>{
+        const show = (key === 'all') ? true : (g.dataset.group === key);
+        g.style.display = show ? '' : 'none';
       });
+      // 對可見群組：若被收合，仍保持收合（不強制展開）
     }
 
-    tabs.forEach(btn=>{
-      btn.addEventListener('click', ()=> activateTab(btn.dataset.tab));
-      btn.addEventListener('keydown', (e)=>{
-        if(e.key==='ArrowRight' || e.key==='ArrowLeft'){
-          const i = tabs.indexOf(document.activeElement);
-          const next = e.key==='ArrowRight' ? (i+1)%tabs.length : (i-1+tabs.length)%tabs.length;
-          tabs[next].focus();
-          activateTab(tabs[next].dataset.tab);
-          e.preventDefault();
-        }
+    chips.forEach(c => c.addEventListener('click', () => applyFilter(c.dataset.filter)));
+    applyFilter('all'); // 預設顯示全部
+
+    // 群組收合/展開 + 計數
+    document.querySelectorAll('.tool-group').forEach(group=>{
+      const btn = group.querySelector('.toggle');
+      const grid = group.querySelector('.tools-grid');
+      const count = group.querySelector('[data-count]');
+      if(count){ count.textContent = `(${grid.querySelectorAll('.tool').length})`; }
+
+      btn.addEventListener('click', ()=>{
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        btn.textContent = expanded ? '展開' : '收合';
+        group.setAttribute('aria-hidden', expanded ? 'true' : 'false');
       });
     });
-
-    // 初始化：顯示第一個分頁
-    activateTab('color');
   </script>
 </body>
 </html>
-
