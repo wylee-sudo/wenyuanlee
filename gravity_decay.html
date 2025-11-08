@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gravity & Decay Particles — Computational Aesthetics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N8QWS5JKZD');
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro TC",
+        -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #eee;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 控制面板切換按鈕 */
+    #ui-toggle {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      color: #f6d58a;
+      font-size: 18px;
+      user-select: none;
+      transition: background 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+    #ui-toggle:hover {
+      background: rgba(0,0,0,0.85);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.9);
+    }
+
+    /* 控制面板（浮層） */
+    #panel {
+      position: fixed;
+      top: 54px;
+      right: 14px;
+      width: 260px;
+      padding: 14px 14px 10px;
+      border-radius: 18px;
+      background: radial-gradient(circle at top left,
+                  rgba(255,215,130,0.12),
+                  rgba(0,0,0,0.94));
+      backdrop-filter: blur(18px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.95);
+      color: #f7f1e6;
+      font-size: 11px;
+      line-height: 1.5;
+      z-index: 19;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-6px);
+      transition: all 0.25s ease;
+    }
+    #panel.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+    #panel h1 {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      color: #f6d58a;
+    }
+    #panel p.desc {
+      font-size: 10px;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+    .control {
+      margin-bottom: 6px;
+    }
+    .control label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+    .control span {
+      opacity: 0.78;
+    }
+    .control input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      outline: none;
+    }
+    .control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f6d58a;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(246,213,138,0.9);
+    }
+    .row {
+      display: flex;
+      gap: 6px;
+      margin-top: 3px;
+      margin-bottom: 6px;
+    }
+    .row input[type="number"] {
+      flex: 1;
+      padding: 2px 4px;
+      border-radius: 6px;
+      border: none;
+      background: rgba(0,0,0,0.6);
+      color: #f6d58a;
+      font-size: 10px;
+      text-align: center;
+      outline: none;
+    }
+    #preset-note {
+      font-size: 9px;
+      opacity: 0.6;
+      margin-top: 2px;
+    }
+    #resetBtn {
+      margin-top: 4px;
+      width: 100%;
+      padding: 3px 0;
+      border-radius: 8px;
+      border: none;
+      background: rgba(246,213,138,0.1);
+      color: #f6d58a;
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    #resetBtn:hover {
+      background: rgba(246,213,138,0.22);
+    }
+
+    /* 簡短論述 + 回 CDR Lab連結 */
+    #info {
+      position: fixed;
+      left: 16px;
+      bottom: 14px;
+      max-width: 290px;
+      color: #f6f6f6;
+      font-size: 9px;
+      line-height: 1.6;
+      z-index: 10;
+      padding: 6px 9px 7px;
+      border-radius: 10px;
+      background:
+        radial-gradient(circle at top left, rgba(0,0,0,0.9), rgba(0,0,0,0.15));
+      backdrop-filter: blur(12px);
+    }
+    #info .title {
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #f6d58a;
+      margin-bottom: 2px;
+    }
+    #info .text {
+      opacity: 0.74;
+      margin-bottom: 3px;
+    }
+    #info .en {
+      opacity: 0.6;
+      font-size: 8px;
+      margin-bottom: 3px;
+    }
+    #info .link {
+      display: inline-block;
+      font-size: 9px;
+      color: #f6d58a;
+      text-decoration: none;
+      opacity: 0.92;
+    }
+    #info .link:hover {
+      text-decoration: underline;
+      opacity: 1;
+    }
+
+    @media (max-width: 600px) {
+      #panel {
+        width: 230px;
+        top: 50px;
+        right: 10px;
+        padding: 10px;
+      }
+      #info {
+        max-width: 230px;
+        left: 10px;
+        bottom: 10px;
+        font-size: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<div id="ui-toggle" title="Toggle control panel">⚙</div>
+
+<div id="panel">
+  <h1>Gravity × Decay Field</h1>
+  <p class="desc">
+    粒子在重力場中旋向核心，生命週期讓軌跡漸淡消散。
+    透過少量參數，你可以調整「被吸引、留下、消逝」的節奏。
+  </p>
+
+  <div class="control">
+    <label>
+      <span>Particles</span>
+      <span id="particlesLabel"></span>
+    </label>
+    <input id="particlesRange" type="range" min="500" max="8000" step="500" />
+  </div>
+
+  <div class="control">
+    <label>
+      <span>Gravity Strength</span>
+      <span id="gravityLabel"></span>
+    </label>
+    <input id="gravityRange" type="range" min="5" max="60" step="1" />
+  </div>
+
+  <div class="control">
+    <label>
+      <span>Initial Spiral Speed</span>
+      <span id="speedLabel"></span>
+    </label>
+    <input id="speedRange" type="range" min="5" max="40" step="1" />
+  </div>
+
+  <div class="control">
+    <label>
+      <span>Trail Persistence</span>
+      <span id="trailLabel"></span>
+    </label>
+    <input id="trailRange" type="range" min="2" max="25" step="1" />
+  </div>
+
+  <div class="control">
+    <label><span>Lifetime (frames)</span></label>
+    <div class="row">
+      <input id="lifeMin" type="number" min="40" max="2000" step="20" />
+      <input id="lifeMax" type="number" min="40" max="3000" step="20" />
+    </div>
+  </div>
+
+  <div class="control">
+    <label><span>Particle Color</span></label>
+    <input id="colorPicker" type="color" value="#f6d58a" />
+  </div>
+
+  <button id="resetBtn">Reset to poetic default</button>
+  <div id="preset-note">Tip：收合面板以專注於光的運動。</div>
+</div>
+
+<div id="info">
+  <div class="title">光之引力 The Gravity of Light</div>
+  <div class="text">
+    它們誕生、燃燒、消散，如同人生—
+圍繞著自身的使命，閃耀而去，靜默歸於無形
+  </div>
+  <div class="en">
+    It is born, it shines, it fades — like life itself —
+circling its own purpose before dissolving into quiet infinity.
+  </div>
+  <a class="link" href="https://wylee-sudo.github.io/wenyuanlee/" target="_blank">
+    ↩ Back to CDR Lab
+  </a>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  let width = window.innerWidth;
+  let height = window.innerHeight;
+  canvas.width = width;
+  canvas.height = height;
+
+  let centerX = width / 2;
+  let centerY = height / 2;
+
+  const params = {
+    particleCount: 5000,
+    gravityStrength: 0.22,      // base strength
+    maxInitialSpeed: 0.9,
+    trailFade: 0.14,            // black overlay alpha each frame
+    lifeMin: 260,
+    lifeMax: 760,
+    color: { r: 246, g: 213, b: 138 } // default #f6d58a
+  };
+
+  let particles = [];
+
+  class Particle {
+    constructor() {
+      this.reset(true);
+    }
+    reset(initial = false) {
+      const minR = Math.min(width, height) * 0.18;
+      const maxR = Math.min(width, height) * 0.50;
+      const angle = Math.random() * Math.PI * 2;
+      const radius = minR + Math.random() * (maxR - minR);
+
+      this.x = centerX + Math.cos(angle) * radius;
+      this.y = centerY + Math.sin(angle) * radius;
+
+      const dir = (Math.random() < 0.5 ? -1 : 1);
+      const speed = (Math.random() * params.maxInitialSpeed + 0.1);
+      this.vx = -Math.sin(angle) * speed * dir;
+      this.vy =  Math.cos(angle) * speed * dir;
+
+      this.life = params.lifeMin + Math.random() * (params.lifeMax - params.lifeMin);
+      this.age = initial ? Math.random() * this.life : 0;
+      this.baseAlpha = 0.25 + Math.random() * 0.75;
+      this.currentAlpha = 0;
+    }
+    update() {
+      const dx = centerX - this.x;
+      const dy = centerY - this.y;
+      const distSq = dx*dx + dy*dy || 1;
+      const dist = Math.sqrt(distSq);
+
+      let g = (params.gravityStrength * 800) / distSq;
+      if (g > 0.08) g = 0.08;
+
+      this.vx += (dx / dist) * g;
+      this.vy += (dy / dist) * g;
+
+      this.x += this.vx;
+      this.y += this.vy;
+
+      this.age++;
+      const t = this.age / this.life;
+
+      let alpha = this.baseAlpha;
+      if (t < 0.1) {
+        alpha *= t / 0.1;              // fade in
+      } else if (t > 0.6) {
+        alpha *= Math.max(0, (1 - t) / 0.4); // fade out
+      }
+      this.currentAlpha = Math.max(0, alpha);
+
+      const inCore = dist < 4;
+      if (t >= 1 || this.currentAlpha <= 0 || inCore ||
+          this.x < -50 || this.x > width+50 ||
+          this.y < -50 || this.y > height+50) {
+        this.reset();
+      }
+    }
+    draw() {
+      if (this.currentAlpha <= 0) return;
+      ctx.globalAlpha = this.currentAlpha;
+      ctx.fillRect(this.x, this.y, 1.1, 1.1);
+    }
+  }
+
+  function createParticles() {
+    particles = [];
+    for (let i = 0; i < params.particleCount; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  function resize() {
+    width = window.innerWidth;
+    height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
+    centerX = width / 2;
+    centerY = height / 2;
+    createParticles();
+  }
+
+  window.addEventListener('resize', resize);
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    // trail
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.globalAlpha = params.trailFade;
+    ctx.fillStyle = 'rgb(0,0,0)';
+    ctx.fillRect(0, 0, width, height);
+
+    // particles
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.fillStyle = `rgb(${params.color.r},${params.color.g},${params.color.b})`;
+
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      p.update();
+      p.draw();
+    }
+  }
+
+  // ---------- 控制面板互動 ----------
+  const toggle = document.getElementById('ui-toggle');
+  const panel = document.getElementById('panel');
+  toggle.addEventListener('click', () => {
+    panel.classList.toggle('visible');
+  });
+
+  const particlesRange = document.getElementById('particlesRange');
+  const gravityRange = document.getElementById('gravityRange');
+  const speedRange = document.getElementById('speedRange');
+  const trailRange = document.getElementById('trailRange');
+  const lifeMinInput = document.getElementById('lifeMin');
+  const lifeMaxInput = document.getElementById('lifeMax');
+  const colorPicker = document.getElementById('colorPicker');
+
+  const particlesLabel = document.getElementById('particlesLabel');
+  const gravityLabel = document.getElementById('gravityLabel');
+  const speedLabel = document.getElementById('speedLabel');
+  const trailLabel = document.getElementById('trailLabel');
+
+  function rgbToHex(r,g,b){
+    const toHex = (v)=>('0'+v.toString(16)).slice(-2);
+    return '#'+toHex(r)+toHex(g)+toHex(b);
+  }
+
+  function hexToRgb(hex){
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return m ? {
+      r: parseInt(m[1],16),
+      g: parseInt(m[2],16),
+      b: parseInt(m[3],16)
+    } : null;
+  }
+
+  function syncUI() {
+    particlesRange.value = params.particleCount;
+    particlesLabel.textContent = params.particleCount;
+
+    gravityRange.value = Math.round(params.gravityStrength * 100 * 2.5);
+    gravityLabel.textContent = params.gravityStrength.toFixed(2);
+
+    speedRange.value = Math.round(params.maxInitialSpeed * 40);
+    speedLabel.textContent = params.maxInitialSpeed.toFixed(2);
+
+    trailRange.value = Math.round(params.trailFade * 100);
+    trailLabel.textContent = (1 - params.trailFade).toFixed(2);
+
+    lifeMinInput.value = Math.round(params.lifeMin);
+    lifeMaxInput.value = Math.round(params.lifeMax);
+
+    colorPicker.value = rgbToHex(params.color.r, params.color.g, params.color.b);
+  }
+
+  particlesRange.addEventListener('input', () => {
+    params.particleCount = parseInt(particlesRange.value, 10);
+    particlesLabel.textContent = params.particleCount;
+    createParticles();
+  });
+
+  gravityRange.addEventListener('input', () => {
+    const v = parseInt(gravityRange.value, 10); // 5–60
+    params.gravityStrength = v / 250;
+    gravityLabel.textContent = params.gravityStrength.toFixed(2);
+  });
+
+  speedRange.addEventListener('input', () => {
+    const v = parseInt(speedRange.value, 10); // 5–40
+    params.maxInitialSpeed = v / 40;
+    speedLabel.textContent = params.maxInitialSpeed.toFixed(2);
+  });
+
+  trailRange.addEventListener('input', () => {
+    const v = parseInt(trailRange.value, 10); // 2–25
+    params.trailFade = v / 100;
+    trailLabel.textContent = (1 - params.trailFade).toFixed(2);
+  });
+
+  function clampLife() {
+    let min = parseInt(lifeMinInput.value, 10) || params.lifeMin;
+    let max = parseInt(lifeMaxInput.value, 10) || params.lifeMax;
+    if (min < 40) min = 40;
+    if (max <= min + 20) max = min + 20;
+    params.lifeMin = min;
+    params.lifeMax = max;
+    lifeMinInput.value = min;
+    lifeMaxInput.value = max;
+  }
+
+  lifeMinInput.addEventListener('change', () => {
+    clampLife();
+    createParticles();
+  });
+  lifeMaxInput.addEventListener('change', () => {
+    clampLife();
+    createParticles();
+  });
+
+  colorPicker.addEventListener('input', () => {
+    const rgb = hexToRgb(colorPicker.value);
+    if (rgb) params.color = rgb;
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    params.particleCount = 5000;
+    params.gravityStrength = 0.22;
+    params.maxInitialSpeed = 0.9;
+    params.trailFade = 0.14;
+    params.lifeMin = 260;
+    params.lifeMax = 760;
+    params.color = { r: 246, g: 213, b: 138 };
+    syncUI();
+    createParticles();
+  });
+
+  // 初始化
+  syncUI();
+  createParticles();
+  animate();
+})();
+</script>
+</body>
+</html>
+
