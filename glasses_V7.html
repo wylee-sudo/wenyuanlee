@@ -1,0 +1,268 @@
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N8QWS5JKZD');
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlapping Transparent Glass Panels</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-N8QWS5JKZD');
+    </script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #121212; /* 深色背景 */
+            height: 100vh;
+            width: 100vw;
+            font-family: Arial, sans-serif;
+            color: #ffffff; /* 文字顏色調整為白色以匹配深色背景 */
+        }
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #121212; /* 深色背景，無圖片以保持簡單深色 */
+        }
+        .glass {
+            position: absolute;
+            border-radius: 0; /* 移除圓角 */
+            opacity: 1; /* 預設透明度調整為1以增加鮮豔度 */
+            backdrop-filter: blur(15px); /* Glassmorphism核心：加強模糊背景以模擬折射 */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* 輕邊框，內定為最小1px */
+            box-shadow: 
+                0 4px 6px rgba(0, 0, 0, 0.3), /* 陰影模擬厚度，調整為深色調 */
+                inset 0 0 20px rgba(255, 255, 255, 0.6); /* 加強內部光澤 */
+            transform: perspective(800px) rotateY(15deg) rotateX(10deg); /* 加強3D透視效果 */
+            animation: float 20s ease-in-out infinite; /* 緩慢移動 */
+            mix-blend-mode: screen; /* 使用mix-blend-mode來模擬顏色加法混合效果，忽略光線遞減 */
+        }
+        .glass::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: linear-gradient(45deg, rgba(255,255,255,0.4), transparent, rgba(255,255,255,0.2)); /* 加強光澤亮點漸變 */
+            pointer-events: none;
+            border-radius: 0; /* 移除圓角 */
+            filter: blur(5px); /* 添加模糊以模擬光澤散射 */
+        }
+        .glass::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.2); /* 底部陰影模擬厚度 */
+            transform: perspective(800px) rotateX(60deg); /* 加強3D邊緣效果 */
+            pointer-events: none;
+            filter: brightness(0.8); /* 調整亮度以增強折射感 */
+        }
+        @keyframes float {
+            0% { transform: perspective(800px) rotateY(15deg) rotateX(10deg) translate(0, 0); }
+            50% { transform: perspective(800px) rotateY(-15deg) rotateX(-10deg) translate(250px, 250px); } /* 加大移動範圍，並調整3D角度 */
+            100% { transform: perspective(800px) rotateY(15deg) rotateX(10deg) translate(0, 0); }
+        }
+        #left-panel-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.05); /* 調整為深色Glassmorphism */
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(15px); /* 控制面板也用加強Glassmorphism */
+            z-index: 10;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            color: #ffffff; /* 文字顏色調整 */
+            font-size: 0.7em; /* 再縮小字體 */
+            width: 180px; /* 略縮小寬度 */
+        }
+        #left-panel-container label {
+            display: block;
+            margin-bottom: 5px; /* 縮小間距 */
+            color: #dddddd; /* 輕灰文字 */
+        }
+        #left-panel-container input {
+            margin-left: 5px; /* 縮小間距 */
+            background-color: #333333; /* 輸入框調整為深色 */
+            color: #ffffff;
+            border: 1px solid #555555;
+            width: 70px; /* 縮小輸入框寬度 */
+        }
+        #left-panel-container button {
+            background-color: #333333;
+            color: #ffffff;
+            border: 1px solid #555555;
+            font-size: 0.7em;
+        }
+        #design-concept {
+            font-size: 0.8em;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+        #back-button {
+            display: block;
+            margin-top: 10px;
+            padding: 8px 16px; /* 縮小padding */
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(15px);
+            color: #ffffff;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            font-size: 0.7em; /* 再縮小字體 */
+        }
+        #back-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container"></div>
+    <div id="left-panel-container">
+        <div id="design-concept">
+            <b>"Layering of Colors"</b> is a way to create endless color combinations and harmony using a simple equation. It moves beyond the limits of how colors usually mix in real life by allowing them to brighten instead of fade when they overlap. The goal is to spark people's curiosity and turn math concepts into a link between reason and imagination.
+        </div>
+        <label>Number of Glasses: <input type="number" id="num-glasses" min="3" max="7" value="4"></label>
+        <label>Opacity: <input type="range" id="opacity" min="0.1" max="1" step="0.1" value="1"></label>
+        <label>Speed (seconds): <input type="range" id="speed" min="5" max="60" step="5" value="20"></label>
+        <label>Background Color: <input type="color" id="background-color" value="#121212"></label>
+        <button id="random-colors">Random Colors</button>
+        <button id="pause-play">Pause</button>
+        <a id="back-button" href="https://wylee-sudo.github.io/wenyuanlee/" target="_blank">Return to CDR Lab</a>
+    </div>
+    <script>
+        const container = document.getElementById('container');
+        const numGlassesInput = document.getElementById('num-glasses');
+        const opacityInput = document.getElementById('opacity');
+        const speedInput = document.getElementById('speed');
+        const backgroundColorInput = document.getElementById('background-color');
+        const randomColorsButton = document.getElementById('random-colors');
+        const pausePlayButton = document.getElementById('pause-play');
+
+        let glasses = [];
+        let isPaused = false;
+
+        function getRandomColor() {
+            const h = Math.random() * 360;
+            const s = 1; // 固定飽和度為1
+            const v = 1; // 固定亮度為1
+            // 轉換HSV到RGB
+            const c = v * s;
+            const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+            const m = v - c;
+            let r, g, b;
+            if (h >= 0 && h < 60) { r = c; g = x; b = 0; }
+            else if (h >= 60 && h < 120) { r = x; g = c; b = 0; }
+            else if (h >= 120 && h < 180) { r = 0; g = c; b = x; }
+            else if (h >= 180 && h < 240) { r = 0; g = x; b = c; }
+            else if (h >= 240 && h < 300) { r = x; g = 0; b = c; }
+            else { r = c; g = 0; b = x; }
+            r = Math.floor((r + m) * 255);
+            g = Math.floor((g + m) * 255);
+            b = Math.floor((b + m) * 255);
+            return `rgba(${r}, ${g}, ${b}, 0.7)`; /* 提高alpha值到0.7以增加顏色鮮豔度，結合screen混合模式模擬色光加法 */
+        }
+
+        function createGlasses(num) {
+            // 清空現有玻璃片
+            container.innerHTML = '';
+            glasses = [];
+
+            for (let i = 0; i < num; i++) {
+                const glass = document.createElement('div');
+                glass.className = 'glass';
+                glass.style.backgroundColor = getRandomColor();
+                const aspectRatio = Math.random() * 2 + 0.5; // 長寬比例隨機 0.5-2.5
+                const baseSize = Math.random() * window.innerWidth * 1.5 + window.innerWidth * 0.5; // 尺寸隨機，有些大於畫面 (0.5-2x 畫面寬)
+                const width = baseSize;
+                const height = baseSize / aspectRatio;
+                glass.style.width = `${width}px`;
+                glass.style.height = `${height}px`;
+                glass.style.top = `${Math.random() * (window.innerHeight - height / 2)}px`; // 調整位置以避免完全離開畫面
+                glass.style.left = `${Math.random() * (window.innerWidth - width / 2)}px`;
+                glass.style.animationDelay = `${i * 2}s`; // 延遲以產生變化
+                container.appendChild(glass);
+                glasses.push(glass);
+            }
+            updateStyles();
+        }
+
+        function updateStyles() {
+            const opacity = opacityInput.value;
+            const speed = speedInput.value;
+            glasses.forEach(glass => {
+                glass.style.opacity = opacity;
+                glass.style.borderWidth = `1px`; /* 內定為最小1px */
+                glass.style.boxShadow = `0 2px 3px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.6)`;
+                glass.style.transform = `perspective(500px) rotateY(15deg) rotateX(10deg)`; // 根據厚度調整3D透視
+                glass.style.backdropFilter = `blur(15px)`; // 固定模糊
+                glass.style.animationDuration = `${speed}s`;
+                glass.style.animationPlayState = isPaused ? 'paused' : 'running';
+            });
+        }
+
+        function randomizeColors() {
+            glasses.forEach(glass => {
+                glass.style.backgroundColor = getRandomColor();
+            });
+        }
+
+        function applyBackgroundColor() {
+            const color = backgroundColorInput.value;
+            document.body.style.backgroundColor = color;
+            container.style.backgroundColor = color;
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            pausePlayButton.textContent = isPaused ? 'Play' : 'Pause';
+            updateStyles();
+        }
+
+        // 即時更新事件
+        numGlassesInput.addEventListener('input', () => {
+            let num = parseInt(numGlassesInput.value);
+            if (num < 3) num = 3;
+            if (num > 7) num = 7;
+            numGlassesInput.value = num;
+            createGlasses(num);
+        });
+
+        opacityInput.addEventListener('input', updateStyles);
+        speedInput.addEventListener('input', updateStyles);
+        backgroundColorInput.addEventListener('input', applyBackgroundColor);
+        randomColorsButton.addEventListener('click', randomizeColors);
+        pausePlayButton.addEventListener('click', togglePause);
+
+        // 滑鼠點擊畫面改變random colors
+        container.addEventListener('click', randomizeColors);
+
+        // 初始化
+        createGlasses(4);
+
+        console.log("Page loaded successfully. Adjust parameters via the control panel to view Glassmorphism style 3D transparent glass panels with refraction effects!");
+    </script>
+</body>
+</html>
