@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Color Scheme ： text-background color combination</title>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-N8QWS5JKZD');
+</script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@400;700&display=swap');
+  
+  :root{ --page:#0f1216; --panel:#7d7d7d; --ink:#0a0d10; --ink2:#e6edf3; }
+  html,body{height:100%}
+  body{margin:0;background:var(--page);color:var(--ink2);font:14px/1.5 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1400px;margin:0 auto;padding:20px}
+  h1{margin:0 0 12px;font-size:22px}
+  .row{display:grid;gap:14px}
+  @media(min-width:980px){.row{grid-template-columns:1fr 1fr}}
+  .card{background:var(--panel);color:var(--ink);border-radius:16px;padding:16px;box-shadow:0 1px 0 rgba(255,255,255,.25) inset, 0 8px 24px rgba(0,0,0,.35)}
+  .section-title{font-weight:800;margin:2px 0 8px}
+  .grid{display:grid;gap:10px}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr)}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:12px;color:#222}
+  input[type=number]{
+    width:60px;padding:4px 6px;margin-right:4px;border-radius:6px;border:1px solid #525252;background:#f7f7f7;color:#111;
+  }
+  select,button{padding:8px 10px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;cursor:pointer}
+  button:hover{background:#334155}
+  .swatch{height:64px;border-radius:12px;border:1px dashed #666;display:flex;align-items:center;justify-content:center;color:#222;font-size:12px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:8px 10px;border-bottom:1px solid #777;text-align:right}
+  th{background:#c9c9c9;color:#0a0d10;text-align:center}
+  .warn{background:#3a1600;border:1px solid #6b3f00;color:#ffd7a1;padding:6px 10px;border-radius:10px;margin:6px 0;font-size:13px}
+  .error{background:#5a0000;border:1px solid #8b0000;color:#ffcccc;padding:8px 10px;border-radius:10px;margin:6px 0;font-size:13px;font-weight:600}
+  .good{color:#4ade80}.mid{color:#fbbf24}.bad{color:#fb7185}
+  .desc{font-size:12px;font-weight:700;padding-left:6px;color:#fff}
+  .preview-box{
+    border-radius:12px;
+    padding:40px 20px;
+    margin:10px 0;
+    min-height:200px;
+    display:flex;
+    flex-direction:column;
+    gap:30px;
+    align-items:center;
+    justify-content:center;
+  }
+  .preview-text{
+    font-size:100px;
+    font-weight:700;
+    text-align:center;
+    line-height:1.1;
+  }
+  @media(max-width:768px){
+    .preview-text{font-size:48px}
+  }
+  .preview-text.sans{
+    font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  .preview-text.serif{
+    font-family: 'Noto Serif TC', Georgia, serif;
+  }
+  .suggestion-card{
+    background:var(--panel);
+    border-radius:12px;
+    padding:16px;
+    margin:10px 0;
+  }
+  .color-info{
+    font-size:11px;
+    color:#333;
+    margin-top:4px;
+  }
+  .info-section{
+    background:var(--panel);
+    color:var(--ink);
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:20px;
+    font-size:13px;
+    line-height:1.7;
+  }
+  .info-grid{
+    display:grid;
+    gap:20px;
+  }
+  @media(min-width:980px){
+    .info-grid{grid-template-columns:1fr 1fr}
+  }
+  .info-section h2{
+    font-size:17px;
+    font-weight:800;
+    margin:0 0 12px;
+    color:#0a0d10;
+  }
+  .info-section ul{
+    margin:0;
+    padding-left:20px;
+  }
+  .info-section li{
+    margin:6px 0;
+  }
+  .info-section ol{
+    margin:0;
+    padding-left:20px;
+  }
+  .info-section ol li{
+    margin:8px 0;
+    font-size:12px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Color Scheme ： text-background color combination</h1>
+
+  <!-- Features & References -->
+  <div class="info-section">
+    <div class="info-grid">
+      <div>
+        <h2>Features</h2>
+        <ul>
+          <li><strong>Color Scheme Preview:</strong> Visualize text-background color combinations with "Color Design" displayed in both sans-serif and serif fonts.</li>
+          <li><strong>Three Color Specification:</strong> Input colors using CIELAB, LCh or sRGB. The system automatically detects and warns if colors fall outside the sRGB gamut.</li>
+          <li><strong>Vibrating Boundaries（or Color Vibration) Detection:</strong> Automatically detects potential Color Assimilation/Spreading.</li>
+          <li><strong>Color Harmony Prediction:</strong> Analyzes the harmony between two colors based on their lightness, chroma, and hue angles. Provides color difference metrics including ΔL, ΔC, Δh, and ΔE.</li>
+        </ul>
+      </div>
+      <div>
+        <h2>References</h2>
+        <ol>
+          <li>Ou, L.-C., Yuan, Y., Sato, T., Lee, W.-Y., Szabó, F., Sueeprasan, S., & Huertas, R. (2018). Universal models of colour emotion and colour harmony. Color Research & Application, 43(5), 736-748. https://doi.org/https://doi.org/10.1002/col.22243 </li>
+          <li>Ou, L.-C., Yuan, Y., Sato, T., Lee, W.-Y., Szabó, F., Sueeprasan, S., & Huertas, R. (2019). 【correction】Universal models of colour emotion and colour harmony. Color Research & Application, 44(1), 153-153. https://doi.org/https://doi.org/10.1002/col.22322 </li>
+          <li>CIE. (2004). <em>Colorimetry</em> (3rd ed., CIE 15:2004). Commission Internationale de l'Éclairage.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- 左：Text color -->
+    <div class="card">
+      <div class="section-title">Text color</div>
+      
+      <!-- 新增調色盤 -->
+      <div class="field">
+        <label>Select a color by clicking on the color swatch</label>
+        <input type="color" id="colorPicker1" value="#333333" style="width:100%;height:50px;border-radius:8px;border:2px solid #525252;cursor:pointer;">
+      </div>
+      
+      <div class="grid cols-2">
+        <div class="field">
+          <label>Color spec</label>
+          <select id="mode1">
+            <option value="lab">CIELAB</option>
+            <option value="lch">LCh</option>
+            <option value="rgb">sRGB</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="labBox1" class="grid cols-3">
+        <div class="field"><label>L*</label><input id="L1" type="number" step="1" value="20"></div>
+        <div class="field"><label>a*</label><input id="a1" type="number" step="1" value="0"></div>
+        <div class="field"><label>b*</label><input id="b1" type="number" step="1" value="0"></div>
+      </div>
+      <div id="lchBox1" class="grid cols-3" style="display:none">
+        <div class="field"><label>L*</label><input id="LL1" type="number" step="1" value="20"></div>
+        <div class="field"><label>C*</label><input id="CC1" type="number" step="1" value="0"></div>
+        <div class="field"><label>h°</label><input id="hh1" type="number" step="1" value="0"></div>
+      </div>
+      <div id="rgbBox1" class="grid cols-3" style="display:none">
+        <div class="field"><label>R</label><input id="R1" type="number" min="0" max="255" value="51"></div>
+        <div class="field"><label>G</label><input id="G1" type="number" min="0" max="255" value="51"></div>
+        <div class="field"><label>B</label><input id="B1" type="number" min="0" max="255" value="51"></div>
+      </div>
+
+      <div class="swatch" id="mainSw1">(Text color preview)</div>
+      <div id="gamutNote1"></div>
+    </div>
+
+    <!-- 右：Background color -->
+    <div class="card">
+      <div class="section-title">Background color</div>
+      
+      <!-- 新增調色盤 -->
+      <div class="field">
+        <label>Select a color by clicking on the color swatch</label>
+        <input type="color" id="colorPicker2" value="#f2f2f2" style="width:100%;height:50px;border-radius:8px;border:2px solid #525252;cursor:pointer;">
+      </div>
+      
+      <div class="grid cols-2">
+        <div class="field">
+          <label>Color spec</label>
+          <select id="mode2">
+            <option value="lab">CIELAB</option>
+            <option value="lch">LCh</option>
+            <option value="rgb">sRGB</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="labBox2" class="grid cols-3">
+        <div class="field"><label>L*</label><input id="L2" type="number" step="1" value="95"></div>
+        <div class="field"><label>a*</label><input id="a2" type="number" step="1" value="0"></div>
+        <div class="field"><label>b*</label><input id="b2" type="number" step="1" value="0"></div>
+      </div>
+      <div id="lchBox2" class="grid cols-3" style="display:none">
+        <div class="field"><label>L*</label><input id="LL2" type="number" step="1" value="95"></div>
+        <div class="field"><label>C*</label><input id="CC2" type="number" step="1" value="0"></div>
+        <div class="field"><label>h°</label><input id="hh2" type="number" step="1" value="0"></div>
+      </div>
+      <div id="rgbBox2" class="grid cols-3" style="display:none">
+        <div class="field"><label>R</label><input id="R2" type="number" min="0" max="255" value="242"></div>
+        <div class="field"><label>G</label><input id="G2" type="number" min="0" max="255" value="242"></div>
+        <div class="field"><label>B</label><input id="B2" type="number" min="0" max="255" value="242"></div>
+      </div>
+
+      <div class="swatch" id="mainSw2">(Background color preview)</div>
+      <div id="gamutNote2"></div>
+    </div>
+  </div>
+
+  <!-- Color scheme preview -->
+  <div class="card" style="margin-top:20px">
+    <div class="section-title">Color scheme preview</div>
+    <button id="analyze" style="margin-bottom:10px">Generate & Analyze</button>
+    
+    <div id="previewArea"></div>
+    <div id="analysisResult"></div>
+  </div>
+</div>
+
+<script>
+/* =============== Color conversion algorithms =============== */
+const $=s=>document.querySelector(s), rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI, clamp=(x,lo,hi)=>Math.min(hi,Math.max(lo,x));
+const WP_D65=[0.95047,1.00000,1.08883], WP_D50=[0.96422,1.00000,0.82521];
+
+function mult3x3v(M,v){return [M[0][0]*v[0]+M[0][1]*v[1]+M[0][2]*v[2], M[1][0]*v[0]+M[1][1]*v[1]+M[1][2]*v[2], M[2][0]*v[0]+M[2][1]*v[1]+M[2][2]*v[2]];}
+function bradfordAdapt(XYZ, srcW, dstW){
+  const M=[[0.8951,0.2664,-0.1614],[-0.7502,1.7135,0.0367],[0.0389,-0.0685,1.0296]];
+  const Minv=[[0.9869929,-0.1470543,0.1599627],[0.4323053,0.5183603,0.0492912],[-0.0085287,0.0400428,0.9684867]];
+  const src=mult3x3v(M,srcW), dst=mult3x3v(M,dstW);
+  const S=[dst[0]/src[0], dst[1]/src[1], dst[2]/src[2]];
+  const cone=mult3x3v(M,XYZ), adapted=[cone[0]*S[0], cone[1]*S[1], cone[2]*S[2]];
+  return mult3x3v(Minv, adapted);
+}
+const srgb2lin=c => (c<=0.04045)? c/12.92 : Math.pow((c+0.055)/1.055,2.4);
+const lin2srgb=x => (x<=0.0031308)? 12.92*x : 1.055*Math.pow(x,1/2.4)-0.055;
+
+function rgb8_to_xyzD65(R8,G8,B8){
+  const r=srgb2lin(R8/255), g=srgb2lin(G8/255), b=srgb2lin(B8/255);
+  const X=0.4124564*r+0.3575761*g+0.1804375*b;
+  const Y=0.2126729*r+0.7151522*g+0.0721750*b;
+  const Z=0.0193339*r+0.1191920*g+0.9503041*b;
+  return [X,Y,Z];
+}
+function xyzD65_to_rgb8(X,Y,Z){
+  let r= 3.2404542*X -1.5371385*Y -0.4985314*Z;
+  let g=-0.9692660*X +1.8760108*Y +0.0415560*Z;
+  let b= 0.0556434*X -0.2040259*Y +1.0572252*Z;
+  const inGamut=(r>=0&&r<=1&&g>=0&&g<=1&&b>=0&&b<=1);
+  r=lin2srgb(clamp(r,0,1)); g=lin2srgb(clamp(g,0,1)); b=lin2srgb(clamp(b,0,1));
+  return {R:Math.round(r*255),G:Math.round(g*255),B:Math.round(b*255),inGamut};
+}
+function fLab(t){const d6=6/29; return t>(d6**3)? Math.cbrt(t) : (t/(3*d6*d6)+4/29);}
+function finvLab(t){const d6=6/29; return (t> d6)? (t*t*t) : (3*d6*d6*(t-4/29));}
+function xyzD50_to_labD50(X,Y,Z){
+  const [Xn,Yn,Zn]=WP_D50; const fx=fLab(X/Xn), fy=fLab(Y/Yn), fz=fLab(Z/Zn);
+  return {L:116*fy-16, a:500*(fx-fy), b:200*(fy-fz)};
+}
+function labD50_to_xyzD50(L,a,b){
+  const fy=(L+16)/116, fx=fy + a/500, fz=fy - b/200;
+  const [Xn,Yn,Zn]=WP_D50;
+  return [Xn*finvLab(fx), Yn*finvLab(fy), Zn*finvLab(fz)];
+}
+function rgb8_to_labD50(R,G,B){
+  const XYZd65=rgb8_to_xyzD65(R,G,B);
+  const XYZd50=bradfordAdapt(XYZd65, WP_D65, WP_D50);
+  return xyzD50_to_labD50(...XYZd50);
+}
+function labD50_to_rgb8(L,a,b){
+  const XYZd50=labD50_to_xyzD50(L,a,b);
+  const XYZd65=bradfordAdapt(XYZd50, WP_D50, WP_D65);
+  return xyzD65_to_rgb8(...XYZd65);
+}
+function lab2lch({L,a,b}){const C=Math.hypot(a,b); let h=deg(Math.atan2(b,a)); if(h<0)h+=360; return {L,C,h};}
+function lch2lab({L,C,h}){return {L, a:C*Math.cos(rad(h)), b:C*Math.sin(rad(h))};}
+
+/* =============== Emotion prediction formulas =============== */
+function AP(lab){
+  const {C}=lab2lch(lab);
+  return 0.0216*C - 0.0106*lab.L + 0.7073;
+}
+function HL(lab){
+  const {C}=lab2lch(lab);
+  return -0.0145*C + 0.0251*lab.L - 1.2618;
+}
+function WC(lab){
+  return 0.0283*lab.a - 0.0660*lab.b;
+}
+
+/* =============== Color harmony calculation =============== */
+function pairMetrics(lab1, lab2){
+  const LCh1=lab2lch(lab1), LCh2=lab2lch(lab2);
+  const dL = Math.abs(lab1.L - lab2.L);
+  const dC = Math.abs(LCh1.C - LCh2.C);
+  
+  // Hue difference formula: Δh° = (360° - |hr - hs|) when |hr - hs| > 180°, else |hr - hs|
+  const rawDiff = LCh1.h - LCh2.h;
+  const absDiff = Math.abs(rawDiff);
+  let dH;
+  if(absDiff > 180){
+    dH = 360 - absDiff;
+  } else {
+    dH = absDiff;
+  }
+  
+  return {dL, dC, dH};
+}
+function CHU(pm){
+  const {dL,dC,dH}=pm;
+  const SL = dL<15? 0.29 : (dL<30? 0.67 : 1);
+  const SC = dC<20? 0.54 : 1;
+  const SH = dH<30? 0.53 : (dH<60? 0.70 : (dH<90? 0.90 : 1));
+  return 0.65*SL + 0.15*SC + 0.20*SH;
+}
+
+// Calculate ΔE (CIE76 formula)
+function deltaE(lab1, lab2){
+  const dL = lab1.L - lab2.L;
+  const da = lab1.a - lab2.a;
+  const db = lab1.b - lab2.b;
+  return Math.sqrt(dL*dL + da*da + db*db);
+}
+
+function descSpan(which,v){
+  let t, c;
+  if(which==='AP') {
+    if(v>1.98){ t='active'; c='good'; }
+    else if(v<0.74){ t='passive'; c='bad'; }
+    else { t='moderate'; c='mid'; }
+  }
+  else if(which==='HL') {
+    if(v>0.03){ t='light'; c='good'; }
+    else if(v<-1.34){ t='heavy'; c='bad'; }
+    else { t='moderate'; c='mid'; }
+  }
+  else if(which==='WC') {
+    if(v>4.52){ t='cool'; c='good'; }
+    else if(v<-4.33){ t='warm'; c='bad'; }
+    else { t='moderate'; c='mid'; }
+  }
+  else if(which==='CH') {
+    if(v>0.93){ t='harmonious'; c='good'; }
+    else if(v<0.47){ t='not harmonious'; c='bad'; }
+    else { t='moderate harmonious'; c='mid'; }
+  }
+  return `<span class="desc ${c}">${t}</span>`;
+}
+
+/* =============== Color Assimilation/Spreading detection =============== */
+function detectChromaSteraopsis(lab1, lab2){
+  const lch1 = lab2lch(lab1);
+  const lch2 = lab2lch(lab2);
+  
+  const c1 = lch1.C;
+  const c2 = lch2.C;
+  const dL = Math.abs(lab1.L - lab2.L);
+  let dH = Math.abs(lch1.h - lch2.h);
+  if(dH > 180) dH = 360 - dH;
+  
+  // Detection criteria: both chroma > 5.0, hue difference > 90°, lightness difference < 25
+  if(c1 > 5.0 && c2 > 5.0 && dH > 90 && dL < 25){
+    return true;
+  }
+  return false;
+}
+
+/* =============== UI update logic =============== */
+let base1 = {L:20, a:0, b:0};  // Text color
+let base2 = {L:95, a:0, b:0};  // Background color
+
+function updateColor(colorNum){
+  const mode = $(`#mode${colorNum}`).value;
+  let lab;
+  
+  if(mode === 'lab'){
+    const L = parseFloat($(`#L${colorNum}`).value);
+    const a = parseFloat($(`#a${colorNum}`).value);
+    const b = parseFloat($(`#b${colorNum}`).value);
+    lab = {L, a, b};
+  }
+  else if(mode === 'lch'){
+    const L = parseFloat($(`#LL${colorNum}`).value);
+    const C = parseFloat($(`#CC${colorNum}`).value);
+    const h = parseFloat($(`#hh${colorNum}`).value);
+    lab = lch2lab({L, C, h});
+  }
+  else {
+    const R = parseInt($(`#R${colorNum}`).value);
+    const G = parseInt($(`#G${colorNum}`).value);
+    const B = parseInt($(`#B${colorNum}`).value);
+    lab = rgb8_to_labD50(R, G, B);
+  }
+  
+  if(colorNum === 1) base1 = lab;
+  else base2 = lab;
+  
+  // Sync other inputs
+  syncInputs(colorNum, lab, mode);
+  
+  // Sync color picker
+  const rgb = labD50_to_rgb8(lab.L, lab.a, lab.b);
+  const hex = '#' + [rgb.R, rgb.G, rgb.B].map(x => x.toString(16).padStart(2,'0')).join('');
+  $(`#colorPicker${colorNum}`).value = hex;
+  
+  // Update display
+  updateColorDisplay(colorNum);
+}
+
+function updateColorDisplay(colorNum){
+  const lab = (colorNum === 1) ? base1 : base2;
+  const rgb = labD50_to_rgb8(lab.L, lab.a, lab.b);
+  const hex = `rgb(${rgb.R},${rgb.G},${rgb.B})`;
+  
+  // Update preview
+  $(`#mainSw${colorNum}`).style.background = hex;
+  $(`#mainSw${colorNum}`).style.color = lab.L > 50 ? '#000' : '#fff';
+  $(`#mainSw${colorNum}`).textContent = `RGB(${rgb.R},${rgb.G},${rgb.B})`;
+  
+  // Out of gamut warning
+  if(!rgb.inGamut){
+    $(`#gamutNote${colorNum}`).innerHTML = '<div class="warn">Out of sRGB gamut, automatically adjusted to the closest color</div>';
+  } else {
+    $(`#gamutNote${colorNum}`).innerHTML = '';
+  }
+}
+
+function syncInputs(colorNum, lab, currentMode){
+  const lch = lab2lch(lab);
+  const rgb = labD50_to_rgb8(lab.L, lab.a, lab.b);
+  
+  if(currentMode !== 'lab'){
+    $(`#L${colorNum}`).value = lab.L.toFixed(1);
+    $(`#a${colorNum}`).value = lab.a.toFixed(1);
+    $(`#b${colorNum}`).value = lab.b.toFixed(1);
+  }
+  if(currentMode !== 'lch'){
+    $(`#LL${colorNum}`).value = lch.L.toFixed(1);
+    $(`#CC${colorNum}`).value = lch.C.toFixed(1);
+    $(`#hh${colorNum}`).value = lch.h.toFixed(1);
+  }
+  if(currentMode !== 'rgb'){
+    $(`#R${colorNum}`).value = rgb.R;
+    $(`#G${colorNum}`).value = rgb.G;
+    $(`#B${colorNum}`).value = rgb.B;
+  }
+}
+
+// Mode switching
+for(let i=1; i<=2; i++){
+  $(`#mode${i}`).addEventListener('change', ()=>{
+    const mode = $(`#mode${i}`).value;
+    $(`#labBox${i}`).style.display = mode==='lab'? 'grid' : 'none';
+    $(`#lchBox${i}`).style.display = mode==='lch'? 'grid' : 'none';
+    $(`#rgbBox${i}`).style.display = mode==='rgb'? 'grid' : 'none';
+  });
+  
+  // Bind all input fields
+  ['L','a','b','LL','CC','hh','R','G','B'].forEach(id=>{
+    const elem = $(`#${id}${i}`);
+    if(elem){
+      elem.addEventListener('input', ()=>updateColor(i));
+    }
+  });
+  
+  // Bind color picker
+  $(`#colorPicker${i}`).addEventListener('input', (e)=>{
+    const hex = e.target.value;
+    const r = parseInt(hex.slice(1,3), 16);
+    const g = parseInt(hex.slice(3,5), 16);
+    const b = parseInt(hex.slice(5,7), 16);
+    
+    // Convert to LAB
+    const lab = rgb8_to_labD50(r, g, b);
+    
+    // Update current color
+    if(i === 1) base1 = lab;
+    else base2 = lab;
+    
+    // Sync all inputs
+    const lch = lab2lch(lab);
+    $(`#L${i}`).value = lab.L.toFixed(1);
+    $(`#a${i}`).value = lab.a.toFixed(1);
+    $(`#b${i}`).value = lab.b.toFixed(1);
+    $(`#LL${i}`).value = lch.L.toFixed(1);
+    $(`#CC${i}`).value = lch.C.toFixed(1);
+    $(`#hh${i}`).value = lch.h.toFixed(1);
+    $(`#R${i}`).value = r;
+    $(`#G${i}`).value = g;
+    $(`#B${i}`).value = b;
+    
+    // Update preview and display
+    updateColorDisplay(i);
+  });
+}
+
+/* =============== Color scheme analysis =============== */
+$('#analyze').addEventListener('click', ()=>{
+  const rgb1 = labD50_to_rgb8(base1.L, base1.a, base1.b);
+  const rgb2 = labD50_to_rgb8(base2.L, base2.a, base2.b);
+  const hex1 = `rgb(${rgb1.R},${rgb1.G},${rgb1.B})`;
+  const hex2 = `rgb(${rgb2.R},${rgb2.G},${rgb2.B})`;
+  
+  const lch1 = lab2lch(base1);
+  const lch2 = lab2lch(base2);
+  
+  // Color Assimilation/Spreading detection
+  const hasChromaStereo = detectChromaSteraopsis(base1, base2);
+  
+  // Calculate color harmony
+  const pm = pairMetrics(base1, base2);
+  const ch = CHU(pm);
+  const dE = deltaE(base1, base2);
+  
+  // Preview area
+  let previewHTML = `
+    <div class="preview-box" style="background-color:${hex2};color:${hex1};">
+      <div class="preview-text sans">Color Design</div>
+      <div class="preview-text serif">Color Design</div>
+      <div class="color-info" style="color:${base2.L>50?'#333':'#ccc'}">
+        Text: L=${base1.L.toFixed(0)} C=${lch1.C.toFixed(0)} h=${lch1.h.toFixed(0)}° | 
+        Background: L=${base2.L.toFixed(0)} C=${lch2.C.toFixed(0)} h=${lch2.h.toFixed(0)}°
+      </div>
+    </div>
+  `;
+  
+  // Analysis results
+  let analysisHTML = `
+    <div class="suggestion-card">
+      <div class="section-title">Analysis Results</div>
+      ${hasChromaStereo ? '<div class="error">⚠️ Vibrating Boundaries（or Color Vibration) detected! This color scheme may cause visual discomfort. Enlarge lightness difference (ΔL) may help.</div>' : ''}
+      
+      <div style="margin-top:12px;font-size:13px;color:#222;">
+        <div style="margin-bottom:8px;">
+          <strong>Harmony:</strong> ${descSpan('CH', ch)}
+        </div>
+        <div>
+          <strong>Color Difference:</strong>
+          ΔL=${pm.dL.toFixed(1)} | 
+          ΔC=${pm.dC.toFixed(1)} | 
+          Δh=${pm.dH.toFixed(1)}° | 
+          ΔE=${dE.toFixed(1)}
+        </div>
+      </div>
+    </div>
+  `;
+  
+  $('#previewArea').innerHTML = previewHTML;
+  $('#analysisResult').innerHTML = analysisHTML;
+});
+
+/* Initialize */
+updateColor(1);
+updateColor(2);
+</script>
+</body>
+</html>
