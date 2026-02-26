@@ -36,6 +36,13 @@
   }
   select,button{padding:8px 10px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;cursor:pointer}
   button:hover{background:#334155}
+  #swapBtn{background:#2d3f55;border-color:#4a6080;padding:8px 20px;}
+  #swapBtn:hover{background:#3a5270;}
+  .depth-bar{height:10px;border-radius:5px;background:linear-gradient(90deg,#334155,#64748b);margin-top:4px}
+  .depth-val{font-size:22px;font-weight:800;margin:2px 0}
+  .prominence-box{text-align:center;padding:14px;border-radius:12px;background:#1e293b;border:1px solid #334155;margin-top:8px}
+  .prominence-score{font-size:36px;font-weight:800}
+  .prominence-label{font-size:13px;color:#94a3b8;margin-top:2px}
   .swatch{height:64px;border-radius:12px;border:1px dashed #666;display:flex;align-items:center;justify-content:center;color:#222;font-size:12px}
   table{width:100%;border-collapse:collapse;font-size:14px}
   th,td{padding:8px 10px;border-bottom:1px solid #777;text-align:right}
@@ -133,7 +140,8 @@
           <li><strong>Color Scheme Preview:</strong> Visualize text-background color combinations with "Color Design" displayed in both sans-serif and serif fonts.</li>
           <li><strong>Three Color Specification:</strong> Input colors using CIELAB, LCh or sRGB. The system automatically detects and warns if colors fall outside the sRGB gamut.</li>
           <li><strong>Vibrating Boundaries（or Color Vibration) Detection:</strong> Automatically detects potential Color Assimilation/Spreading.</li>
-          <li><strong>Color Harmony Prediction:</strong> Analyzes the harmony between two colors based on their lightness, chroma, and hue angles. Provides color difference metrics including ΔL, ΔC, Δh, and ΔE.</li>
+          <li><strong>Color Harmony Assessment:</strong> Analyzes the harmony between two colors based on their lightness, chroma, and hue angles.</li>
+          <li><strong>Spatial effect assessment: </strong> Analyzes the perceived depth of two colors to predict whether the text color will advance or recede.</li>
         </ul>
       </div>
       <div>
@@ -142,11 +150,14 @@
           <li>Ou, L.-C., Yuan, Y., Sato, T., Lee, W.-Y., Szabó, F., Sueeprasan, S., & Huertas, R. (2018). Universal models of colour emotion and colour harmony. Color Research & Application, 43(5), 736-748. https://doi.org/https://doi.org/10.1002/col.22243 </li>
           <li>Ou, L.-C., Yuan, Y., Sato, T., Lee, W.-Y., Szabó, F., Sueeprasan, S., & Huertas, R. (2019). 【correction】Universal models of colour emotion and colour harmony. Color Research & Application, 44(1), 153-153. https://doi.org/https://doi.org/10.1002/col.22322 </li>
           <li>CIE. (2004). <em>Colorimetry</em> (3rd ed., CIE 15:2004). Commission Internationale de l'Éclairage.</li>
+<li>Gong, S.-M., Liou, F.-Y., & Lee, W.-Y. (2023). The effect of lightness, chroma, and hue on depth perception. Color Research & Application, 48(6), 793-800. https://doi.org/https://doi.org/10.1002/col.22894 </li>
         </ol>
       </div>
     </div>
   </div>
 
+
+  <div style="position:relative">
   <div class="row">
     <!-- 左：Text color -->
     <div class="card">
@@ -229,12 +240,20 @@
       <div class="swatch" id="mainSw2">(Background color preview)</div>
       <div id="gamutNote2"></div>
     </div>
+  </div><!-- end .row -->
+
+  <!-- Swap button centered below the two cards -->
+  <div style="text-align:center;margin:10px 0">
+    <button id="swapBtn" title="Swap text and background colors">Swap Color</button>
   </div>
+  </div><!-- end position:relative wrapper -->
 
   <!-- Color scheme preview -->
   <div class="card" style="margin-top:20px">
-    <div class="section-title">Color scheme preview</div>
-    <button id="analyze" style="margin-bottom:10px">Generate & Analyze</button>
+    <div class="section-title" style="text-align:center">Color scheme preview</div>
+    <div style="text-align:center;margin-bottom:10px">
+      <button id="analyze" style="font-size:17px;padding:12px 32px;">Generate & Analyze</button>
+    </div>
     
     <div id="previewArea"></div>
     <div id="analysisResult"></div>
@@ -342,6 +361,12 @@ function deltaE(lab1, lab2){
   const da = lab1.a - lab2.a;
   const db = lab1.b - lab2.b;
   return Math.sqrt(dL*dL + da*da + db*db);
+}
+
+/* =============== Perceived Color Depth (Ou et al.) =============== */
+function perceivedDepth(lab){
+  const {C, h} = lab2lch(lab);
+  return 2.18 - 0.02*lab.L - 0.02*C - 0.20*Math.sin(rad(h + 57));
 }
 
 function descSpan(which,v){
@@ -546,6 +571,28 @@ $('#analyze').addEventListener('click', ()=>{
     </div>
   `;
   
+  // Calculate perceived color depth
+  const depth1 = perceivedDepth(base1);
+  const depth2 = perceivedDepth(base2);
+  const depthDiff = depth1 - depth2; // text depth minus background depth
+  
+  // Advancing / Neutral / Receding (threshold ±0.20)
+  let prominenceClass, prominenceLabel, prominenceDetail;
+  const absDiff = Math.abs(depthDiff);
+  if(depthDiff < -0.20){
+    prominenceClass='good';
+    prominenceLabel='Advancing';
+    prominenceDetail='Text perceptually advances over the background — high visual salience';
+  } else if(depthDiff > 0.20){
+    prominenceClass='mid';
+    prominenceLabel='Receding';
+    prominenceDetail='Text perceptually recedes into the background — stable, grounded appearance';
+  } else {
+    prominenceClass='bad';
+    prominenceLabel='Neutral';
+    prominenceDetail='Text and background have similar perceptual depth — spatial relationship is ambiguous';
+  }
+  
   // Analysis results
   let analysisHTML = `
     <div class="suggestion-card">
@@ -554,9 +601,12 @@ $('#analyze').addEventListener('click', ()=>{
       
       <div style="margin-top:12px;font-size:13px;color:#222;">
         <div style="margin-bottom:8px;">
-          <strong>Harmony:</strong> ${descSpan('CH', ch)}
+          <strong>Color harmony assessment:</strong> ${descSpan('CH', ch)}
         </div>
-        <div>
+        <div style="margin-bottom:8px;">
+          <strong>Spatial effect for text color:</strong> <span style="font-weight:700;color:${depthDiff < -0.20 ? '#4ade80' : depthDiff > 0.20 ? '#fbbf24' : '#fb7185'}">${depthDiff < -0.20 ? 'Advancing' : depthDiff > 0.20 ? 'Receding' : 'Not advancing or receding'}</span>
+        </div>
+        <div style="margin-bottom:12px;">
           <strong>Color Difference:</strong>
           ΔL=${pm.dL.toFixed(1)} | 
           ΔC=${pm.dC.toFixed(1)} | 
@@ -569,6 +619,27 @@ $('#analyze').addEventListener('click', ()=>{
   
   $('#previewArea').innerHTML = previewHTML;
   $('#analysisResult').innerHTML = analysisHTML;
+});
+
+/* =============== Swap button =============== */
+$('#swapBtn').addEventListener('click', ()=>{
+  // Swap base LAB values
+  const tmp = {...base1};
+  base1 = {...base2};
+  base2 = {...tmp};
+  
+  // Sync all inputs for both colors
+  syncInputs(1, base1, $(`#mode1`).value);
+  syncInputs(2, base2, $(`#mode2`).value);
+  
+  // Sync color pickers
+  [1, 2].forEach(i => {
+    const lab = (i===1) ? base1 : base2;
+    const rgb = labD50_to_rgb8(lab.L, lab.a, lab.b);
+    const hex = '#' + [rgb.R, rgb.G, rgb.B].map(x => x.toString(16).padStart(2,'0')).join('');
+    $(`#colorPicker${i}`).value = hex;
+    updateColorDisplay(i);
+  });
 });
 
 /* Initialize */
