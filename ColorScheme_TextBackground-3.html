@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Color Scheme : Text & Background Combination</title>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-N8QWS5JKZD');
+</script>
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&family=Noto+Serif+TC:wght@400;700&display=swap');
+  
+  :root { 
+    --bg-main: #0f141a; 
+    --bg-card: #1a202a; 
+    --bg-input: #12171e;
+    --border: #2d3748;
+    --border-hover: #4a5568;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --radius: 12px;
+  }
+
+  /* Force NO SCROLL on desktop */
+  html, body { height: 100vh; margin: 0; overflow: hidden; background: var(--bg-main); color: var(--text-main); font: 13px/1.5 system-ui, -apple-system, sans-serif; }
+  
+  /* Main Wrapper */
+  .wrap { max-width: 1600px; width: 100%; margin: 0 auto; padding: 16px 24px; display: flex; flex-direction: column; height: 100vh; box-sizing: border-box; }
+  
+  /* Header Area */
+  .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; position: relative; }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  h1 { margin: 0; font-size: 20px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+  
+  /* Back Button */
+  .btn-back { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 13px; transition: all 0.2s; }
+  .btn-back:hover { color: #fff; border-color: var(--border-hover); background: var(--border); }
+
+  /* Info Toggle & Overlay */
+  .info-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; background: var(--bg-card); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-weight: 600; color: var(--text-muted); transition: all 0.2s; }
+  .info-toggle:hover { color: #fff; border-color: var(--border-hover); }
+  .info-toggle .arrow { transition: transform 0.2s; font-size: 10px; }
+  .info-toggle.open .arrow { transform: rotate(180deg); }
+  
+  .info-overlay { position: absolute; top: 100%; right: 0; width: 800px; max-width: 100%; background: rgba(26, 32, 42, 0.95); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transform: translateY(-10px); transition: all 0.25s ease; z-index: 100; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .info-overlay.open { opacity: 1; pointer-events: auto; transform: translateY(8px); }
+  .info-overlay h2 { font-size: 14px; color: #fff; margin: 0 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  .info-overlay ul, .info-overlay ol { margin: 0; padding-left: 18px; color: var(--text-muted); font-size: 12px; }
+  .info-overlay li { margin-bottom: 6px; }
+  .info-overlay strong { color: #e2e8f0; }
+
+  /* Workspace Grid (3 Columns + Swap) */
+  .workspace { display: flex; flex: 1; gap: 16px; min-height: 0; }
+  
+  /* Cards */
+  .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+  .input-panel { flex: 1; min-width: 250px; }
+  .output-panel { flex: 1.8; min-width: 350px; }
+  
+  .section-title { font-weight: 700; font-size: 15px; margin: 0 0 12px; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+  
+  /* Inputs & Form */
+  .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .field label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  
+  input[type=color] { width: 100%; height: 40px; padding: 0; border: none; border-radius: 8px; cursor: pointer; background: transparent; overflow: hidden; outline: 1px solid var(--border); }
+  input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type=color]::-webkit-color-swatch { border: none; border-radius: 8px; }
+  
+  select, input[type=number] { width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-main); font-size: 13px; box-sizing: border-box; outline: none; transition: border 0.2s; }
+  select:focus, input[type=number]:focus { border-color: var(--primary); }
+  
+  .grid { display: grid; gap: 10px; }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+  
+  /* Swatch Preview */
+  .swatch { flex: 1; min-height: 50px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; margin-top: 6px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1); }
+  
+  /* Swap Button */
+  .swap-col { display: flex; align-items: center; justify-content: center; }
+  #swapBtn { width: 44px; height: 44px; border-radius: 50%; background: var(--bg-card); border: 1px solid var(--border); color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+  #swapBtn:hover { background: var(--border-hover); transform: scale(1.05); }
+  
+  /* Buttons */
+  button.btn-primary { background: var(--primary); color: #fff; border: none; padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  button.btn-primary:hover { background: var(--primary-hover); }
+  
+  /* Badges & Status */
+  .warn { background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.3); color: #fcd34d; padding: 6px 10px; border-radius: 6px; margin-top: 8px; font-size: 11px; display: flex; align-items: center; gap: 6px; }
+  .error { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px; font-size: 12px; font-weight: 600; }
+  .good { color: #4ade80; font-weight: 700; } 
+  .mid { color: #fbbf24; font-weight: 700; } 
+  .bad { color: #fb7185; font-weight: 700; }
+
+  /* Output Area */
+  .output-content { display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; }
+  
+  .preview-box { border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center; flex: 1; border: 1px solid rgba(255,255,255,0.05); box-shadow: inset 0 2px 10px rgba(0,0,0,0.1); }
+  .preview-group { display: flex; flex-direction: column; align-items: center; }
+  .preview-text { font-size: clamp(36px, 4vw, 54px); font-weight: 700; line-height: 1.1; text-align: center; }
+  .preview-sub { font-size: clamp(14px, 1.5vw, 16px); font-weight: 400; text-align: center; margin-top: 4px; opacity: 0.9; }
+  
+  .sans { font-family: 'Noto Sans TC', system-ui, sans-serif; }
+  .serif { font-family: 'Noto Serif TC', Georgia, serif; }
+  .color-info { font-size: 11px; margin-top: auto; opacity: 0.7; font-family: monospace; }
+
+  .suggestion-card { background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+  /* Changed to 1 column so the longer labels fit properly */
+  .analysis-grid { display: grid; grid-template-columns: 1fr; gap: 8px; font-size: 13px; }
+  .analysis-grid .full-w { border-top: 1px dashed var(--border); padding-top: 8px; margin-top: 4px; color: var(--text-muted); font-family: monospace; }
+  .analysis-grid span.lbl { color: var(--text-muted); margin-right: 6px; font-weight: 600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="header-row">
+    <div class="header-left">
+      <a href="https://wylee-sudo.github.io/wenyuanlee/" class="btn-back">← Back</a>
+      <h1>Color Scheme Analyzer</h1>
+    </div>
+    
+    <div class="info-toggle" id="infoToggle" onclick="toggleInfo()">
+      <span>ℹ️ Features & References</span>
+      <span class="arrow">▼</span>
+    </div>
+
+    <div class="info-overlay" id="infoBody">
+      <div>
+        <h2>Features</h2>
+        <ul>
+          <li><strong>Color Scheme Preview:</strong> Visualize combinations in sans-serif and serif fonts.</li>
+          <li><strong>Three Color Specification:</strong> CIELAB, LCh or sRGB input. Auto-detects out of sRGB gamut.</li>
+          <li><strong>Vibrating Boundaries:</strong> Detects potential Color Assimilation/Spreading.</li>
+          <li><strong>Color Harmony Assessment:</strong> Analyzes harmony based on lightness, chroma, and hue angles.</li>
+          <li><strong>Spatial Effect:</strong> Predicts whether text advances or recedes based on depth perception.</li>
+        </ul>
+      </div>
+      <div>
+        <h2>References</h2>
+        <ol>
+          <li>Ou, L.-C. et al. (2018). Universal models of colour emotion and colour harmony. <em>Color Research & Application</em>, 43(5), 736-748.</li>
+          <li>Ou, L.-C. et al. (2019). 【correction】Universal models... <em>Color Research & Application</em>, 44(1), 153-153.</li>
+          <li>CIE. (2004). <em>Colorimetry</em> (3rd ed., CIE 15:2004).</li>
+          <li>Gong, S.-M. et al. (2023). The effect of lightness, chroma, and hue on depth perception. <em>Color Research & Application</em>, 48(6), 793-800.</li>
+        </ol>
+      </div>
+    </div>
+  </header>
+
+  <div class="workspace">
+    
+    <div class="card input-panel">
+      <div class="section-title">Text Color</div>
+      <div class="field">
+        <label>Picker</label>
+        <input type="color" id="colorPicker1" value="#333333">
+      </div>
+      <div class="field">
+        <label>Color Space</label>
+        <select id="mode1">
+          <option value="lab">CIELAB</option>
+          <option value="lch">LCh</option>
+          <option value="rgb">sRGB</option>
+        </select>
+      </div>
+      <div id="labBox1" class="grid cols-3">
+        <div class="field"><label>L*</label><input id="L1" type="number" step="1" value="20"></div>
+        <div class="field"><label>a*</label><input id="a1" type="number" step="1" value="0"></div>
+        <div class="field"><label>b*</label><input id="b1" type="number" step="1" value="0"></div>
+      </div>
+      <div id="lchBox1" class="grid cols-3" style="display:none;">
+        <div class="field"><label>L*</label><input id="LL1" type="number" step="1" value="20"></div>
+        <div class="field"><label>C*</label><input id="CC1" type="number" step="1" value="0"></div>
+        <div class="field"><label>h°</label><input id="hh1" type="number" step="1" value="0"></div>
+      </div>
+      <div id="rgbBox1" class="grid cols-3" style="display:none;">
+        <div class="field"><label>R</label><input id="R1" type="number" min="0" max="255" value="51"></div>
+        <div class="field"><label>G</label><input id="G1" type="number" min="0" max="255" value="51"></div>
+        <div class="field"><label>B</label><input id="B1" type="number" min="0" max="255" value="51"></div>
+      </div>
+      <div class="swatch" id="mainSw1">Text Preview</div>
+      <div id="gamutNote1"></div>
+    </div>
+
+    <div class="swap-col">
+      <button id="swapBtn" title="Swap Colors">⇄</button>
+    </div>
+
+    <div class="card input-panel">
+      <div class="section-title">Background Color</div>
+      <div class="field">
+        <label>Picker</label>
+        <input type="color" id="colorPicker2" value="#f2f2f2">
+      </div>
+      <div class="field">
+        <label>Color Space</label>
+        <select id="mode2">
+          <option value="lab">CIELAB</option>
+          <option value="lch">LCh</option>
+          <option value="rgb">sRGB</option>
+        </select>
+      </div>
+      <div id="labBox2" class="grid cols-3">
+        <div class="field"><label>L*</label><input id="L2" type="number" step="1" value="95"></div>
+        <div class="field"><label>a*</label><input id="a2" type="number" step="1" value="0"></div>
+        <div class="field"><label>b*</label><input id="b2" type="number" step="1" value="0"></div>
+      </div>
+      <div id="lchBox2" class="grid cols-3" style="display:none;">
+        <div class="field"><label>L*</label><input id="LL2" type="number" step="1" value="95"></div>
+        <div class="field"><label>C*</label><input id="CC2" type="number" step="1" value="0"></div>
+        <div class="field"><label>h°</label><input id="hh2" type="number" step="1" value="0"></div>
+      </div>
+      <div id="rgbBox2" class="grid cols-3" style="display:none;">
+        <div class="field"><label>R</label><input id="R2" type="number" min="0" max="255" value="242"></div>
+        <div class="field"><label>G</label><input id="G2" type="number" min="0" max="255" value="242"></div>
+        <div class="field"><label>B</label><input id="B2" type="number" min="0" max="255" value="242"></div>
+      </div>
+      <div class="swatch" id="mainSw2">BG Preview</div>
+      <div id="gamutNote2"></div>
+    </div>
+
+    <div class="card output-panel">
+      <div class="section-title">
+        Preview & Analysis
+        <button id="analyze" class="btn-primary">Generate</button>
+      </div>
+      <div class="output-content">
+        <div id="previewArea" style="display:flex; flex:1;"></div>
+        <div id="analysisResult"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function toggleInfo(){
+  const toggle = document.getElementById('infoToggle');
+  const body = document.getElementById('infoBody');
+  toggle.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+// Close info overlay when clicking outside
+document.addEventListener('click', function(event) {
+  const toggle = document.getElementById('infoToggle');
+  const body = document.getElementById('infoBody');
+  if (!toggle.contains(event.target) && !body.contains(event.target) && body.classList.contains('open')) {
+    toggle.classList.remove('open');
+    body.classList.remove('open');
+  }
+});
+
+/* =============== Color conversion algorithms =============== */
+const $=s=>document.querySelector(s), rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI, clamp=(x,lo,hi)=>Math.min(hi,Math.max(lo,x));
+const WP_D65=[0.95047,1.00000,1.08883], WP_D50=[0.96422,1.00000,0.82521];
+
+function mult3x3v(M,v){return [M[0][0]*v[0]+M[0][1]*v[1]+M[0][2]*v[2], M[1][0]*v[0]+M[1][1]*v[1]+M[1][2]*v[2], M[2][0]*v[0]+M[2][1]*v[1]+M[2][2]*v[2]];}
+function bradfordAdapt(XYZ, srcW, dstW){
+  const M=[[0.8951,0.2664,-0.1614],[-0.7502,1.7135,0.0367],[0.0389,-0.0685,1.0296]];
+  const Minv=[[0.9869929,-0.1470543,0.1599627],[0.4323053,0.5183603,0.0492912],[-0.0085287,0.0400428,0.9684867]];
+  const src=mult3x3v(M,srcW), dst=mult3x3v(M,dstW);
+  const S=[dst[0]/src[0], dst[1]/src[1], dst[2]/src[2]];
+  const cone=mult3x3v(M,XYZ), adapted=[cone[0]*S[0], cone[1]*S[1], cone[2]*S[2]];
+  return mult3x3v(Minv, adapted);
+}
+const srgb2lin=c => (c<=0.04045)? c/12.92 : Math.pow((c+0.055)/1.055,2.4);
+const lin2srgb=x => (x<=0.0031308)? 12.92*x : 1.055*Math.pow(x,1/2.4)-0.055;
+
+function rgb8_to_xyzD65(R8,G8,B8){
+  const r=srgb2lin(R8/255), g=srgb2lin(G8/255), b=srgb2lin(B8/255);
+  const X=0.4124564*r+0.3575761*g+0.1804375*b;
+  const Y=0.2126729*r+0.7151522*g+0.0721750*b;
+  const Z=0.0193339*r+0.1191920*g+0.9503041*b;
+  return [X,Y,Z];
+}
+function xyzD65_to_rgb8(X,Y,Z){
+  let r= 3.2404542*X -1.5371385*Y -0.4985314*Z;
+  let g=-0.9692660*X +1.8760108*Y +0.0415560*Z;
+  let b= 0.0556434*X -0.2040259*Y +1.0572252*Z;
+  const inGamut=(r>=0&&r<=1&&g>=0&&g<=1&&b>=0&&b<=1);
+  r=lin2srgb(clamp(r,0,1)); g=lin2srgb(clamp(g,0,1)); b=lin2srgb(clamp(b,0,1));
+  return {R:Math.round(r*255),G:Math.round(g*255),B:Math.round(b*255),inGamut};
+}
+function fLab(t){const d6=6/29; return t>(d6**3)? Math.cbrt(t) : (t/(3*d6*d6)+4/29);}
+function finvLab(t){const d6=6/29; return (t> d6)? (t*t*t) : (3*d6*d6*(t-4/29));}
+function xyzD50_to_labD50(X,Y,Z){
+  const [Xn,Yn,Zn]=WP_D50; const fx=fLab(X/Xn), fy=fLab(Y/Yn), fz=fLab(Z/Zn);
+  return {L:116*fy-16, a:500*(fx-fy), b:200*(fy-fz)};
+}
+function labD50_to_xyzD50(L,a,b){
+  const fy=(L+16)/116, fx=fy + a/500, fz=fy - b/200;
+  const [Xn,Yn,Zn]=WP_D50;
+  return [Xn*finvLab(fx), Yn*finvLab(fy), Zn*finvLab(fz)];
+}
+function rgb8_to_labD50(R,G,B){
+  const XYZd65=rgb8_to_xyzD65(R,G,B);
+  const XYZd50=bradfordAdapt(XYZd65, WP_D65, WP_D50);
+  return xyzD50_to_labD50(...XYZd50);
+}
+function labD50_to_rgb8(L,a,b){
+  const XYZd50=labD50_to_xyzD50(L,a,b);
+  const XYZd65=bradfordAdapt(XYZd50, WP_D50, WP_D65);
+  return xyzD65_to_rgb8(...XYZd65);
+}
+function lab2lch({L,a,b}){const C=Math.hypot(a,b); let h=deg(Math.atan2(b,a)); if(h<0)h+=360; return {L,C,h};}
+function lch2lab({L,C,h}){return {L, a:C*Math.cos(rad(h)), b:C*Math.sin(rad(h))};}
+
+/* =============== Emotion prediction formulas =============== */
+function AP(lab){ return 0.0216*lab2lch(lab).C - 0.0106*lab.L + 0.7073; }
+function HL(lab){ return -0.0145*lab2lch(lab).C + 0.0251*lab.L - 1.2618; }
+function WC(lab){ return 0.0283*lab.a - 0.0660*lab.b; }
+
+/* =============== Color harmony calculation =============== */
+function pairMetrics(lab1, lab2){
+  const LCh1=lab2lch(lab1), LCh2=lab2lch(lab2);
+  const dL = Math.abs(lab1.L - lab2.L);
+  const dC = Math.abs(LCh1.C - LCh2.C);
+  const rawDiff = LCh1.h - LCh2.h;
+  const absDiff = Math.abs(rawDiff);
+  const dH = absDiff > 180 ? 360 - absDiff : absDiff;
+  return {dL, dC, dH};
+}
+function CHU(pm){
+  const {dL,dC,dH}=pm;
+  const SL = dL<15? 0.29 : (dL<30? 0.67 : 1);
+  const SC = dC<20? 0.54 : 1;
+  const SH = dH<30? 0.53 : (dH<60? 0.70 : (dH<90? 0.90 : 1));
+  return 0.65*SL + 0.15*SC + 0.20*SH;
+}
+function deltaE(lab1, lab2){
+  return Math.sqrt((lab1.L-lab2.L)**2 + (lab1.a-lab2.a)**2 + (lab1.b-lab2.b)**2);
+}
+
+/* =============== Perceived Color Depth =============== */
+function perceivedDepth(lab){
+  const {C, h} = lab2lch(lab);
+  return 2.18 - 0.02*lab.L - 0.02*C - 0.20*Math.sin(rad(h + 57));
+}
+
+function descSpan(which,v){
+  let t, c;
+  if(which==='CH') {
+    if(v>0.93){ t='Harmonious'; c='good'; }
+    else if(v<0.47){ t='Not harmonious'; c='bad'; }
+    else { t='Moderate harmonious'; c='mid'; }
+  }
+  return `<span class="${c}">${t}</span>`;
+}
+
+/* =============== Color Assimilation/Spreading detection =============== */
+function detectChromaSteraopsis(lab1, lab2){
+  const lch1 = lab2lch(lab1), lch2 = lab2lch(lab2);
+  let dH = Math.abs(lch1.h - lch2.h);
+  if(dH > 180) dH = 360 - dH;
+  return (lch1.C > 5.0 && lch2.C > 5.0 && dH > 90 && Math.abs(lab1.L - lab2.L) < 25);
+}
+
+/* =============== UI update logic =============== */
+let base1 = {L:20, a:0, b:0};
+let base2 = {L:95, a:0, b:0};
+
+function updateColor(colorNum){
+  const mode = $(`#mode${colorNum}`).value;
+  let lab;
+  
+  if(mode === 'lab'){
+    lab = { L: parseFloat($(`#L${colorNum}`).value), a: parseFloat($(`#a${colorNum}`).value), b: parseFloat($(`#b${colorNum}`).value) };
+  } else if(mode === 'lch'){
+    lab = lch2lab({ L: parseFloat($(`#LL${colorNum}`).value), C: parseFloat($(`#CC${colorNum}`).value), h: parseFloat($(`#hh${colorNum}`).value) });
+  } else {
+    lab = rgb8_to_labD50(parseInt($(`#R${colorNum}`).value), parseInt($(`#G${colorNum}`).value), parseInt($(`#B${colorNum}`).value));
+  }
+  
+  if(colorNum === 1) base1 = lab; else base2 = lab;
+  syncInputs(colorNum, lab, mode);
+  
+  const rgb = labD50_to_rgb8(lab.L, lab.a, lab.b);
+  $(`#colorPicker${colorNum}`).value = '#' + [rgb.R, rgb.G, rgb.B].map(x => x.toString(16).padStart(2,'0')).join('');
+  updateColorDisplay(colorNum);
+}
+
+function updateColorDisplay(colorNum){
+  const lab = (colorNum === 1) ? base1 : base2;
+  const rgb = labD50_to_rgb8(lab.L, lab.a, lab.b);
+  
+  $(`#mainSw${colorNum}`).style.background = `rgb(${rgb.R},${rgb.G},${rgb.B})`;
+  $(`#mainSw${colorNum}`).style.color = lab.L > 50 ? '#000' : '#fff';
+  $(`#mainSw${colorNum}`).textContent = `RGB(${rgb.R}, ${rgb.G}, ${rgb.B})`;
+  
+  $(`#gamutNote${colorNum}`).innerHTML = !rgb.inGamut ? '<div class="warn">⚠️ Out of sRGB gamut (Adjusted)</div>' : '';
+}
+
+function syncInputs(colorNum, lab, currentMode){
+  const lch = lab2lch(lab), rgb = labD50_to_rgb8(lab.L, lab.a, lab.b);
+  if(currentMode !== 'lab'){ $(`#L${colorNum}`).value = lab.L.toFixed(1); $(`#a${colorNum}`).value = lab.a.toFixed(1); $(`#b${colorNum}`).value = lab.b.toFixed(1); }
+  if(currentMode !== 'lch'){ $(`#LL${colorNum}`).value = lch.L.toFixed(1); $(`#CC${colorNum}`).value = lch.C.toFixed(1); $(`#hh${colorNum}`).value = lch.h.toFixed(1); }
+  if(currentMode !== 'rgb'){ $(`#R${colorNum}`).value = rgb.R; $(`#G${colorNum}`).value = rgb.G; $(`#B${colorNum}`).value = rgb.B; }
+}
+
+for(let i=1; i<=2; i++){
+  $(`#mode${i}`).addEventListener('change', ()=>{
+    const mode = $(`#mode${i}`).value;
+    $(`#labBox${i}`).style.display = mode==='lab'? 'grid' : 'none';
+    $(`#lchBox${i}`).style.display = mode==='lch'? 'grid' : 'none';
+    $(`#rgbBox${i}`).style.display = mode==='rgb'? 'grid' : 'none';
+  });
+  
+  ['L','a','b','LL','CC','hh','R','G','B'].forEach(id=>{
+    if($(`#${id}${i}`)) $(`#${id}${i}`).addEventListener('input', ()=>updateColor(i));
+  });
+  
+  $(`#colorPicker${i}`).addEventListener('input', (e)=>{
+    const hex = e.target.value;
+    const lab = rgb8_to_labD50(parseInt(hex.slice(1,3), 16), parseInt(hex.slice(3,5), 16), parseInt(hex.slice(5,7), 16));
+    if(i === 1) base1 = lab; else base2 = lab;
+    syncInputs(i, lab, '');
+    updateColorDisplay(i);
+  });
+}
+
+/* =============== Generate & Analyze =============== */
+$('#analyze').addEventListener('click', ()=>{
+  const rgb1 = labD50_to_rgb8(base1.L, base1.a, base1.b), rgb2 = labD50_to_rgb8(base2.L, base2.a, base2.b);
+  const lch1 = lab2lch(base1), lch2 = lab2lch(base2);
+  const pm = pairMetrics(base1, base2), depthDiff = perceivedDepth(base1) - perceivedDepth(base2);
+  
+  $('#previewArea').innerHTML = `
+    <div class="preview-box" style="background-color:rgb(${rgb2.R},${rgb2.G},${rgb2.B}); color:rgb(${rgb1.R},${rgb1.G},${rgb1.B});">
+      <div class="preview-group">
+        <div class="preview-text sans">Color Design</div>
+        <div class="preview-sub sans">Tatung University</div>
+      </div>
+      <div class="preview-group">
+        <div class="preview-text serif">Color Design</div>
+        <div class="preview-sub serif">Tatung University</div>
+      </div>
+      <div class="color-info" style="color:${base2.L>50?'#111':'#eee'}">
+        Text: L=${base1.L.toFixed(0)} C=${lch1.C.toFixed(0)} h=${lch1.h.toFixed(0)}° | BG: L=${base2.L.toFixed(0)} C=${lch2.C.toFixed(0)} h=${lch2.h.toFixed(0)}°
+      </div>
+    </div>
+  `;
+  
+  $('#analysisResult').innerHTML = `
+    <div class="suggestion-card">
+      ${detectChromaSteraopsis(base1, base2) ? '<div class="error">⚠️ Vibrating Boundaries detected! May cause visual discomfort. Enlarge lightness difference (ΔL) may help.</div>' : ''}
+      <div class="analysis-grid">
+        <div><span class="lbl">Harmony assessment:</span> ${descSpan('CH', CHU(pm))}</div>
+        <div><span class="lbl">Spatial effect for text color:</span> <span class="${depthDiff < -0.20 ? 'good' : depthDiff > 0.20 ? 'mid' : 'bad'}">${depthDiff < -0.20 ? 'Advancing' : depthDiff > 0.20 ? 'Receding' : 'None'}</span></div>
+        <div class="full-w">ΔL=${pm.dL.toFixed(1)} &nbsp;|&nbsp; ΔC=${pm.dC.toFixed(1)} &nbsp;|&nbsp; Δh=${pm.dH.toFixed(1)}° &nbsp;|&nbsp; ΔE=${deltaE(base1, base2).toFixed(1)}</div>
+      </div>
+    </div>
+  `;
+});
+
+/* =============== Swap button =============== */
+$('#swapBtn').addEventListener('click', ()=>{
+  const tmp = {...base1}; base1 = {...base2}; base2 = {...tmp};
+  syncInputs(1, base1, $(`#mode1`).value); syncInputs(2, base2, $(`#mode2`).value);
+  [1, 2].forEach(i => {
+    const rgb = labD50_to_rgb8((i===1?base1:base2).L, (i===1?base1:base2).a, (i===1?base1:base2).b);
+    $(`#colorPicker${i}`).value = '#' + [rgb.R, rgb.G, rgb.B].map(x => x.toString(16).padStart(2,'0')).join('');
+    updateColorDisplay(i);
+  });
+});
+
+updateColor(1); updateColor(2); $('#analyze').click();
+</script>
+</body>
+</html>
