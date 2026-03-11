@@ -60,4 +60,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7.1.0
         with:
           commit_message: Auto update weekly color alerts from Google RSS
-          file_pattern: _data/alerts/color_alerts.json
+          file_pattern: alerts-data/color_alerts.json
