@@ -1,28 +1,29 @@
 name: Weekly Google Alerts Update for Color
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true  # 強制使用 Node.js 24（2026 年 3 月起 default）
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   schedule:
-    - cron: '0 1 * * 0'  # 每週日 UTC 01:00（台灣時間週日早上 09:00）
-  workflow_dispatch:     # 允許手動觸發測試
+    - cron: '0 1 * * 0'
+  workflow_dispatch:
 
 permissions:
-  contents: write       # 允許 workflow 寫入 repo（commit & push 必要）
+  contents: write
 
 jobs:
   fetch-and-update:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6.0.2  # 升級到最新 v6.0.2
+        uses: actions/checkout@v6.0.2
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v6.2.0  # 最新版 v6.2.0
+        uses: actions/setup-python@v6.2.0
         with:
           python-version: '3.12'
-          cache: 'pip'                     # 快取 pip 依賴，加速重跑
+          # cache: 'pip'   ← 移除這行，或註解掉
+          # cache-dependency-path: '**/requirements.txt'  ← 如果要保留 cache，可加這行但仍需有檔案
 
       - name: Install dependencies
         run: pip install feedparser requests
@@ -38,7 +39,7 @@ jobs:
           feed = feedparser.parse(feed_url)
 
           items = []
-          for entry in feed.entries[:10]:  # 只取最新 10 筆
+          for entry in feed.entries[:10]:
               item = {
                   "title": entry.get("title", "No title"),
                   "link": entry.get("link", "#"),
@@ -56,7 +57,7 @@ jobs:
           EOF
 
       - name: Commit changes if any
-        uses: stefanzweifel/git-auto-commit-action@v7.1.0  # 最新 v7.1.0
+        uses: stefanzweifel/git-auto-commit-action@v7.1.0
         with:
           commit_message: Auto update weekly color alerts from Google RSS
           file_pattern: _data/alerts/color_alerts.json
