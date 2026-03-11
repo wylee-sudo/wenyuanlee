@@ -329,13 +329,15 @@ data.items.forEach(item => {
   const div = document.createElement('div');
   div.className = 'tool';  // 保留原有 tool 樣式，但會變一欄
 
-  div.innerHTML = `
-    <div style="width: 100%;">
-      <a href="${item.link}" target="_blank" rel="nofollow noopener" style="font-weight: bold; color: var(--link); text-decoration: none;">
-        ${item.title}
-      </a>
-    </div>
-  `;
+div.innerHTML = `
+  <div style="width: 100%;">
+    <a href="${item.link}" target="_blank" rel="nofollow noopener" 
+       style="font-weight: normal; color: var(--link); text-decoration: none; 
+              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">
+      ${item.title}
+    </a>
+  </div>
+`;
 
   container.appendChild(div);
 });
@@ -356,6 +358,7 @@ alertsGrid.style.gap = '16px';                          // 加大間距，看起
   </script>
 </body>
 </html>
+
 
 
 
