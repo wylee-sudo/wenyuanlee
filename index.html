@@ -307,14 +307,15 @@
       });
     });
 
-   // 動態載入 Google Alerts JSON（由 workflow 每週更新）
-fetch('_data/alerts/color_alerts.json?' + new Date().getTime(), { cache: 'no-store' })
+// 動態載入 Google Alerts JSON（由 workflow 每週更新）
+fetch('alerts-data/color_alerts.json?' + new Date().getTime(), { cache: 'no-store' })
   .then(response => {
     if (!response.ok) {
       throw new Error(`HTTP ${response.status} - 檔案還在部署中或路徑錯誤`);
     }
     return response.json();
   })
+  // ... 以下不變
   .then(data => {
     const container = document.getElementById('alerts-container');
     container.innerHTML = '';
@@ -347,4 +348,5 @@ fetch('_data/alerts/color_alerts.json?' + new Date().getTime(), { cache: 'no-sto
   </script>
 </body>
 </html>
+
 
