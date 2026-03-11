@@ -34,15 +34,27 @@ jobs:
           import feedparser
           import json
           import os
+          from urllib.parse import urlparse, parse_qs
 
           feed_url = "https://www.google.com/alerts/feeds/16676562592338289988/16796024816747426133"
           feed = feedparser.parse(feed_url)
 
           items = []
           for entry in feed.entries[:10]:
+              link = entry.get("link", "#")
+              
+              # 解析 Google redirect 中的原始 URL
+              original_link = link
+              if "google.com/url" in link:
+                  from urllib.parse import urlparse, parse_qs
+                  parsed = urlparse(link)
+                  qs = parse_qs(parsed.query)
+                  if 'url' in qs and qs['url']:
+                      original_link = qs['url'][0]  # 取出真正的原始網址
+              
               item = {
                   "title": entry.get("title", "No title"),
-                  "link": entry.get("link", "#"),
+                  "link": original_link,  # 使用乾淨的原始 URL
                   "published": entry.get("published", entry.get("updated", "No date")),
                   "description": (entry.get("summary") or entry.get("description") or "No snippet")[:300] + "..."
               }
