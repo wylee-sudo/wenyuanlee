@@ -318,7 +318,10 @@ fetch('alerts-data/color_alerts.json?' + new Date().getTime(), { cache: 'no-stor
   .then(data => {
     const container = document.getElementById('alerts-container');
     container.innerHTML = '';  // 清空 loading
-
+    
+  // 強制 Alerts 區塊維持單欄
+  container.style.gridTemplateColumns = '1fr';
+  container.style.gap = '16px';  // 可選：加大間距，看起來更舒服
     if (!data.items || data.items.length === 0) {
       container.innerHTML = '<div class="tool"><span class="muted">本週無新 color 相關更新。</span></div>';
       return;
@@ -379,6 +382,7 @@ fetch('alerts-data/color_alerts.json?' + new Date().getTime(), { cache: 'no-stor
   </script>
 </body>
 </html>
+
 
 
 
