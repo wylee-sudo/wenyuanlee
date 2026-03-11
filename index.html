@@ -315,39 +315,60 @@ fetch('alerts-data/color_alerts.json?' + new Date().getTime(), { cache: 'no-stor
     }
     return response.json();
   })
-  // ... 以下不變
   .then(data => {
     const container = document.getElementById('alerts-container');
-    container.innerHTML = '';
+    container.innerHTML = '';  // 清空 loading
 
-    if (data.items && data.items.length > 0) {
-// 先清空 container
-container.innerHTML = '';
+    if (!data.items || data.items.length === 0) {
+      container.innerHTML = '<div class="tool"><span class="muted">本週無新 color 相關更新。</span></div>';
+      return;
+    }
 
-// 只顯示標題（連結），移除 emoji 和 description
-data.items.forEach(item => {
-  const div = document.createElement('div');
-  div.className = 'tool';  // 保留原有 tool 樣式，但會變一欄
+    // 預設只顯示前 3 筆
+    const initialCount = 3;
+    let displayedCount = initialCount;
 
-div.innerHTML = `
-  <div style="width: 100%;">
-    <a href="${item.link}" target="_blank" rel="nofollow noopener" 
-       style="font-weight: normal; color: var(--link); text-decoration: none; 
-              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">
-      ${item.title}
-    </a>
-  </div>
-`;
+    // 建立所有項目（但先隱藏後面的）
+    const allItems = data.items.map(item => {
+      const div = document.createElement('div');
+      div.className = 'tool';
+      div.innerHTML = `
+        <div style="width: 100%;">
+          <a href="${item.link}" target="_blank" rel="nofollow noopener" 
+             style="font-weight: normal; color: var(--link); text-decoration: none; 
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">
+            ${item.title}
+          </a>
+        </div>
+      `;
+      return div;
+    });
 
-  container.appendChild(div);
-});
+    // 先只顯示前 3 筆
+    allItems.slice(0, initialCount).forEach(item => container.appendChild(item));
 
-// 讓 Alerts 區塊強制一欄（覆蓋 media query 的 2 欄）
-const alertsGrid = document.getElementById('alerts-container');
-alertsGrid.style.gridTemplateColumns = '1fr';           // 強制單欄
-alertsGrid.style.gap = '16px';                          // 加大間距，看起來更舒服
-    } else {
-      container.innerHTML = '<div class="tool"><span class="muted">本週暫無新 color 相關更新。</span></div>';
+    // 如果超過 3 筆，加「更多」按鈕
+    if (data.items.length > initialCount) {
+      const moreButton = document.createElement('div');
+      moreButton.style.textAlign = 'center';
+      moreButton.style.marginTop = '16px';
+      moreButton.innerHTML = `
+        <button class="chip" style="padding:10px 24px; cursor:pointer;">
+          顯示更多 (${data.items.length - initialCount} 筆)
+        </button>
+      `;
+
+      const button = moreButton.querySelector('button');
+      button.addEventListener('click', () => {
+        // 展開剩下所有
+        allItems.slice(displayedCount).forEach(item => container.insertBefore(item, moreButton));
+        displayedCount = data.items.length;
+
+        // 隱藏按鈕
+        moreButton.remove();
+      });
+
+      container.appendChild(moreButton);
     }
   })
   .catch(err => {
@@ -358,6 +379,7 @@ alertsGrid.style.gap = '16px';                          // 加大間距，看起
   </script>
 </body>
 </html>
+
 
 
 
