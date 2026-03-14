@@ -141,7 +141,7 @@
 
       <section class="card">
         <h2>Contact</h2>
-        <p>Email: <a href="mailto:wylee@gm.ttu.edu.tw">wylee@gm.ttu.edu.tw</a></p>
+        <p>Email: <a href="/cdn-cgi/l/email-protection#67101e0b020227000a4913131249020312491310"><span class="__cf_email__" data-cfemail="f5828c999090b59298db818180db909180db8182">[email&#160;protected]</span></a></p>
         <p>Location: Tatung University, Taipei, Taiwan</p>
       </section>
     </aside>
@@ -260,8 +260,8 @@
             <button class="toggle" type="button" aria-expanded="true">收合</button>
           </div>
           <div class="tools-grid" id="alerts-container" style="padding: 0 8px;">
-  <div class="tool"><span class="muted">Loading latest color-related news & articles...</span></div>
-</div>
+            <div class="tool"><span class="muted">Loading latest color-related news &amp; articles...</span></div>
+          </div>
         </section>
 
       </section>
@@ -272,18 +272,19 @@
     <p>© 2025 Color & Design Research Lab | Designed for GitHub Pages</p>
   </footer>
 
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
   <script>
     // 晶片篩選
     const chips = [...document.querySelectorAll('.chip')];
     const groups = [...document.querySelectorAll('.tool-group')];
 
-    function applyFilter(key){
-      chips.forEach(c=>{
-        const active = c.dataset.filter === key || (key==='all' && c.dataset.filter==='all');
+    function applyFilter(key) {
+      chips.forEach(c => {
+        const active = c.dataset.filter === key || (key === 'all' && c.dataset.filter === 'all');
         c.classList.toggle('is-active', active);
         c.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
-      groups.forEach(g=>{
+      groups.forEach(g => {
         const show = (key === 'all') ? true : (g.dataset.group === key);
         g.style.display = show ? '' : 'none';
       });
@@ -293,13 +294,13 @@
     applyFilter('all');
 
     // 群組收合/展開 + 計數
-    document.querySelectorAll('.tool-group').forEach(group=>{
+    document.querySelectorAll('.tool-group').forEach(group => {
       const btn = group.querySelector('.toggle');
       const grid = group.querySelector('.tools-grid');
       const count = group.querySelector('[data-count]');
-      if(count){ count.textContent = `(${grid.querySelectorAll('.tool').length})`; }
+      if (count) { count.textContent = '(' + grid.querySelectorAll('.tool').length + ')'; }
 
-      btn.addEventListener('click', ()=>{
+      btn.addEventListener('click', () => {
         const expanded = btn.getAttribute('aria-expanded') === 'true';
         btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
         btn.textContent = expanded ? '展開' : '收合';
@@ -307,87 +308,88 @@
       });
     });
 
-// 動態載入 Google Alerts JSON（由 workflow 每週更新）
-fetch('alerts-data/color_alerts.json?' + new Date().getTime(), { cache: 'no-store' })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} - 檔案還在部署中或路徑錯誤`);
-    }
-    return response.json();
-  })
-  .then(data => {
-    const container = document.getElementById('alerts-container');
-    container.innerHTML = '';  // 清空 loading
-    
-  // 強制 Alerts 區塊維持單欄
-  container.style.gridTemplateColumns = '1fr';
-  container.style.gap = '16px';  // 可選：加大間距，看起來更舒服
-    if (!data.items || data.items.length === 0) {
-      container.innerHTML = '<div class="tool"><span class="muted">本週無新 color 相關更新。</span></div>';
-      return;
+    // 解析 Google 轉址，取得真實 URL
+    function resolveGoogleUrl(url) {
+      try {
+        const u = new URL(url);
+        if (u.hostname === 'www.google.com' && u.pathname === '/url') {
+          const real = u.searchParams.get('q') || u.searchParams.get('url');
+          if (real) return real;
+        }
+      } catch(e) {}
+      return url;
     }
 
-    // 預設只顯示前 3 筆
-    const initialCount = 3;
-    let displayedCount = initialCount;
+    // 動態載入 Google Alerts JSON（由 workflow 每週更新）
+    fetch('alerts-data/color_alerts.json?' + new Date().getTime(), { cache: 'no-store' })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('HTTP ' + response.status + ' - 檔案還在部署中或路徑錯誤');
+        }
+        return response.json();
+      })
+      .then(data => {
+        const container = document.getElementById('alerts-container');
+        container.innerHTML = '';
 
-    // 建立所有項目（但先隱藏後面的）
-    const allItems = data.items.map(item => {
-      const div = document.createElement('div');
-      div.className = 'tool';
-     div.innerHTML = `
-  <div style="width: 100%;">
-    <a href="${item.link}" target="_blank" rel="nofollow noopener" 
-       style="font-weight: normal; color: var(--link); text-decoration: none; 
-              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">
-      ${item.title}
-    </a>
-  </div>
-`;
-      return div;
-    });
+        // 強制 Alerts 區塊維持單欄
+        container.style.gridTemplateColumns = '1fr';
+        container.style.gap = '16px';
 
-    // 先只顯示前 3 筆
-    allItems.slice(0, initialCount).forEach(item => container.appendChild(item));
+        if (!data.items || data.items.length === 0) {
+          container.innerHTML = '<div class="tool"><span class="muted">本週無新 color 相關更新。</span></div>';
+          return;
+        }
 
-    // 如果超過 3 筆，加「更多」按鈕
-    if (data.items.length > initialCount) {
-      const moreButton = document.createElement('div');
-      moreButton.style.textAlign = 'center';
-      moreButton.style.marginTop = '16px';
-      moreButton.innerHTML = `
-        <button class="chip" style="padding:10px 24px; cursor:pointer;">
-          顯示更多 (${data.items.length - initialCount} 筆)
-        </button>
-      `;
+        // 預設只顯示前 3 筆
+        const initialCount = 3;
+        let displayedCount = initialCount;
 
-      const button = moreButton.querySelector('button');
-      button.addEventListener('click', () => {
-        // 展開剩下所有
-        allItems.slice(displayedCount).forEach(item => container.insertBefore(item, moreButton));
-        displayedCount = data.items.length;
+        // 建立所有項目
+        const allItems = data.items.map(item => {
+          const div = document.createElement('div');
+          div.className = 'tool';
+          const realLink = resolveGoogleUrl(item.link);
+          div.innerHTML =
+            '<div style="width:100%;">' +
+              '<a href="' + realLink + '" target="_blank" rel="nofollow noopener" ' +
+                 'style="font-weight:normal; color:var(--link); text-decoration:none; display:block;">' +
+                item.title +
+              '</a>' +
+            '</div>';
+          return div;
+        });
 
-        // 隱藏按鈕
-        moreButton.remove();
+        // 先只顯示前 3 筆
+        allItems.slice(0, initialCount).forEach(item => container.appendChild(item));
+
+        // 如果超過 3 筆，加「更多」按鈕
+        if (data.items.length > initialCount) {
+          const moreButton = document.createElement('div');
+          moreButton.style.textAlign = 'center';
+          moreButton.style.marginTop = '16px';
+          moreButton.innerHTML =
+            '<button class="chip" style="padding:10px 24px; cursor:pointer;">' +
+              '顯示更多 (' + (data.items.length - initialCount) + ' 筆)' +
+            '</button>';
+
+          const button = moreButton.querySelector('button');
+          button.addEventListener('click', () => {
+            allItems.slice(displayedCount).forEach(item => container.insertBefore(item, moreButton));
+            displayedCount = data.items.length;
+            moreButton.remove();
+          });
+
+          container.appendChild(moreButton);
+        }
+      })
+      .catch(err => {
+        console.error('載入 Alerts 失敗:', err);
+        const container = document.getElementById('alerts-container');
+        if (container) {
+          container.innerHTML = '<div class="tool"><span class="muted">無法載入最新內容，請稍後再試。</span></div>';
+        }
       });
-
-      container.appendChild(moreButton);
-    }
-  })
-  .catch(err => {
-    console.error('載入 Alerts 失敗:', err);
-    document.getElementById('alerts-container').innerHTML = 
-      '<div class="tool"><span class="muted">Alerts 載入失敗（可能是 Pages 部署延遲或路徑問題），請稍後重新整理！</span></div>';
-  });
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
