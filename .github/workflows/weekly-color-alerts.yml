@@ -60,8 +60,8 @@ jobs:
               }
               items.append(item)
 
-          os.makedirs('_data/alerts', exist_ok=True)
-          with open('_data/alerts/color_alerts.json', 'w', encoding='utf-8') as f:
+os.makedirs('alerts-data', exist_ok=True)
+with open('alerts-data/color_alerts.json', 'w', encoding='utf-8') as f:
               json.dump({
                   "items": items,
                   "updated": feed.get("updated", "No update time")
