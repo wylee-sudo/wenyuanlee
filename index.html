@@ -345,18 +345,29 @@
         const initialCount = 3;
         let displayedCount = initialCount;
 
+        // 剝除標題裡的 HTML 標籤，只保留純文字
+        function stripHtml(html) {
+          const tmp = document.createElement('div');
+          tmp.innerHTML = html;
+          return tmp.textContent || tmp.innerText || '';
+        }
+
         // 建立所有項目
         const allItems = data.items.map(item => {
           const div = document.createElement('div');
           div.className = 'tool';
           const realLink = resolveGoogleUrl(item.link);
-          div.innerHTML =
-            '<div style="width:100%;">' +
-              '<a href="' + realLink + '" target="_blank" rel="nofollow noopener" ' +
-                 'style="font-weight:normal; color:var(--link); text-decoration:none; display:block;">' +
-                item.title +
-              '</a>' +
-            '</div>';
+          const plainTitle = stripHtml(item.title);
+          const a = document.createElement('a');
+          a.href = realLink;
+          a.target = '_blank';
+          a.rel = 'nofollow noopener';
+          a.style.cssText = 'font-weight:normal; color:var(--link); text-decoration:none; display:block;';
+          a.textContent = plainTitle;
+          const inner = document.createElement('div');
+          inner.style.width = '100%';
+          inner.appendChild(a);
+          div.appendChild(inner);
           return div;
         });
 
