@@ -1,3 +1,3 @@
-# Wen-Yuan LEE
-#Color and Design Research Lab, led by Prof. Wen-Yuan Lee at Tatung University, focuses on color science, color emotion and harmony, UX/GUI, and computational aesthetics.
-#大同大學 數位媒體設計學系 李文淵教授 長期致力於色彩科學、色彩情感與調和、使用者體驗/圖形使用者介面以及運算美學之相關研究。
+# Color & Design Research Lab
+> Interactive tools for color science, UX research, and computational aesthetics. 用於色彩科學、使用者體驗研究和計算美學的互動式工具。
+> Built by Wen-Yuan Lee at the Department of Digital Media Design, Tatung University, Taiwan.  由台灣 大同大學 數位媒體設計系 李文淵 建立。
