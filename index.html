@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <title>Color & Design Research Lab | Wen-Yuan Lee</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Color and Design Research Lab, led by Prof. Wen-Yuan Lee at Tatung University, focuses on color science, color emotion and harmony, UX/GUI, and computational aesthetics.大同大學李文淵教授帶領的色彩與設計研究實驗室，專注於色彩科學、色彩情感與和諧、使用者經驗/使用者介面以及運算美學。">
-  <meta name="author" content="Wen-Yuan Lee">
+  <meta name="description" content="Color and Design Research Lab, led by Prof. Wen-Yuan Lee at Tatung University, focuses on color science, color emotion and harmony, UX/GUI, and computational aesthetics.大同大學 數位媒體設計學系 李文淵教授 長期致力於色彩科學、色彩情感與調和、使用者體驗/圖形使用者介面以及運算美學之相關研究。 ">
+  <meta name="author" content="Wen-Yuan Lee 李文淵">
   <meta name="robots" content="index,follow">
-  <meta property="og:title" content="Color & Design Research Lab | Wen-Yuan Lee">
-  <meta property="og:description" content="Exploring color design, UX, and computation aesthetics at Tatung University.在大同大學探索色彩設計、使用者體驗和運算美學。">
+  <meta property="og:title" content="Color & Design Research Lab | Wen-Yuan Lee 李文淵">
+  <meta property="og:description" content="Exploring color design, UX, and computational aesthetics at Tatung University.">
   <meta property="og:image" content="https://wylee-sudo.github.io/wenyuanlee/og-Image.jpg">
   <meta property="og:url" content="https://wylee-sudo.github.io/wenyuanlee/">
   <meta name="theme-color" content="#ffffff">
@@ -40,7 +40,7 @@
     header h1{ margin:0 0 6px 0; font-size: clamp(26px,4.2vw,38px); font-weight:800; letter-spacing:.2px; }
     header p{ margin:0; color:var(--muted) }
 
-    /* Layout: 左內容 + 右工具 */
+    /* Layout: sidebar + main */
     .wrap{
       width:100%; max-width:var(--maxw); margin: 0 auto; padding: 0 16px 56px;
       display:grid; gap:20px; grid-template-columns: 1fr;
@@ -49,12 +49,12 @@
       .wrap{ grid-template-columns: 460px 1fr; align-items:start; }
     }
 
-    /* 卡片 */
+    /* Cards */
     .card{ background:var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding:22px; }
     h2{ color:var(--brand); font-size: clamp(20px,3.4vw,26px); margin: 6px 0 12px; }
     a{ color:var(--link); }
 
-    /* 右欄：Groups + Chips */
+    /* Right column: Groups + Chips */
     .groups-card{ padding:16px; }
     .chips{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
     .chip{
@@ -73,7 +73,7 @@
       margin-left:auto; font-size:13px; padding:6px 10px; border:1px solid #ddd; border-radius:8px; background:#fff; cursor:pointer;
     }
 
-    /* 工具卡：兩欄（手機一欄） */
+    /* Tool cards: 2-col (1-col on mobile) */
     .tools-grid{ display:grid; gap:12px; grid-template-columns:1fr; padding:12px; }
     @media (min-width: 680px){
       .tools-grid{ grid-template-columns:1fr 1fr; }
@@ -88,8 +88,34 @@
     .tool b{ display:block; margin-bottom:2px }
     .muted{ color:#777; font-size:13px; }
 
-    /* 收合狀態（僅隱藏內容區） */
+    /* Collapsed state (hide content only) */
     .tool-group[aria-hidden="true"] .tools-grid{ display:none; }
+
+    /* Color Roundup card */
+    .roundup-head{
+      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    }
+    .roundup-head h2{ margin: 0; }
+    .roundup-head .toggle{
+      margin-left: auto; font-size: 13px; padding: 6px 10px;
+      border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer;
+    }
+    .roundup-card[aria-hidden="true"] .roundup-body{ display: none; }
+    .roundup-item{
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .roundup-item:last-child{ border-bottom: none; padding-bottom: 0; }
+    .roundup-item a{ color: var(--link); text-decoration: none; font-size: 14px; line-height: 1.5; }
+    .roundup-item a:hover{ text-decoration: underline; }
+    .roundup-icon{ font-size: 15px; margin-top: 2px; flex-shrink: 0; }
+    .roundup-more-btn{
+      display: block; width: 100%; margin-top: 12px;
+      padding: 8px; border-radius: 8px; border: 1px solid var(--border);
+      background: #fff; color: var(--link); font-size: 13px; cursor: pointer;
+      text-align: center;
+    }
+    .roundup-more-btn:hover{ background: #f5f5f5; }
 
     /* Footer */
     footer{ text-align:center; color:#fff; background:#333; padding: 18px 14px; margin-top:30px; }
@@ -116,8 +142,19 @@
   </header>
 
   <div class="wrap">
-    <!-- 左欄：完整內容 -->
+    <!-- Left column: profile & info -->
     <aside>
+      <!-- Color Roundup -->
+      <section class="card roundup-card" id="roundup-section" aria-hidden="false">
+        <div class="roundup-head">
+          <h2>📢 Color Roundup</h2>
+          <button class="toggle" type="button" aria-expanded="true">Collapse</button>
+        </div>
+        <div class="roundup-body" id="alerts-container">
+          <div class="roundup-item"><span class="roundup-icon">⏳</span><span style="color:#777;font-size:14px">Loading latest color-related news &amp; articles...</span></div>
+        </div>
+      </section>
+
       <section class="card">
         <h2>Leader of Color & Design Research Lab</h2>
         <p><b>Professor Wen-Yuan Lee</b> is currently a faculty member in the Department of Digital Media Design at Tatung University in Taipei, Taiwan. His research interests encompass design thinking, color design, user experience, and computational aesthetics. He teaches courses in digital design, interaction design, color design, and user experience design. Professor Lee is dedicated to advancing the integration of aesthetics, technology, and human-centered innovation.</p>
@@ -141,27 +178,27 @@
 
     </aside>
 
-    <!-- 右欄：一目了然 + 分類 chips -->
+    <!-- Right column: tools + roundup -->
     <main>
       <section class="card groups-card" aria-label="Tools">
         <div class="chips" role="tablist" aria-label="Tool categories">
-          <button class="chip is-active" data-filter="all" aria-pressed="true">All</button>
+          <button class="chip is-active" data-filter="all" aria-pressed="true">All Tools</button>
           <button class="chip" data-filter="color" aria-pressed="false">for Color</button>
           <button class="chip" data-filter="gen" aria-pressed="false">Computational Aesthetics</button>
           <button class="chip" data-filter="ux" aria-pressed="false">for UX test</button>
           <button class="chip" data-filter="quiz" aria-pressed="false">Quiz &amp; Game</button>
         </div>
 
-        <!-- 原有群組：for Color -->
+        <!-- Group: for Color -->
         <section class="tool-group" data-group="color" aria-hidden="false">
           <div class="group-head">
             <h3>for Color</h3>
             <span class="count" data-count></span>
-            <button class="toggle" type="button" aria-expanded="true">收合</button>
+            <button class="toggle" type="button" aria-expanded="true">Collapse</button>
           </div>
           <div class="tools-grid">
             <a class="tool" href="Visual_Identification.html" target="_blank" rel="noopener">
-              <span class="emoji">🎨</span><div><b>Visual Identification</b><span class="muted">視覺辨識色彩三屬性 / Visual recognition of the three color attributes</span></div>
+              <span class="emoji">🎨</span><div><b>Visual Identification</b><span class="muted">Visual recognition of the three color attributes</span></div>
             </a>
             <a class="tool" href="CIELABspaceVisualizer.html" target="_blank" rel="noopener">
               <span class="emoji">📌</span><div><b>CIELAB Color Space Visualizer</b><span class="muted">CIELAB 3D color space</span></div>
@@ -187,39 +224,39 @@
           </div>
         </section>
 
-        <!-- 原有群組：Computational Aesthetics -->
+        <!-- Group: Computational Aesthetics -->
         <section class="tool-group" data-group="gen" aria-hidden="false">
           <div class="group-head">
             <h3>Computational Aesthetics</h3>
             <span class="count" data-count></span>
-            <button class="toggle" type="button" aria-expanded="true">收合</button>
+            <button class="toggle" type="button" aria-expanded="true">Collapse</button>
           </div>
           <div class="tools-grid">
             <a class="tool" href="DigitalFabricTexture.html" target="_blank" rel="noopener">
-              <span class="emoji">🧵</span><div><b>Digital Fabric Texture--Light and color intertwined</b><span class="muted">A silent symphony woven by algorithms.</span></div>
+              <span class="emoji">🧵</span><div><b>Digital Fabric Texture</b><span class="muted">Light and color intertwined — a silent symphony woven by algorithms.</span></div>
             </a>
             <a class="tool" href="ColorCube.html" target="_blank" rel="noopener">
-              <span class="emoji">🟩</span><div><b>Color Cub</b><span class="muted">Light acts as a design language</span></div>
+              <span class="emoji">🟩</span><div><b>Color Cube</b><span class="muted">Light acts as a design language</span></div>
             </a>
             <a class="tool" href="gravity_decay.html" target="_blank" rel="noopener">
-              <span class="emoji">🌠</span><div><b>The Gravity of Light 光之引力</b><span class="muted">它們誕生、燃燒、消散，如同人生</span></div>
+              <span class="emoji">🌠</span><div><b>The Gravity of Light</b><span class="muted">Born, burning, fading — like life itself</span></div>
             </a>
             <a class="tool" href="glasses_V7.html" target="_blank" rel="noopener">
-              <span class="emoji">🏳️‍🌈</span><div><b>Layering of Colors 色彩層疊</b><span class="muted">色彩在重疊過程中昇華而非衰減</span></div>
+              <span class="emoji">🏳️‍🌈</span><div><b>Layering of Colors</b><span class="muted">Colors transcend rather than diminish through layering</span></div>
             </a>
           </div>
         </section>
 
-        <!-- 原有群組：for UX test -->
+        <!-- for UX test -->
         <section class="tool-group" data-group="ux" aria-hidden="false">
           <div class="group-head">
             <h3>for UX test</h3>
             <span class="count" data-count></span>
-            <button class="toggle" type="button" aria-expanded="true">收合</button>
+            <button class="toggle" type="button" aria-expanded="true">Collapse</button>
           </div>
           <div class="tools-grid">
             <a class="tool" href="sus_measurment.html" target="_blank" rel="noopener">
-              <span class="emoji">📏</span><div><b>SUS</b><span class="muted">System Usability Scale </span></div>
+              <span class="emoji">📏</span><div><b>SUS</b><span class="muted">System Usability Scale</span></div>
             </a>
             <a class="tool" href="csuq.html" target="_blank" rel="noopener">
               <span class="emoji">🧪</span><div><b>CSUQ</b><span class="muted">Computer System Usability Questionnaire</span></div>
@@ -227,49 +264,41 @@
           </div>
         </section>
 
-        <!-- 原有群組：Quiz & Game -->
+        <!-- Quiz & Game -->
         <section class="tool-group" data-group="quiz" aria-hidden="false">
           <div class="group-head">
             <h3>Quiz &amp; Game</h3>
             <span class="count" data-count></span>
-            <button class="toggle" type="button" aria-expanded="true">收合</button>
+            <button class="toggle" type="button" aria-expanded="true">Collapse</button>
           </div>
           <div class="tools-grid">
             <a class="tool" href="ColorIdiomsQuiz3.html" target="_blank" rel="noopener">
-              <span class="emoji">🧩</span><div><b>Color Idioms Quiz</b><span class="muted">色彩都不色彩了</span></div>
+              <span class="emoji">🧩</span><div><b>Color Idioms Quiz</b><span class="muted">Test your knowledge of color-related idioms</span></div>
             </a>
             <a class="tool" href="diffColor.html" target="_blank" rel="noopener">
-              <span class="emoji">🟦</span><div><b>Odd-One-Out</b><span class="muted">找出不同色</span></div>
+              <span class="emoji">🟦</span><div><b>Odd-One-Out</b><span class="muted">Spot the different color</span></div>
             </a>
             <a class="tool" href="StroopGame.html" target="_blank" rel="noopener">
-              <span class="emoji">🔤</span><div><b>Stroop Effect Game</b><span class="muted">叫色遊戲</span></div>
+              <span class="emoji">🔤</span><div><b>Stroop Effect Game</b><span class="muted">Name the color, not the word</span></div>
             </a>
-          </div>
-        </section>
-
-        <!-- 新增：自動更新的 Google Alerts 區塊 -->
-        <section class="tool-group" data-group="alerts" aria-hidden="false">
-          <div class="group-head">
-            <h3>📢 Weekly Color Roundup </h3>
-            <span class="count">(Latest)</span>
-            <button class="toggle" type="button" aria-expanded="true">收合</button>
-          </div>
-          <div class="tools-grid" id="alerts-container" style="padding: 0 8px;">
-            <div class="tool"><span class="muted">Loading latest color-related news &amp; articles...</span></div>
           </div>
         </section>
 
       </section>
+
     </main>
   </div>
 
   <footer>
-    <p>© 2025 Color & Design Research Lab | Designed for GitHub Pages</p>
+    <p>© <span id="year"></span> Color &amp; Design Research Lab | Designed for GitHub Pages</p>
   </footer>
 
   <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
   <script>
-    // 晶片篩選
+    // Footer year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Chip filter
     const chips = [...document.querySelectorAll('.chip')];
     const groups = [...document.querySelectorAll('.tool-group')];
 
@@ -288,7 +317,7 @@
     chips.forEach(c => c.addEventListener('click', () => applyFilter(c.dataset.filter)));
     applyFilter('all');
 
-    // 群組收合/展開 + 計數
+    // Tool group collapse/expand + item count
     document.querySelectorAll('.tool-group').forEach(group => {
       const btn = group.querySelector('.toggle');
       const grid = group.querySelector('.tools-grid');
@@ -298,12 +327,22 @@
       btn.addEventListener('click', () => {
         const expanded = btn.getAttribute('aria-expanded') === 'true';
         btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-        btn.textContent = expanded ? '展開' : '收合';
+        btn.textContent = expanded ? 'Expand' : 'Collapse';
         group.setAttribute('aria-hidden', expanded ? 'true' : 'false');
       });
     });
 
-    // 解析 Google 轉址，取得真實 URL
+    // Color Roundup collapse/expand
+    const roundupSection = document.getElementById('roundup-section');
+    const roundupToggle = roundupSection.querySelector('.toggle');
+    roundupToggle.addEventListener('click', () => {
+      const expanded = roundupToggle.getAttribute('aria-expanded') === 'true';
+      roundupToggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+      roundupToggle.textContent = expanded ? 'Expand' : 'Collapse';
+      roundupSection.setAttribute('aria-hidden', expanded ? 'true' : 'false');
+    });
+
+    // Resolve Google redirect URLs
     function resolveGoogleUrl(url) {
       try {
         const u = new URL(url);
@@ -315,85 +354,65 @@
       return url;
     }
 
-    // 動態載入 Google Alerts JSON（由 workflow 每週更新）
+    // Load Color Roundup from JSON
     fetch('alerts-data/color_alerts.json?' + new Date().getTime(), { cache: 'no-store' })
       .then(response => {
-        if (!response.ok) {
-          throw new Error('HTTP ' + response.status + ' - 檔案還在部署中或路徑錯誤');
-        }
+        if (!response.ok) throw new Error('HTTP ' + response.status);
         return response.json();
       })
       .then(data => {
         const container = document.getElementById('alerts-container');
         container.innerHTML = '';
 
-        // 強制 Alerts 區塊維持單欄
-        container.style.gridTemplateColumns = '1fr';
-        container.style.gap = '16px';
-
         if (!data.items || data.items.length === 0) {
-          container.innerHTML = '<div class="tool"><span class="muted">本週無新 color 相關更新。</span></div>';
+          container.innerHTML = '<div class="roundup-item"><span class="roundup-icon">📭</span><span style="color:#777;font-size:14px">No new color updates this week.</span></div>';
           return;
         }
 
-        // 預設只顯示前 3 筆
-        const initialCount = 3;
-        let displayedCount = initialCount;
-
-        // 剝除標題裡的 HTML 標籤，只保留純文字
         function stripHtml(html) {
           const tmp = document.createElement('div');
           tmp.innerHTML = html;
           return tmp.textContent || tmp.innerText || '';
         }
 
-        // 建立所有項目
+        const initialCount = 3;
+        let displayedCount = initialCount;
+
         const allItems = data.items.map(item => {
           const div = document.createElement('div');
-          div.className = 'tool';
-          const realLink = resolveGoogleUrl(item.link);
-          const plainTitle = stripHtml(item.title);
+          div.className = 'roundup-item';
+          const icon = document.createElement('span');
+          icon.className = 'roundup-icon';
+          icon.textContent = '📰';
           const a = document.createElement('a');
-          a.href = realLink;
+          a.href = resolveGoogleUrl(item.link);
           a.target = '_blank';
           a.rel = 'nofollow noopener';
-          a.style.cssText = 'font-weight:normal; color:var(--link); text-decoration:none; display:block;';
-          a.textContent = plainTitle;
-          const inner = document.createElement('div');
-          inner.style.width = '100%';
-          inner.appendChild(a);
-          div.appendChild(inner);
+          a.textContent = stripHtml(item.title);
+          div.appendChild(icon);
+          div.appendChild(a);
           return div;
         });
 
-        // 先只顯示前 3 筆
         allItems.slice(0, initialCount).forEach(item => container.appendChild(item));
 
-        // 如果超過 3 筆，加「更多」按鈕
         if (data.items.length > initialCount) {
-          const moreButton = document.createElement('div');
-          moreButton.style.textAlign = 'center';
-          moreButton.style.marginTop = '16px';
-          moreButton.innerHTML =
-            '<button class="chip" style="padding:10px 24px; cursor:pointer;">' +
-              '顯示更多 (' + (data.items.length - initialCount) + ' 筆)' +
-            '</button>';
-
-          const button = moreButton.querySelector('button');
-          button.addEventListener('click', () => {
-            allItems.slice(displayedCount).forEach(item => container.insertBefore(item, moreButton));
+          const moreBtn = document.createElement('button');
+          moreBtn.className = 'roundup-more-btn';
+          moreBtn.textContent = 'Show more (' + (data.items.length - initialCount) + ' items)';
+          moreBtn.addEventListener('click', () => {
+            allItems.slice(displayedCount).forEach(item => container.insertBefore(item, moreBtn));
             displayedCount = data.items.length;
-            moreButton.remove();
+            moreBtn.remove();
           });
-
-          container.appendChild(moreButton);
+          container.appendChild(moreBtn);
         }
       })
       .catch(err => {
-        console.error('載入 Alerts 失敗:', err);
+        console.error('Failed to load alerts:', err);
         const container = document.getElementById('alerts-container');
         if (container) {
-          container.innerHTML = '<div class="tool"><span class="muted">無法載入最新內容，請稍後再試。</span></div>';
+          container.innerHTML = '<div class="roundup-item"><span class="roundup-icon">⚠️</span><span style="color:#777;font-size:14px">Could not load latest content. Please try again later.</span></div>';
         }
       });
   </script>
