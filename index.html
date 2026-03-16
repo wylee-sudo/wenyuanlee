@@ -155,6 +155,28 @@
         </div>
       </section>
 
+      <!-- Journal: Color Research & Application -->
+      <section class="card roundup-card" id="journal-cra-section" aria-hidden="false">
+        <div class="roundup-head">
+          <h2>&#128214; Color Research &amp; Application</h2>
+          <button class="toggle" type="button" aria-expanded="true">Collapse</button>
+        </div>
+        <div class="roundup-body" id="journal-cra-container">
+          <div class="roundup-item"><span class="roundup-icon">&#9203;</span><span style="color:#777;font-size:14px">Loading latest articles...</span></div>
+        </div>
+      </section>
+
+      <!-- Journal: Coloration Technology -->
+      <section class="card roundup-card" id="journal-ct-section" aria-hidden="false">
+        <div class="roundup-head">
+          <h2>&#128214; Coloration Technology</h2>
+          <button class="toggle" type="button" aria-expanded="true">Collapse</button>
+        </div>
+        <div class="roundup-body" id="journal-ct-container">
+          <div class="roundup-item"><span class="roundup-icon">&#9203;</span><span style="color:#777;font-size:14px">Loading latest articles...</span></div>
+        </div>
+      </section>
+
       <section class="card">
         <h2>Leader of Color & Design Research Lab</h2>
         <p><b>Professor Wen-Yuan Lee</b> is currently a faculty member in the Department of Digital Media Design at Tatung University in Taipei, Taiwan. His research interests encompass design thinking, color design, user experience, and computational aesthetics. He teaches courses in digital design, interaction design, color design, and user experience design. Professor Lee is dedicated to advancing the integration of aesthetics, technology, and human-centered innovation.</p>
@@ -415,6 +437,96 @@
           container.innerHTML = '<div class="roundup-item"><span class="roundup-icon">⚠️</span><span style="color:#777;font-size:14px">Could not load latest content. Please try again later.</span></div>';
         }
       });
+  </script>
+  <script>
+    // Journal collapse/expand — generic helper
+    function initRoundupToggle(sectionId) {
+      const section = document.getElementById(sectionId);
+      if (!section) return;
+      const btn = section.querySelector('.toggle');
+      btn.addEventListener('click', () => {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        btn.textContent = expanded ? 'Expand' : 'Collapse';
+        section.setAttribute('aria-hidden', expanded ? 'true' : 'false');
+      });
+    }
+    initRoundupToggle('journal-cra-section');
+    initRoundupToggle('journal-ct-section');
+
+    // Generic journal loader
+    function loadJournal(jsonPath, containerId) {
+      fetch(jsonPath + '?' + new Date().getTime(), { cache: 'no-store' })
+        .then(response => {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          return response.json();
+        })
+        .then(data => {
+          const container = document.getElementById(containerId);
+          container.innerHTML = '';
+
+          if (!data.items || data.items.length === 0) {
+            container.innerHTML = '<div class="roundup-item"><span class="roundup-icon">📭</span><span style="color:#777;font-size:14px">No recent articles found.</span></div>';
+            return;
+          }
+
+          function stripHtml(html) {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = html;
+            return tmp.textContent || tmp.innerText || '';
+          }
+
+          const initialCount = 3;
+          let displayedCount = initialCount;
+
+          const allItems = data.items.map(item => {
+            const div = document.createElement('div');
+            div.className = 'roundup-item';
+            const icon = document.createElement('span');
+            icon.className = 'roundup-icon';
+            icon.textContent = '📄';
+            const col = document.createElement('div');
+            col.style.cssText = 'display:flex; flex-direction:column; gap:2px;';
+            const a = document.createElement('a');
+            a.href = item.link;
+            a.target = '_blank';
+            a.rel = 'nofollow noopener';
+            a.textContent = stripHtml(item.title);
+            const meta = document.createElement('span');
+            meta.style.cssText = 'color:#999; font-size:12px;';
+            meta.textContent = item.published ? item.published.substring(0, 16) : '';
+            col.appendChild(a);
+            col.appendChild(meta);
+            div.appendChild(icon);
+            div.appendChild(col);
+            return div;
+          });
+
+          allItems.slice(0, initialCount).forEach(item => container.appendChild(item));
+
+          if (data.items.length > initialCount) {
+            const moreBtn = document.createElement('button');
+            moreBtn.className = 'roundup-more-btn';
+            moreBtn.textContent = 'Show more (' + (data.items.length - initialCount) + ' items)';
+            moreBtn.addEventListener('click', () => {
+              allItems.slice(displayedCount).forEach(item => container.insertBefore(item, moreBtn));
+              displayedCount = data.items.length;
+              moreBtn.remove();
+            });
+            container.appendChild(moreBtn);
+          }
+        })
+        .catch(err => {
+          console.error('Failed to load ' + jsonPath + ':', err);
+          const container = document.getElementById(containerId);
+          if (container) {
+            container.innerHTML = '<div class="roundup-item"><span class="roundup-icon">⚠️</span><span style="color:#777;font-size:14px">Could not load latest articles. Please try again later.</span></div>';
+          }
+        });
+    }
+
+    loadJournal('alerts-data/journal_color_research.json', 'journal-cra-container');
+    loadJournal('alerts-data/journal_coloration_technology.json', 'journal-ct-container');
   </script>
 </body>
 </html>
