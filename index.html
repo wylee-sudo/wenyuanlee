@@ -570,7 +570,7 @@
         });
 
         if (merged.length === 0) {
-          container.innerHTML = '<div class="roundup-item"><span class="roundup-icon">&#128237;</span><span style="color:#777;font-size:14px">No recent journal articles found.</span></div>';
+          container.innerHTML = '<div class="roundup-item"><span class="roundup-icon">📭</span><span style="color:#777;font-size:14px">No recent journal articles found.</span></div>';
           return;
         }
 
@@ -588,7 +588,7 @@
           div.className = 'roundup-item';
           const icon = document.createElement('span');
           icon.className = 'roundup-icon';
-          icon.textContent = '&#128196;';
+          icon.textContent = '📄';
           const col = document.createElement('div');
           col.style.cssText = 'display:flex; flex-direction:column; gap:2px;';
           const a = document.createElement('a');
