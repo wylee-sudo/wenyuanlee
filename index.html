@@ -175,25 +175,25 @@
         </div>
       </section>
 
-      <!-- Journal: Color Research & Application -->
-      <section class="card roundup-card" id="journal-cra-section" aria-hidden="false">
+      <!-- Google Alerts: AI & Design -->
+      <section class="card roundup-card" id="ai-design-section" aria-hidden="false">
         <div class="roundup-head">
-          <h2>&#128214; Color Research &amp; Application</h2>
+          <h2>&#129302; AI &amp; Design Roundup</h2>
           <button class="toggle" type="button" aria-expanded="true">Collapse</button>
         </div>
-        <div class="roundup-body" id="journal-cra-container">
-          <div class="roundup-item"><span class="roundup-icon">&#9203;</span><span style="color:#777;font-size:14px">Loading latest articles...</span></div>
+        <div class="roundup-body" id="ai-design-container">
+          <div class="roundup-item"><span class="roundup-icon">&#9203;</span><span style="color:#777;font-size:14px">Loading latest AI &amp; design news...</span></div>
         </div>
       </section>
 
-      <!-- Journal: Coloration Technology -->
-      <section class="card roundup-card" id="journal-ct-section" aria-hidden="false">
+      <!-- Journals: Color-Related (merged) -->
+      <section class="card roundup-card" id="journal-merged-section" aria-hidden="false">
         <div class="roundup-head">
-          <h2>&#128214; Coloration Technology</h2>
+          <h2>&#128214; Color-Related Journal Papers</h2>
           <button class="toggle" type="button" aria-expanded="true">Collapse</button>
         </div>
-        <div class="roundup-body" id="journal-ct-container">
-          <div class="roundup-item"><span class="roundup-icon">&#9203;</span><span style="color:#777;font-size:14px">Loading latest articles...</span></div>
+        <div class="roundup-body" id="journal-merged-container">
+          <div class="roundup-item"><span class="roundup-icon">&#9203;</span><span style="color:#777;font-size:14px">Loading latest journal articles...</span></div>
         </div>
       </section>
 
@@ -473,8 +473,8 @@
         section.setAttribute('aria-hidden', expanded ? 'true' : 'false');
       });
     }
-    initRoundupToggle('journal-cra-section');
-    initRoundupToggle('journal-ct-section');
+    initRoundupToggle('ai-design-section');
+    initRoundupToggle('journal-merged-section');
 
     // Generic journal loader
     function loadJournal(jsonPath, containerId) {
@@ -547,8 +547,81 @@
         });
     }
 
-    loadJournal('alerts-data/journal_color_research.json', 'journal-cra-container');
-    loadJournal('alerts-data/journal_coloration_technology.json', 'journal-ct-container');
+    loadJournal('alerts-data/ai_design_alerts.json', 'ai-design-container');
+
+    // Load merged journals (Color Research & Application + Coloration Technology)
+    (function() {
+      const files = [
+        { path: 'alerts-data/journal_color_research.json', label: 'Color Research & Application' },
+        { path: 'alerts-data/journal_coloration_technology.json', label: 'Coloration Technology' }
+      ];
+      const ts = '?' + new Date().getTime();
+      Promise.all(files.map(f =>
+        fetch(f.path + ts, { cache: 'no-store' })
+          .then(r => r.ok ? r.json() : { items: [] })
+          .then(data => (data.items || []).map(item => Object.assign({}, item, { _journal: f.label })))
+          .catch(() => [])
+      )).then(results => {
+        const container = document.getElementById('journal-merged-container');
+        container.innerHTML = '';
+
+        const merged = results.flat().sort((a, b) => {
+          return new Date(b.published || 0) - new Date(a.published || 0);
+        });
+
+        if (merged.length === 0) {
+          container.innerHTML = '<div class="roundup-item"><span class="roundup-icon">&#128237;</span><span style="color:#777;font-size:14px">No recent journal articles found.</span></div>';
+          return;
+        }
+
+        function stripHtml(html) {
+          const tmp = document.createElement('div');
+          tmp.innerHTML = html;
+          return tmp.textContent || tmp.innerText || '';
+        }
+
+        const initialCount = 5;
+        let displayedCount = initialCount;
+
+        const allItems = merged.map(item => {
+          const div = document.createElement('div');
+          div.className = 'roundup-item';
+          const icon = document.createElement('span');
+          icon.className = 'roundup-icon';
+          icon.textContent = '&#128196;';
+          const col = document.createElement('div');
+          col.style.cssText = 'display:flex; flex-direction:column; gap:2px;';
+          const a = document.createElement('a');
+          a.href = item.link;
+          a.target = '_blank';
+          a.rel = 'nofollow noopener';
+          a.textContent = stripHtml(item.title);
+          const meta = document.createElement('span');
+          meta.style.cssText = 'color:#999; font-size:12px;';
+          const dateStr = item.published ? item.published.substring(0, 16) : '';
+          meta.textContent = item._journal + (dateStr ? ' · ' + dateStr : '');
+          col.appendChild(a);
+          col.appendChild(meta);
+          div.appendChild(icon);
+          div.appendChild(col);
+          return div;
+        });
+
+        allItems.slice(0, initialCount).forEach(item => container.appendChild(item));
+
+        if (merged.length > initialCount) {
+          const moreBtn = document.createElement('button');
+          moreBtn.className = 'roundup-more-btn';
+          moreBtn.textContent = 'Show more (' + (merged.length - initialCount) + ' items)';
+          moreBtn.addEventListener('click', () => {
+            allItems.slice(displayedCount).forEach(item => container.insertBefore(item, moreBtn));
+            displayedCount = merged.length;
+            moreBtn.remove();
+          });
+          container.appendChild(moreBtn);
+        }
+      });
+    })();
   </script>
 </body>
 </html>
