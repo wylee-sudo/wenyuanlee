@@ -30,28 +30,35 @@ jobs:
           os.makedirs('alerts-data', exist_ok=True)
 
           # --- Google Alerts ---
-          feed_url = "https://www.google.com/alerts/feeds/16676562592338289988/16796024816747426133"
-          feed = feedparser.parse(feed_url)
-          items = []
-          for entry in feed.entries[:10]:
-              link = entry.get("link", "#")
-              original_link = link
-              if "google.com/url" in link:
-                  parsed = urlparse(link)
-                  qs = parse_qs(parsed.query)
-                  if 'url' in qs and qs['url']:
-                      original_link = qs['url'][0]
-              items.append({
-                  "title": entry.get("title", "No title"),
-                  "link": original_link,
-                  "published": entry.get("published", entry.get("updated", "No date")),
-                  "description": (entry.get("summary") or entry.get("description") or "No snippet")[:300] + "..."
-              })
-          with open('alerts-data/color_alerts.json', 'w', encoding='utf-8') as f:
-              json.dump({
-                  "items": items,
-                  "updated": feed.get("updated", "No update time")
-              }, f, ensure_ascii=False, indent=2)
+          def fetch_google_alerts(feed_url, output_file):
+              feed = feedparser.parse(feed_url)
+              items = []
+              for entry in feed.entries[:10]:
+                  link = entry.get("link", "#")
+                  original_link = link
+                  if "google.com/url" in link:
+                      parsed = urlparse(link)
+                      qs = parse_qs(parsed.query)
+                      if 'url' in qs and qs['url']:
+                          original_link = qs['url'][0]
+                  items.append({
+                      "title": entry.get("title", "No title"),
+                      "link": original_link,
+                      "published": entry.get("published", entry.get("updated", "No date")),
+                      "description": (entry.get("summary") or entry.get("description") or "No snippet")[:300] + "..."
+                  })
+              with open(output_file, 'w', encoding='utf-8') as f:
+                  json.dump({
+                      "items": items,
+                      "updated": feed.get("updated", "No update time")
+                  }, f, ensure_ascii=False, indent=2)
+
+          google_alerts = {
+              "color_alerts": "https://www.google.com/alerts/feeds/16676562592338289988/16796024816747426133",
+              "ai_design_alerts": "https://www.google.com/alerts/feeds/16676562592338289988/15555520364526028089",
+          }
+          for filename, url in google_alerts.items():
+              fetch_google_alerts(url, f'alerts-data/{filename}.json')
 
           # --- 學術期刊 RSS ---
           journals = {
