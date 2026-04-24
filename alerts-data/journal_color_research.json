@@ -2,6 +2,12 @@
   "journal": "Color Research & Application",
   "items": [
     {
+      "title": "A Perception‐Guided Framework for Cross‐Media HDR‐to‐SDR Reproduction",
+      "link": "https://onlinelibrary.wiley.com/doi/10.1002/col.70089?af=R",
+      "published": "Thu, 23 Apr 2026 18:35:01 -0700",
+      "description": "Color Research &amp;Application, Volume 51, Issue 3, May/June 2026...."
+    },
+    {
       "title": "Bridging Color Standards: Aligning the Color‐Aid System with the International Commission on Illumination (CIE) and the Munsell Book of Color Coordinates",
       "link": "https://onlinelibrary.wiley.com/doi/10.1002/col.70087?af=R",
       "published": "Mon, 20 Apr 2026 03:58:30 -0700",
@@ -54,13 +60,7 @@
       "link": "https://onlinelibrary.wiley.com/doi/10.1002/col.70071?af=R",
       "published": "Wed, 01 Apr 2026 00:29:37 -0700",
       "description": "Color Research &amp;Application, Volume 51, Issue 3, May/June 2026...."
-    },
-    {
-      "title": "Deep Learning–Based Modeling of Angular Color Variations on Surfaces Using RGB‐D Imaging",
-      "link": "https://onlinelibrary.wiley.com/doi/10.1002/col.70080?af=R",
-      "published": "Mon, 30 Mar 2026 19:40:24 -0700",
-      "description": "Color Research &amp;Application, Volume 51, Issue 3, May/June 2026...."
     }
   ],
-  "updated": "Thu, 23 Apr 2026 07:39:10 GMT"
+  "updated": "Fri, 24 Apr 2026 07:27:36 GMT"
 }
