@@ -5,18 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Munsell 色彩秩序系統</title>
   <script src="https://cdn.tailwindcss.com"></script>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-N8QWS5JKZD');
-</script>
 </head>
-
-  <body class="bg-white text-gray-900">
+<body class="bg-white text-gray-900">
 <div id="app" class="min-h-screen w-full"></div>
 <script>
 // === 由 Excel 轉出的內建資料 ===
@@ -51,7 +41,7 @@ function rgbToCss(rgb){ return `rgb(${rgb.R},${rgb.G},${rgb.B})`; }
 function hueToAngleDeg(h){
   if(h==='N') return 0;
   const order=['R','YR','Y','GY','G','BG','B','PB','P','RP'];
-  const m=h.match(/^(2\.5|5|7\.5|10)(R|YR|Y|GY|G|BG|B|PB|P|RP)$/);
+  const m=h.match(/^(2\.5|5\.0|5|7\.5|10\.0|10)(R|YR|Y|GY|G|BG|B|PB|P|RP)$/);
   if(!m) return 0;
   const step=parseFloat(m[1]); const fam=m[2]; const idx=order.indexOf(fam);
   const sectorStart=-18+idx*36; const offset=(step/10)*36; return sectorStart+offset;
@@ -127,11 +117,11 @@ function App(){
                 }
                 return ticks;
               })()}
-              <!-- X軸 (Chroma) 刻度 0~32, 間隔2 -->
+              <!-- X軸 (Chroma) 刻度 0~40, 間隔2 -->
               ${(() => {
                 let ticks='';
-                for(let c=0; c<=32; c+=2){
-                  const x=40+(c/32)*300;
+                for(let c=0; c<=40; c+=2){
+                  const x=40+(c/40)*300;
                   ticks += `<line x1='${x}' y1='280' x2='${x}' y2='282' stroke='#9ca3af'/>`;
                   ticks += `<text x='${x-4}' y='295'>${c}</text>`;
                 }
@@ -139,7 +129,7 @@ function App(){
               })()}
             </g>
             ${(() => {
-              const cx = 40 + (state.chroma/32)*300;
+              const cx = 40 + (state.chroma/40)*300;
               const cy = 280 - (value/10)*240;
               return `<circle cx='${cx}' cy='${cy}' r='10' fill='${swatchCss}'/>`;
             })()}
@@ -154,13 +144,18 @@ function App(){
             <!-- 同心圓：彩度 2～32（偶數），實線 -->
 ${(() => {
   const rings=[];
-  const chromaTicks=[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32];
+  const chromaTicks=[2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40];
   for(const c of chromaTicks){
-    const r=(c/32)*140;
+    const r=(c/40)*140;
     rings.push(`<circle cx='180' cy='180' r='${r}' fill='none' stroke='#e5e7eb'/>`);
   }
-  // 中心 0 標示（保留）
+  // 中心 0 標示
   rings.push(`<text x='180' y='180' font-size='10' text-anchor='middle' dominant-baseline='middle' fill='#6b7280'>0</text>`);
+  // 在正右方標示彩度刻度
+  for(const c of [10,20,30,40]){
+    const r=(c/40)*140;
+    rings.push(`<text x='${180+r+3}' y='183' font-size='9' fill='#9ca3af'>${c}</text>`);
+  }
   return rings.join('');
 })()}
             <!-- 5R/5Y/5G/5B/5P 的刻度 -->
@@ -204,8 +199,8 @@ ${(() => {
               const r=140;
               const angle = hueToAngleDeg(state.hue);
               const rad=(angle-90)*Math.PI/180;
-              const cx=180+(state.chroma/32*r)*Math.cos(rad);
-              const cy=180+(state.chroma/32*r)*Math.sin(rad);
+              const cx=180+(state.chroma/40*r)*Math.cos(rad);
+              const cy=180+(state.chroma/40*r)*Math.sin(rad);
               return `<circle cx='${cx}' cy='${cy}' r='10' fill='${swatchCss}'/>`;
             })()}
           </svg>
@@ -222,10 +217,5 @@ ${(() => {
 }
 App();
 </script>
-
-  <footer style="text-align:center; margin-top: 30px; font-size: 14px; color: #555;">
-    Developed by <a href="index.html">Color & Design Research Lab</a></br>
-</footer>
-  
 </body>
 </html>
