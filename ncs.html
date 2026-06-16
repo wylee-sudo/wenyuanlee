@@ -166,7 +166,7 @@
     if(angle==null){ return; }
     const rad=(angle-90)*Math.PI/180;
     const x=cx+R*Math.cos(rad), y=cy+R*Math.sin(rad);
-    const size=14;
+    const size=24;
     hctx.save(); hctx.translate(x,y);
     hctx.fillStyle=color; hctx.strokeStyle='#fff'; hctx.lineWidth=2;
     hctx.fillRect(-size/2,-size/2,size,size);
@@ -254,7 +254,7 @@
     const w1=W/sum, s1=S/sum, c1=C/sum;
     const x=w1*Ax + s1*Bx + c1*Cx;
     const y=w1*Ay + s1*By + c1*Cy;
-    const size=16;
+    const size=24;
     tctx.save(); tctx.translate(x,y);
     tctx.fillStyle=color; tctx.strokeStyle='#fff'; tctx.lineWidth=2;
     tctx.fillRect(-size/2,-size/2,size,size);
