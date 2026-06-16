@@ -377,7 +377,12 @@ function formatNCS(hue, S, C){
   async function init(){
     await loadData();
     computeTriGeom(); drawHueBase(); drawTriBase();
-    fillHue(); fillC(); fillS();
+    ffillHue(); 
+hSel.value = 'G30Y';  // 設定色相
+fillC(); 
+cSel.value = '70';    // 設定含色度 C
+fillS(); 
+sSel.value = '25';     // 設定含黑度 S（依資料庫內有的值）
     updateA(); // 會觸發第一次 redraw()
   }
   window.addEventListener('load', init);
