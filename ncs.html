@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>NCS ↔ RGB</title>
 <style>
-  :root{--bg:#808080;--card:#f4f4f4;--ink:#111}
+  :root{--bg:#ffffff;--card:#808080;--ink:#111}
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--ink)}
   header,footer{padding:16px;text-align:center;color:#eee}
@@ -69,10 +69,7 @@
     <div><canvas id="hueCanvas" width="460" height="460" aria-label="NCS Hue Circle"></canvas></div>
     <div><canvas id="triCanvas" width="460" height="460" aria-label="NCS W-S-C Triangle"></canvas></div>
   </div>
-  <div class="legend">
-    <span class="dot dotA"></span> A 點　
-    <span class="dot dotB"></span> B 點
-  </div>
+
 </div>
 <footer>Developed by <a href="#">Color & Design Research Lab</a></footer>
 
@@ -161,16 +158,20 @@
       hctx.strokeStyle='#000'; hctx.lineWidth=1.2; hctx.stroke();
     });
 
-    // 中性（N）
-    hctx.beginPath(); hctx.arc(cx,cy,5,0,Math.PI*2); hctx.fillStyle='#000'; hctx.fill();
+    // 中性（N）— 不畫圓點
   }
   function drawHueMarker(angle,color){
     const cx=hueCanvas.width/2, cy=hueCanvas.height/2;
     const R=Math.min(hueCanvas.width,hueCanvas.height)/2 - 36;
-    if(angle==null){ hctx.beginPath(); hctx.arc(cx,cy,7,0,Math.PI*2); hctx.fillStyle=color; hctx.fill(); return; }
+    if(angle==null){ return; }
     const rad=(angle-90)*Math.PI/180;
     const x=cx+R*Math.cos(rad), y=cy+R*Math.sin(rad);
-    hctx.beginPath(); hctx.arc(x,y,7,0,Math.PI*2); hctx.fillStyle=color; hctx.strokeStyle='#fff'; hctx.lineWidth=2; hctx.fill(); hctx.stroke();
+    const size=14;
+    hctx.save(); hctx.translate(x,y);
+    hctx.fillStyle=color; hctx.strokeStyle='#fff'; hctx.lineWidth=2;
+    hctx.fillRect(-size/2,-size/2,size,size);
+    hctx.strokeRect(-size/2,-size/2,size,size);
+    hctx.restore();
   }
 
   // --- WSC 正三角（WS 垂直） ---
@@ -253,15 +254,19 @@
     const w1=W/sum, s1=S/sum, c1=C/sum;
     const x=w1*Ax + s1*Bx + c1*Cx;
     const y=w1*Ay + s1*By + c1*Cy;
-    tctx.beginPath(); tctx.arc(x,y,8,0,Math.PI*2);
-    tctx.fillStyle=color; tctx.strokeStyle='#fff'; tctx.lineWidth=2; tctx.fill(); tctx.stroke();
+    const size=16;
+    tctx.save(); tctx.translate(x,y);
+    tctx.fillStyle=color; tctx.strokeStyle='#fff'; tctx.lineWidth=2;
+    tctx.fillRect(-size/2,-size/2,size,size);
+    tctx.strokeRect(-size/2,-size/2,size,size);
+    tctx.restore();
   }
 
   // --- 重畫（lastA/lastB 預設） ---
   function redraw(Arec=lastA,Brec=lastB){
     drawHueBase(); drawTriBase();
-    if(Arec){ drawHueMarker(hueToAngle(Arec.hue),'#111'); drawTriMarker(Arec.W,Arec.S,Arec.C,'#111'); }
-    if(Brec){ drawHueMarker(hueToAngle(Brec.hue),'#c20000'); drawTriMarker(Brec.W,Brec.S,Brec.C,'#c20000'); }
+    if(Arec){ const ca=Arec.color||'#111'; drawHueMarker(hueToAngle(Arec.hue),ca); drawTriMarker(Arec.W,Arec.S,Arec.C,ca); }
+    if(Brec){ const cb=Brec.color||'#c20000'; drawHueMarker(hueToAngle(Brec.hue),cb); drawTriMarker(Brec.W,Brec.S,Brec.C,cb); }
   }
 
   // --- UI：級聯下拉（Hue→C→S） ---
@@ -289,14 +294,14 @@
   const W=Math.max(0,100-(S+C));
   const rec=DATA.find(d=>String(d.hue||'').toUpperCase()===hue && Number(d.C)===C && Number(d.S)===S) || null;
 
-  lastA={W,S,C,hue};
-
   if(rec){
     const bg = rec.hex || `rgb(${rec.R},${rec.G},${rec.B})`;
+    lastA={W,S,C,hue,color:bg};
     const ncsStr = getNCS(rec) || formatNCS(hue,S,C);
     swatchA.style.background = bg;
     infoA.textContent = `NCS=${ncsStr}，RGB=(${rec.R},${rec.G},${rec.B})，Hue=${rec.hue}，W/S/C=${rec.W}/${rec.S}/${rec.C}`;
   }else{
+    lastA={W,S,C,hue,color:'#888'};
     swatchA.style.background = '#fff';
     infoA.textContent = `Hue=${hue}，W/S/C=${W}/${S}/${C}`;
   }
@@ -335,7 +340,8 @@ function formatNCS(hue, S, C){
   const R=+rIn.value||0, G=+gIn.value||0, B=+bIn.value||0;
   const rec=nearestNCS(R,G,B);
   if(rec){
-    lastB={W:rec.W,S:rec.S,C:rec.C,hue:rec.hue};
+    const inputColor = `rgb(${R},${G},${B})`;
+    lastB={W:rec.W,S:rec.S,C:rec.C,hue:rec.hue,color:inputColor};
     const ncsStr = getNCS(rec) || formatNCS(rec.hue, rec.S, rec.C);
     swatchB.style.background = rec.hex || `rgb(${rec.R},${rec.G},${rec.B})`;
     infoB.textContent = `最近 NCS=${ncsStr}，RGB=(${rec.R},${rec.G},${rec.B})，Hue=${rec.hue}，W/S/C=${rec.W}/${rec.S}/${rec.C}`;
