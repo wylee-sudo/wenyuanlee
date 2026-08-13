@@ -2,6 +2,12 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "Comparative evaluation of reactive dye structures on colour strength enhancement in caustic‐treated regenerated bamboo fabrics",
+      "link": "https://doi.org/10.1111/cote.70091",
+      "published": "2026-08-12",
+      "description": ""
+    },
+    {
       "title": "Preparation of high‐purity plant‐derived indigo via ultrasound‐assisted extraction for enhancing colour fastness of the indigo on textile substrates",
       "link": "https://doi.org/10.1111/cote.70097",
       "published": "2026-08-12",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70088",
       "published": "2026-07-31",
       "description": ""
-    },
-    {
-      "title": "Modulating the molecular structure of azo‐pyridone dyes via morpholine and pyridine substituents to enhance their high‐performance in color filters",
-      "link": "https://doi.org/10.1111/cote.70086",
-      "published": "2026-07-21",
-      "description": ""
     }
   ],
-  "updated": "2026-08-13T03:20:31Z"
+  "updated": "2026-08-13T09:52:45Z"
 }
