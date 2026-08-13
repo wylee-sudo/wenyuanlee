@@ -54,12 +54,17 @@ jobs:
               }, f, ensure_ascii=False, indent=2)
 
           # --- 學術期刊 RSS ---
-          import urllib.request
+          import requests
 
-          headers = {
+          session = requests.Session()
+          session.headers.update({
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-              "Accept": "application/rss+xml, application/xml, text/xml, */*"
-          }
+              "Accept": "application/rss+xml, application/xml, text/xml, */*",
+              "Accept-Language": "en-US,en;q=0.9",
+              "Accept-Encoding": "gzip, deflate, br",
+              "Connection": "keep-alive",
+              "Referer": "https://onlinelibrary.wiley.com/"
+          })
 
           journals = {
               "journal_color_research": {
@@ -73,10 +78,10 @@ jobs:
           }
           for key, info in journals.items():
               try:
-                  req = urllib.request.Request(info["url"], headers=headers)
-                  with urllib.request.urlopen(req, timeout=15) as response:
-                      xml_data = response.read()
-                  feed = feedparser.parse(xml_data)
+                  response = session.get(info["url"], timeout=15)
+                  response.raise_for_status()
+                  feed = feedparser.parse(response.content)
+                  print(f"OK: {info['name']} - {len(feed.entries)} entries")
               except Exception as e:
                   print(f"Warning: failed to fetch {info['name']}: {e}")
                   feed = feedparser.FeedParserDict()
