@@ -1,5 +1,66 @@
 {
   "journal": "Coloration Technology",
-  "items": [],
-  "updated": "No update time"
+  "items": [
+    {
+      "title": "Preparation of high‐purity plant‐derived indigo via ultrasound‐assisted extraction for enhancing colour fastness of the indigo on textile substrates",
+      "link": "https://doi.org/10.1111/cote.70097",
+      "published": "2026-08-12",
+      "description": ""
+    },
+    {
+      "title": "Laser versus manual whiskering: A comparative study of the chromatic, physical and color fastness properties of denim fabrics",
+      "link": "https://doi.org/10.1111/cote.70092",
+      "published": "2026-08-10",
+      "description": ""
+    },
+    {
+      "title": "Integrating neural networks and Mamdani fuzzy logic for predicting colour coordinates in trichromatic natural dyeing of cationic dyeable polyester fabric",
+      "link": "https://doi.org/10.1111/cote.70099",
+      "published": "2026-08-10",
+      "description": ""
+    },
+    {
+      "title": "Correlation between apparent solubility and dye exhaustion in carrier‐assisted dyeing of disperse dyeable polyester under normal pressure",
+      "link": "https://doi.org/10.1111/cote.70096",
+      "published": "2026-08-09",
+      "description": ""
+    },
+    {
+      "title": "Preparation and characterisation of dope‐dyed regenerated cellulose films using 1‐butyl‐3‐methylimidazolium chloride: A comparison of indigo and direct dyes",
+      "link": "https://doi.org/10.1111/cote.70093",
+      "published": "2026-08-09",
+      "description": ""
+    },
+    {
+      "title": "Preparation and performance of non‐toxic silica sol/melamine‐glyoxal composite dye modifier for staining fast‐growing poplar",
+      "link": "https://doi.org/10.1111/cote.70089",
+      "published": "2026-08-04",
+      "description": ""
+    },
+    {
+      "title": "Polyammonium salts as retardants for the dyeing of methylene blue on polyacrylonitrile microfibers",
+      "link": "https://doi.org/10.1111/cote.70090",
+      "published": "2026-08-02",
+      "description": ""
+    },
+    {
+      "title": "No title",
+      "link": "https://doi.org/10.1111/cote.v142.4",
+      "published": "2026-08",
+      "description": ""
+    },
+    {
+      "title": "Chemical compositions of\n                    <i>Stramonita haemastoma</i>\n                    and\n                    <i>Bolinus brandaris</i>\n                    : New data relevant to cultural heritage studies",
+      "link": "https://doi.org/10.1111/cote.70088",
+      "published": "2026-07-31",
+      "description": ""
+    },
+    {
+      "title": "Modulating the molecular structure of azo‐pyridone dyes via morpholine and pyridine substituents to enhance their high‐performance in color filters",
+      "link": "https://doi.org/10.1111/cote.70086",
+      "published": "2026-07-21",
+      "description": ""
+    }
+  ],
+  "updated": "2026-08-13T03:20:31Z"
 }

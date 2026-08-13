@@ -1,5 +1,66 @@
 {
   "journal": "Color Research & Application",
-  "items": [],
-  "updated": "No update time"
+  "items": [
+    {
+      "title": "No title",
+      "link": "https://doi.org/10.1002/col.v51.5",
+      "published": "2026-09",
+      "description": ""
+    },
+    {
+      "title": "Cognate Tetrahedral Mapping Algorithm From PRMG to the Target Color Gamut",
+      "link": "https://doi.org/10.1002/col.70110",
+      "published": "2026-08-12",
+      "description": ""
+    },
+    {
+      "title": "Skin Impression Modeling Across Different Skin Types Under Different Scenes",
+      "link": "https://doi.org/10.1002/col.70114",
+      "published": "2026-08-10",
+      "description": ""
+    },
+    {
+      "title": "User Preferences for Electric Two‐Wheeler Colors: A Multistage Framework Integrating Big Data Mining, Eye‐Tracking, and Semantic Differential Methods",
+      "link": "https://doi.org/10.1002/col.70115",
+      "published": "2026-08-07",
+      "description": ""
+    },
+    {
+      "title": "The Effect of Scarf and Skin Color Combinations on Moral Perception",
+      "link": "https://doi.org/10.1002/col.70116",
+      "published": "2026-08-05",
+      "description": ""
+    },
+    {
+      "title": "Issue Information",
+      "link": "https://doi.org/10.1002/col.70093",
+      "published": "2026-07-30",
+      "description": ""
+    },
+    {
+      "title": "Characterizing the Dark Category: Psychophysical Thresholds and Semantic Associations",
+      "link": "https://doi.org/10.1002/col.70113",
+      "published": "2026-07-30",
+      "description": ""
+    },
+    {
+      "title": "Color‐Managed Workflow for Specular Gloss Control",
+      "link": "https://doi.org/10.1002/col.70105",
+      "published": "2026-07",
+      "description": ""
+    },
+    {
+      "title": "Performance of Chromatic Adaptation Transforms for Stimuli at Different Chroma Levels",
+      "link": "https://doi.org/10.1002/col.70108",
+      "published": "2026-07",
+      "description": ""
+    },
+    {
+      "title": "The Color of Power and Order: A Color Analysis of Spatial Hierarchy and Color Transitions in the Joseon Royal Procession",
+      "link": "https://doi.org/10.1002/col.70107",
+      "published": "2026-07",
+      "description": ""
+    }
+  ],
+  "updated": "2026-08-13T03:20:30Z"
 }
