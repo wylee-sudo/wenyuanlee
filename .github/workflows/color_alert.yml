@@ -53,52 +53,62 @@ jobs:
                   "updated": feed.get("updated", "No update time")
               }, f, ensure_ascii=False, indent=2)
 
-          # --- 學術期刊 RSS ---
+          # --- 學術期刊（Crossref API，免費、不需 key、不會被封鎖）---
           import requests
-
-          session = requests.Session()
-          session.headers.update({
-              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-              "Accept": "application/rss+xml, application/xml, text/xml, */*",
-              "Accept-Language": "en-US,en;q=0.9",
-              "Accept-Encoding": "gzip, deflate, br",
-              "Connection": "keep-alive",
-              "Referer": "https://onlinelibrary.wiley.com/"
-          })
+          from datetime import datetime
 
           journals = {
               "journal_color_research": {
-                  "url": "https://onlinelibrary.wiley.com/feed/15206378/most-recent",
+                  "issn": "1520-6378",
                   "name": "Color Research & Application"
               },
               "journal_coloration_technology": {
-                  "url": "https://onlinelibrary.wiley.com/feed/14784408/most-recent",
+                  "issn": "1478-4408",
                   "name": "Coloration Technology"
               }
           }
+
           for key, info in journals.items():
               try:
-                  response = session.get(info["url"], timeout=15)
+                  url = f"https://api.crossref.org/journals/{info['issn']}/works"
+                  params = {
+                      "rows": 10,
+                      "sort": "published",
+                      "order": "desc",
+                      "mailto": "wylee@ttu.edu.tw"
+                  }
+                  response = requests.get(url, params=params, timeout=15)
                   response.raise_for_status()
-                  feed = feedparser.parse(response.content)
-                  print(f"OK: {info['name']} - {len(feed.entries)} entries")
+                  data = response.json()
+                  works = data["message"]["items"]
+                  print(f"OK: {info['name']} - {len(works)} entries")
               except Exception as e:
                   print(f"Warning: failed to fetch {info['name']}: {e}")
-                  feed = feedparser.FeedParserDict()
-                  feed["entries"] = []
+                  works = []
+
               items = []
-              for entry in feed.entries[:10]:
+              for work in works:
+                  title = work.get("title", ["No title"])[0] if work.get("title") else "No title"
+                  doi = work.get("DOI", "")
+                  link = f"https://doi.org/{doi}" if doi else "#"
+                  date_parts = work.get("published", {}).get("date-parts", [[]])
+                  if date_parts and date_parts[0]:
+                      parts = date_parts[0]
+                      published = "-".join(str(p).zfill(2) for p in parts)
+                  else:
+                      published = "No date"
                   items.append({
-                      "title": entry.get("title", "No title"),
-                      "link": entry.get("link", "#"),
-                      "published": entry.get("published", entry.get("updated", "No date")),
-                      "description": (entry.get("summary") or entry.get("description") or "No snippet")[:300] + "..."
+                      "title": title,
+                      "link": link,
+                      "published": published,
+                      "description": ""
                   })
+
               with open(f'alerts-data/{key}.json', 'w', encoding='utf-8') as f:
                   json.dump({
                       "journal": info["name"],
                       "items": items,
-                      "updated": feed.get("updated", "No update time")
+                      "updated": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
                   }, f, ensure_ascii=False, indent=2)
           EOF
       - name: Commit changes if any
