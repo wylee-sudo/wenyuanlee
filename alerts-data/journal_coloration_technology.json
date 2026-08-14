@@ -2,6 +2,12 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "Naturally coloured poly(3‐hydroxybutyrate)",
+      "link": "https://doi.org/10.1111/cote.70098",
+      "published": "2026-08-13",
+      "description": ""
+    },
+    {
       "title": "Comparative evaluation of reactive dye structures on colour strength enhancement in caustic‐treated regenerated bamboo fabrics",
       "link": "https://doi.org/10.1111/cote.70091",
       "published": "2026-08-12",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1111/cote.v142.4",
       "published": "2026-08",
       "description": ""
-    },
-    {
-      "title": "Chemical compositions of\n                    <i>Stramonita haemastoma</i>\n                    and\n                    <i>Bolinus brandaris</i>\n                    : New data relevant to cultural heritage studies",
-      "link": "https://doi.org/10.1111/cote.70088",
-      "published": "2026-07-31",
-      "description": ""
     }
   ],
-  "updated": "2026-08-13T09:52:45Z"
+  "updated": "2026-08-14T09:50:46Z"
 }
