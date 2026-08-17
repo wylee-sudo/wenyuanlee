@@ -8,6 +8,18 @@
       "description": ""
     },
     {
+      "title": "Ink Trapping Assessment Based on Reflectance Spectra Analysis of Overprint",
+      "link": "https://doi.org/10.1002/col.70117",
+      "published": "2026-08-16",
+      "description": ""
+    },
+    {
+      "title": "Deep Learning‐Based White Balance Correction Using Spectrum Estimation From Multispectral Imaging",
+      "link": "https://doi.org/10.1002/col.70118",
+      "published": "2026-08-16",
+      "description": ""
+    },
+    {
       "title": "Cognate Tetrahedral Mapping Algorithm From PRMG to the Target Color Gamut",
       "link": "https://doi.org/10.1002/col.70110",
       "published": "2026-08-12",
@@ -48,19 +60,7 @@
       "link": "https://doi.org/10.1002/col.70105",
       "published": "2026-07",
       "description": ""
-    },
-    {
-      "title": "Performance of Chromatic Adaptation Transforms for Stimuli at Different Chroma Levels",
-      "link": "https://doi.org/10.1002/col.70108",
-      "published": "2026-07",
-      "description": ""
-    },
-    {
-      "title": "The Color of Power and Order: A Color Analysis of Spatial Hierarchy and Color Transitions in the Joseon Royal Procession",
-      "link": "https://doi.org/10.1002/col.70107",
-      "published": "2026-07",
-      "description": ""
     }
   ],
-  "updated": "2026-08-16T09:17:04Z"
+  "updated": "2026-08-17T09:29:57Z"
 }
