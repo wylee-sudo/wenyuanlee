@@ -2,6 +2,12 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "The influence of coupling agents on the heat resistance, dispersion and reflection properties of pigments",
+      "link": "https://doi.org/10.1111/cote.70095",
+      "published": "2026-08-21",
+      "description": ""
+    },
+    {
       "title": "Investigation of factors affecting ozone yellowing in denim products",
       "link": "https://doi.org/10.1111/cote.70100",
       "published": "2026-08-17",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70093",
       "published": "2026-08-09",
       "description": ""
-    },
-    {
-      "title": "Preparation and performance of non‐toxic silica sol/melamine‐glyoxal composite dye modifier for staining fast‐growing poplar",
-      "link": "https://doi.org/10.1111/cote.70089",
-      "published": "2026-08-04",
-      "description": ""
     }
   ],
-  "updated": "2026-08-21T09:25:19Z"
+  "updated": "2026-08-22T09:17:06Z"
 }
