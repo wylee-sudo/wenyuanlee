@@ -2,6 +2,18 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "No title",
+      "link": "https://doi.org/10.1111/cote.v142.5",
+      "published": "2026-10",
+      "description": ""
+    },
+    {
+      "title": "Issue Information",
+      "link": "https://doi.org/10.1111/cote.70083",
+      "published": "2026-08-26",
+      "description": ""
+    },
+    {
       "title": "The influence of coupling agents on the heat resistance, dispersion and reflection properties of pigments",
       "link": "https://doi.org/10.1111/cote.70095",
       "published": "2026-08-21",
@@ -48,19 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70099",
       "published": "2026-08-10",
       "description": ""
-    },
-    {
-      "title": "Correlation between apparent solubility and dye exhaustion in carrier‐assisted dyeing of disperse dyeable polyester under normal pressure",
-      "link": "https://doi.org/10.1111/cote.70096",
-      "published": "2026-08-09",
-      "description": ""
-    },
-    {
-      "title": "Preparation and characterisation of dope‐dyed regenerated cellulose films using 1‐butyl‐3‐methylimidazolium chloride: A comparison of indigo and direct dyes",
-      "link": "https://doi.org/10.1111/cote.70093",
-      "published": "2026-08-09",
-      "description": ""
     }
   ],
-  "updated": "2026-08-26T09:30:07Z"
+  "updated": "2026-08-27T19:19:38Z"
 }
