@@ -8,6 +8,12 @@
       "description": ""
     },
     {
+      "title": "Chromaticity Points of Real Spectra Outside the\n                    <scp>CIE</scp>\n                    Chromaticity Diagram",
+      "link": "https://doi.org/10.1002/col.70120",
+      "published": "2026-08-30",
+      "description": ""
+    },
+    {
       "title": "Ink Trapping Assessment Based on Reflectance Spectra Analysis of Overprint",
       "link": "https://doi.org/10.1002/col.70117",
       "published": "2026-08-16",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1002/col.70093",
       "published": "2026-07-30",
       "description": ""
-    },
-    {
-      "title": "Characterization of Color Appearance of Self‐Luminous Highlights Under\n                    <scp>HDR</scp>\n                    Scenes, Part\n                    <scp>II</scp>\n                    : Chromatic Stimuli",
-      "link": "https://doi.org/10.1002/col.70112",
-      "published": "2026-07",
-      "description": ""
     }
   ],
-  "updated": "2026-08-30T14:05:00Z"
+  "updated": "2026-08-31T16:30:37Z"
 }
