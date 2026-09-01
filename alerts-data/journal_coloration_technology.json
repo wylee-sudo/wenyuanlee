@@ -8,6 +8,12 @@
       "description": ""
     },
     {
+      "title": "A dyed‐absorbance‐based framework for predicting and optimising reactive dye recipes in cotton fabric dyeing",
+      "link": "https://doi.org/10.1111/cote.70101",
+      "published": "2026-08-31",
+      "description": ""
+    },
+    {
       "title": "Issue Information",
       "link": "https://doi.org/10.1111/cote.70083",
       "published": "2026-08-26",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70092",
       "published": "2026-08-10",
       "description": ""
-    },
-    {
-      "title": "Integrating neural networks and Mamdani fuzzy logic for predicting colour coordinates in trichromatic natural dyeing of cationic dyeable polyester fabric",
-      "link": "https://doi.org/10.1111/cote.70099",
-      "published": "2026-08-10",
-      "description": ""
     }
   ],
-  "updated": "2026-08-31T16:30:39Z"
+  "updated": "2026-09-01T13:47:33Z"
 }
