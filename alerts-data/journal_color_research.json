@@ -2,8 +2,20 @@
   "journal": "Color Research & Application",
   "items": [
     {
+      "title": "Temporal Dynamics of Color and Brightness Adaptation in Reported Non–Ocular Visual Experiences: A Case Study",
+      "link": "https://doi.org/10.1002/col.70123",
+      "published": "2026-09",
+      "description": ""
+    },
+    {
       "title": "No title",
       "link": "https://doi.org/10.1002/col.v51.5",
+      "published": "2026-09",
+      "description": ""
+    },
+    {
+      "title": "Optimizing Pseudo‐Isochromatic Plates Based Testing Through Adaptive Spatial and Chromatic Modulation",
+      "link": "https://doi.org/10.1002/col.70122",
       "published": "2026-09",
       "description": ""
     },
@@ -48,19 +60,7 @@
       "link": "https://doi.org/10.1002/col.70116",
       "published": "2026-08-05",
       "description": ""
-    },
-    {
-      "title": "Characterizing the Dark Category: Psychophysical Thresholds and Semantic Associations",
-      "link": "https://doi.org/10.1002/col.70113",
-      "published": "2026-07-30",
-      "description": ""
-    },
-    {
-      "title": "Issue Information",
-      "link": "https://doi.org/10.1002/col.70093",
-      "published": "2026-07-30",
-      "description": ""
     }
   ],
-  "updated": "2026-09-01T13:47:32Z"
+  "updated": "2026-09-02T13:04:27Z"
 }
