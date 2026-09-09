@@ -2,6 +2,12 @@
   "journal": "Color Research & Application",
   "items": [
     {
+      "title": "Camera Spectral Response Function Estimation and Color Calibration Based on Raw Response Prediction",
+      "link": "https://doi.org/10.1002/col.70124",
+      "published": "2026-09",
+      "description": ""
+    },
+    {
       "title": "Temporal Dynamics of Color and Brightness Adaptation in Reported Non–Ocular Visual Experiences: A Case Study",
       "link": "https://doi.org/10.1002/col.70123",
       "published": "2026-09",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1002/col.70115",
       "published": "2026-08-07",
       "description": ""
-    },
-    {
-      "title": "The Effect of Scarf and Skin Color Combinations on Moral Perception",
-      "link": "https://doi.org/10.1002/col.70116",
-      "published": "2026-08-05",
-      "description": ""
     }
   ],
-  "updated": "2026-09-08T13:09:47Z"
+  "updated": "2026-09-09T13:14:42Z"
 }
