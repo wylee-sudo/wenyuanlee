@@ -2,37 +2,164 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <title>色彩三屬性之視覺辨識練習</title>
 <style>
-  :root { --bg:#f7f7fb; --card:#fff; --text:#111; --muted:#6b7280; }
+  :root {
+    --bg:#f7f7fb; --card:#fff; --text:#111; --muted:#6b7280;
+    --chip:72px; --slot:80px; --gap:10px; --pad:16px;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-t: env(safe-area-inset-top, 0px);
+  }
   * { box-sizing: border-box; }
-  html, body { -webkit-user-select:none; user-select:none; }
-  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans TC, sans-serif; background: var(--bg); color: var(--text); }
-  .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
-  h1 { margin: 0 0 12px; font-size: 28px; }
-  .tabs { display:inline-flex; gap:8px; padding:6px; background:#fff; border:1px solid #e5e7eb; border-radius:14px; box-shadow: 0 1px 2px rgba(0,0,0,.05); position: sticky; top: 10px; z-index:5; }
-  .tab { padding:8px 12px; border-radius:10px; font-weight:600; font-size:14px; border:none; background:#fff; color:#374151; cursor:pointer; }
+  html, body {
+    -webkit-user-select:none; user-select:none;
+    height:100%;
+    overflow:hidden;
+    overscroll-behavior:none;
+    touch-action:manipulation;
+  }
+  body {
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Noto Sans TC, sans-serif;
+    background: var(--bg); color: var(--text);
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: calc(10px + var(--safe-t)) 12px calc(8px + var(--safe-b));
+    height: 100dvh;
+    height: 100vh;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+  h1 {
+    margin: 0 0 8px;
+    font-size: clamp(18px, 4.2vw, 28px);
+    line-height:1.2;
+    flex:0 0 auto;
+  }
+  .tabs {
+    display:inline-flex; gap:6px; padding:4px; background:#fff;
+    border:1px solid #e5e7eb; border-radius:12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    flex:0 0 auto; align-self:flex-start;
+    max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch;
+  }
+  .tab {
+    padding:7px 10px; border-radius:9px; font-weight:600; font-size:13px;
+    border:none; background:#fff; color:#374151; cursor:pointer; white-space:nowrap;
+  }
   .tab.active { background:#111; color:#fff; }
-  .card { background: var(--card); border:1px solid #e5e7eb; border-radius:16px; padding:16px; margin: 16px 0; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+  #view {
+    flex:1 1 auto;
+    min-height:0;
+    display:flex;
+    flex-direction:column;
+  }
+  .card {
+    background: var(--card); border:1px solid #e5e7eb; border-radius:14px;
+    padding: var(--pad); margin: 10px 0 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,.05);
+    flex:1 1 auto; min-height:0;
+    display:flex; flex-direction:column; gap:8px;
+    overflow:hidden;
+  }
+  .card h2 {
+    margin:0;
+    font-size: clamp(15px, 3.6vw, 20px);
+    line-height:1.25;
+    flex:0 0 auto;
+  }
   .muted { color: var(--muted); font-size: 13px; }
-  .row { display:flex; gap:8px; flex-wrap:wrap; }
-  .chip { width:56px; height:56px; border-radius:12px; box-shadow: 0 1px 2px rgba(0,0,0,.2) inset, 0 1px 2px rgba(0,0,0,.05); border:1px solid rgba(0,0,0,.12); cursor:grab; position:relative; }
+  .row {
+    display:flex; gap: var(--gap); flex-wrap:wrap;
+    align-items:flex-start;
+    justify-content:flex-start;
+  }
+  .row.slots, .row.pool {
+    flex:0 0 auto;
+    justify-content:flex-start;
+    width:100%;
+  }
+  .row.slots {
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    padding-bottom:2px;
+  }
+  .row.pool {
+    flex-wrap:wrap;
+  }
+  .chip {
+    width:var(--chip); height:var(--chip); border-radius:14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.2) inset, 0 1px 2px rgba(0,0,0,.05);
+    border:1px solid rgba(0,0,0,.12); cursor:grab; position:relative;
+    touch-action:none;
+  }
+  .chip.selected {
+    outline: 3px solid #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.25);
+  }
+  .chip.dragging { opacity:.55; cursor:grabbing; }
   .chip.bad { outline: 3px solid rgba(220,38,38,.9); }
   .chip.good { outline: 3px solid rgba(22,163,74,.9); }
-  .chip .tag { position:absolute; left:4px; bottom:4px; font-size:10px; background: rgba(255,255,255,.85); padding:1px 3px; border-radius:4px; border:1px solid rgba(0,0,0,.12); display:none; }
-  .chip.reveal .tag { display:inline-block; }
-  .slot { width:64px; height:64px; border:2px dashed rgba(0,0,0,.3); border-radius:12px; display:flex; align-items:center; justify-content:center; background:transparent; }
+  .slot {
+    width:var(--slot); height:var(--slot);
+    border:2px dashed rgba(0,0,0,.3); border-radius:14px;
+    display:flex; align-items:center; justify-content:center;
+    background:transparent; touch-action:none;
+  }
   .slot.bad { border-color: rgba(220,38,38,.9); background: #fee2e2; }
   .slot.good { border-color: rgba(22,163,74,.9); background:#dcfce7; }
-  .btn { padding:8px 12px; border-radius:10px; border:1px solid #e5e7eb; background:#f3f4f6; cursor:pointer; font-weight:600; }
+  .slot.drop-target { border-color:#2563eb; background:#dbeafe; }
+  .btn {
+    padding:8px 12px; border-radius:10px; border:1px solid #e5e7eb;
+    background:#f3f4f6; cursor:pointer; font-weight:600; font-size:14px;
+  }
   .btn.primary { background:#111; color:#fff; border-color:#111; }
   .bar { height:6px; background: linear-gradient(90deg,#e5e7eb,#d1d5db); border-radius:999px; flex:1; }
-  .scale { display:flex; align-items:center; gap:8px; margin-top:6px; font-size:12px; color:#6b7280; }
-  .banner { margin-top:10px; padding:8px 10px; border-radius:10px; font-weight:600; font-size:14px;}
+  .scale { display:flex; align-items:center; gap:8px; font-size:12px; color:#6b7280; flex:0 0 auto; }
+  .banner {
+    margin-top:2px; padding:8px 10px; border-radius:10px;
+    font-weight:600; font-size:13px; flex:0 0 auto;
+  }
   .ok { background:#dcfce7; color:#166534; }
   .badmsg { background:#fee2e2; color:#991b1b; }
-  .tip { font-size:12px; color:#6b7280; margin-top:6px; }
+  .tip { font-size:12px; color:#6b7280; flex:0 0 auto; }
+  .hint {
+    font-size:12px; color:#6b7280; flex:0 0 auto;
+  }
+  .chipWithLabel { display: flex; flex-direction: column; align-items: center; }
+  .chip-label { font-size: 11px; color: #555; margin-top: 3px; line-height:1.1; }
+  .footer {
+    flex:0 0 auto;
+    font-size:11px;
+    margin-top:6px;
+  }
+  .footer a { color:#6b7280; }
+  .btns { flex:0 0 auto; }
+
+  /* Phone: larger chips, always left-aligned; slots stay one row */
+  @media (max-width: 720px) {
+    :root { --chip:58px; --slot:64px; --gap:8px; --pad:12px; }
+    .container { padding: calc(8px + var(--safe-t)) 10px calc(8px + var(--safe-b)); }
+    .tab { padding:6px 8px; font-size:12px; }
+    .btn { padding:7px 10px; font-size:13px; }
+    .chip-label { font-size:11px; }
+    html, body { overflow:auto; }
+    .card { overflow:auto; }
+    .row.slots, .row.pool { justify-content:flex-start; }
+  }
+  @media (max-width: 420px) {
+    /* Fit 6 hue slots on one row without wrapping */
+    :root { --chip:48px; --slot:52px; --gap:6px; --pad:10px; }
+    h1 { margin-bottom:6px; }
+    .card { margin-top:8px; gap:6px; }
+    .hint { display:none; }
+    .row.slots, .row.pool { justify-content:flex-start; }
+  }
 </style>
 
 <!-- Google tag (gtag.js) -->
@@ -41,25 +168,22 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-
   gtag('config', 'G-N8QWS5JKZD');
 </script>
 </head>
 <body>
   <div class="container">
- 
     <h1>色彩三屬性之視覺辨識練習</h1>
     <div class="tabs" id="tabs"></div>
     <div id="view"></div>
     <div class="footer">
-    <a href="index.html">Color & Design Research Lab</a>
-
+      <a href="index.html">Color & Design Research Lab</a>
     </div>
   </div>
 
 <script>
 /* =========================
-   CIELAB → sRGB utilities
+   CIELAB → sRGB utilities  (unchanged)
    ========================= */
 const REF_X=95.047, REF_Y=100.0, REF_Z=108.883;
 function labToXyz(L,a,b){
@@ -95,32 +219,143 @@ function polarToAB(C,h){ const t=h*Math.PI/180; return {a:C*Math.cos(t), b:C*Mat
 function shuffle(arr){ return arr.sort(()=>Math.random()-0.5); }
 
 /* ==============
-   Shared UI
+   Shared UI + touch/pointer placement
    ============== */
 let currentDragId = null;
+let selectedId = null;
+let ghostEl = null;
+let activePlaceHandler = null; // set by each view: (id, slotIndex|null) => void
+
 function chipTagText(c){
   const L = Math.round(c.L);
   const C = Math.round(chroma(c.a,c.b));
   const H = Math.round(hueDeg(c.a,c.b));
   return `L${L} C${C} h${H}°`;
 }
-function makeChipEl(chip, opts={}){
+
+function clearSelection(){
+  selectedId = null;
+  document.querySelectorAll('.chip.selected').forEach(el=>el.classList.remove('selected'));
+}
+
+function setSelected(id){
+  clearSelection();
+  selectedId = id;
+  if(!id) return;
+  document.querySelectorAll(`.chip[data-id="${CSS.escape(id)}"]`).forEach(el=>el.classList.add('selected'));
+}
+
+function placeChip(id, slotIndex){
+  if(typeof activePlaceHandler === 'function') activePlaceHandler(id, slotIndex);
+}
+
+function makeChipEl(chip, opts={}) {
   const { reveal=false, bad=false, good=false } = opts;
-  const el=document.createElement('div');
-  el.className='chip'+(bad?' bad':'')+(good?' good':'')+(reveal?' reveal':'');;
-  el.draggable=true;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'chipWithLabel';
+
+  const el = document.createElement('div');
+  el.className = 'chip' + (bad ? ' bad' : '') + (good ? ' good' : '') + (reveal ? ' reveal' : '');
+  if(selectedId === chip.id) el.classList.add('selected');
+  el.draggable = false; // use pointer path for mouse + touch
   el.style.background = rgbCss(chip.rgb);
   el.dataset.id = chip.id;
-  el.addEventListener('dragstart',e=>{ currentDragId = chip.id; e.dataTransfer.setData('text/plain', chip.id); });
-  el.addEventListener('dragend',()=>{ currentDragId = null; });
-  const tag=document.createElement('div'); tag.className='tag'; tag.textContent=chipTagText(chip);
-  el.appendChild(tag);
-  return el;
+
+  el.addEventListener('pointerdown', onChipPointerDown);
+
+  const tag = document.createElement('div');
+  tag.className = 'chip-label';
+  tag.textContent = chipTagText(chip);
+  tag.style.display = reveal ? 'block' : 'none';
+
+  wrap.appendChild(el);
+  wrap.appendChild(tag);
+  return wrap;
 }
-function makeSlotEl(){
+
+function onChipPointerDown(e){
+  if(e.button != null && e.button !== 0) return;
+  const id = e.currentTarget.dataset.id;
+  if(!id) return;
+  e.preventDefault();
+  e.currentTarget.setPointerCapture(e.pointerId);
+
+  const startX = e.clientX, startY = e.clientY;
+  let moved = false;
+  const chipEl = e.currentTarget;
+  currentDragId = id;
+
+  function onMove(ev){
+    const dx = ev.clientX - startX, dy = ev.clientY - startY;
+    if(!moved && (dx*dx + dy*dy) > 25){
+      moved = true;
+      chipEl.classList.add('dragging');
+      if(!ghostEl){
+        ghostEl = chipEl.cloneNode(true);
+        ghostEl.classList.add('dragging');
+        ghostEl.style.position='fixed';
+        ghostEl.style.pointerEvents='none';
+        ghostEl.style.zIndex='1000';
+        ghostEl.style.width = getComputedStyle(chipEl).width;
+        ghostEl.style.height = getComputedStyle(chipEl).height;
+        ghostEl.style.margin=0;
+        document.body.appendChild(ghostEl);
+      }
+    }
+    if(ghostEl){
+      ghostEl.style.left = (ev.clientX - ghostEl.offsetWidth/2) + 'px';
+      ghostEl.style.top = (ev.clientY - ghostEl.offsetHeight/2) + 'px';
+    }
+    document.querySelectorAll('.slot').forEach(s=>s.classList.remove('drop-target'));
+    const under = document.elementFromPoint(ev.clientX, ev.clientY);
+    const slot = under && under.closest ? under.closest('.slot') : null;
+    if(slot) slot.classList.add('drop-target');
+  }
+
+  function onUp(ev){
+    chipEl.releasePointerCapture(ev.pointerId);
+    chipEl.removeEventListener('pointermove', onMove);
+    chipEl.removeEventListener('pointerup', onUp);
+    chipEl.removeEventListener('pointercancel', onUp);
+    chipEl.classList.remove('dragging');
+    document.querySelectorAll('.slot').forEach(s=>s.classList.remove('drop-target'));
+    if(ghostEl){ ghostEl.remove(); ghostEl=null; }
+
+    if(moved){
+      const under = document.elementFromPoint(ev.clientX, ev.clientY);
+      const slot = under && under.closest ? under.closest('.slot') : null;
+      if(slot && slot.dataset.index != null){
+        placeChip(id, Number(slot.dataset.index));
+      }
+      currentDragId = null;
+      clearSelection();
+    } else {
+      // tap: toggle selection, or if already selected same chip — deselect
+      if(selectedId === id) clearSelection();
+      else setSelected(id);
+      currentDragId = null;
+    }
+  }
+
+  chipEl.addEventListener('pointermove', onMove);
+  chipEl.addEventListener('pointerup', onUp);
+  chipEl.addEventListener('pointercancel', onUp);
+}
+
+function makeSlotEl(index){
   const el=document.createElement('div');
   el.className='slot';
-  el.addEventListener('dragover',e=>{ e.preventDefault(); e.dataTransfer.dropEffect='move'; });
+  el.dataset.index = String(index);
+  el.addEventListener('pointerup', e=>{
+    // tap empty/filled slot while a chip is selected → place
+    if(selectedId != null){
+      e.preventDefault();
+      e.stopPropagation();
+      placeChip(selectedId, index);
+      clearSelection();
+    }
+  });
   return el;
 }
 function buildStatus(correct, slots){
@@ -145,7 +380,6 @@ function rotations(arr){
 }
 function reversed(arr){ return [...arr].reverse(); }
 function bestCircularAlignment(candidate, base){
-  // returns {matchOrder, status} where matchOrder is the base order (possibly rotated/reversed) with max index-wise matches
   const candidates = rotations(base).concat(rotations(reversed(base)));
   let best=null, bestScore=-1;
   for(const order of candidates){
@@ -191,17 +425,34 @@ function genQ1(){
 }
 function viewQ1(container){
   container.innerHTML='';
+  clearSelection();
   const card=document.createElement('div'); card.className='card';
-  card.innerHTML='<h2>第 1 題｜彩度由低→高排序</h2>';
-  const poolRow=document.createElement('div'); poolRow.className='row'; card.appendChild(poolRow);
+  const h2=document.createElement('h2'); h2.textContent='第 1 題｜彩度由低→高排序'; card.appendChild(h2);
+  const hint=document.createElement('div'); hint.className='hint';
+  hint.textContent='手機可點選色塊後再點空格；也可按住拖曳。'; card.appendChild(hint);
+  const poolRow=document.createElement('div'); poolRow.className='row pool'; card.appendChild(poolRow);
   const scale=document.createElement('div'); scale.className='scale'; scale.innerHTML='<span>低</span><div class="bar"></div><span>高</span>'; card.appendChild(scale);
-  const slotsRow=document.createElement('div'); slotsRow.className='row'; card.appendChild(slotsRow);
-  const btns=document.createElement('div'); btns.className='row'; btns.style.marginTop='8px'; card.appendChild(btns);
+  const slotsRow=document.createElement('div'); slotsRow.className='row slots'; card.appendChild(slotsRow);
+  const btns=document.createElement('div'); btns.className='row btns'; card.appendChild(btns);
   const result=document.createElement('div'); card.appendChild(result);
 
   let data = genQ1();
   let slots = Array(4).fill(null);
   let reveal = false;
+  let lastStatus = null;
+
+  activePlaceHandler = (id, slotIndex)=>{
+    const from=slots.indexOf(id);
+    if(from!==-1) slots[from]=null;
+    if(slotIndex!=null){
+      const displaced = slots[slotIndex];
+      slots[slotIndex]=id;
+      // displaced returns to pool automatically
+      void displaced;
+    }
+    lastStatus = null;
+    renderPool(); renderSlots();
+  };
 
   function renderPool(status=null){
     poolRow.innerHTML='';
@@ -213,18 +464,8 @@ function viewQ1(container){
   function renderSlots(status=null){
     slotsRow.innerHTML='';
     for(let i=0;i<4;i++){
-      const s=makeSlotEl();
+      const s=makeSlotEl(i);
       if(status && status.slot[i]) s.classList.add(status.slot[i]);
-      s.addEventListener('drop',e=>{
-        e.preventDefault(); e.stopPropagation();
-        const id=e.dataTransfer.getData('text/plain')||currentDragId;
-        if(!id) return;
-        const from=slots.indexOf(id);
-        if(from!==-1) slots[from]=null;
-        slots[i]=id;
-        currentDragId=null;
-        renderPool(status); renderSlots(status);
-      });
       if(slots[i]){
         const chip=data.chips.find(c=>c.id===slots[i]);
         const st = status ? status.slot[i] : null;
@@ -239,15 +480,17 @@ function viewQ1(container){
     if(slots.some(v=>!v)){ result.className='banner badmsg'; result.textContent='尚有空格未填'; return; }
     const ok = slots.join(',')===data.correct.join(',');
     const status = buildStatus(data.correct, slots);
+    lastStatus = status;
     reveal = ok;
     result.className = 'banner ' + (ok?'ok':'badmsg');
     result.textContent = ok ? '答對！已揭示 L*、C*、h°' : '順序不正確（已標示錯誤）';
+    clearSelection();
     renderPool(status); renderSlots(status);
   };
 
   const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換色，再一次';
-  nextBtn.onclick=()=>{ data=genQ1(); slots=Array(4).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
-  btns.appendChild(checkBtn); 
+  nextBtn.onclick=()=>{ data=genQ1(); slots=Array(4).fill(null); reveal=false; lastStatus=null; clearSelection(); renderPool(); renderSlots(); result.textContent=''; result.className=''; };
+  btns.appendChild(checkBtn);
   btns.appendChild(nextBtn);
 
   renderPool(); renderSlots();
@@ -280,15 +523,25 @@ function genQ2(){
 }
 function viewQ2(container){
   container.innerHTML='';
+  clearSelection();
   const card=document.createElement('div'); card.className='card';
-  card.innerHTML='<h2>第 2 題｜明度由低→高排序</h2>';
-  const poolRow=document.createElement('div'); poolRow.className='row'; card.appendChild(poolRow);
+  const h2=document.createElement('h2'); h2.textContent='第 2 題｜明度由低→高排序'; card.appendChild(h2);
+  const hint=document.createElement('div'); hint.className='hint';
+  hint.textContent='手機可點選色塊後再點空格；也可按住拖曳。'; card.appendChild(hint);
+  const poolRow=document.createElement('div'); poolRow.className='row pool'; card.appendChild(poolRow);
   const scale=document.createElement('div'); scale.className='scale'; scale.innerHTML='<span>低</span><div class="bar"></div><span>高</span>'; card.appendChild(scale);
-  const slotsRow=document.createElement('div'); slotsRow.className='row'; card.appendChild(slotsRow);
-  const btns=document.createElement('div'); btns.className='row'; btns.style.marginTop='8px'; card.appendChild(btns);
+  const slotsRow=document.createElement('div'); slotsRow.className='row slots'; card.appendChild(slotsRow);
+  const btns=document.createElement('div'); btns.className='row btns'; card.appendChild(btns);
   const result=document.createElement('div'); card.appendChild(result);
 
   let data=genQ2(); let slots=Array(5).fill(null); let reveal=false;
+
+  activePlaceHandler = (id, slotIndex)=>{
+    const from=slots.indexOf(id);
+    if(from!==-1) slots[from]=null;
+    if(slotIndex!=null) slots[slotIndex]=id;
+    renderPool(); renderSlots();
+  };
 
   function renderPool(status=null){
     poolRow.innerHTML='';
@@ -300,22 +553,12 @@ function viewQ2(container){
   function renderSlots(status=null){
     slotsRow.innerHTML='';
     for(let i=0;i<5;i++){
-      const s=makeSlotEl();
+      const s=makeSlotEl(i);
       if(status && status.slot[i]) s.classList.add(status.slot[i]);
-      s.addEventListener('drop',e=>{
-        e.preventDefault(); e.stopPropagation();
-        const id=e.dataTransfer.getData('text/plain')||currentDragId;
-        if(!id) return;
-        const from=slots.indexOf(id);
-        if(from!==-1) slots[from]=null;
-        slots[i]=id;
-        currentDragId=null;
-        renderPool(status); renderSlots(status);
-      });
-      if(slots[i]){ 
+      if(slots[i]){
         const chip=data.chips.find(c=>c.id===slots[i]);
         const st = status ? status.slot[i] : null;
-        s.appendChild(makeChipEl(chip,{reveal, good: st==='good', bad: st==='bad'})); 
+        s.appendChild(makeChipEl(chip,{reveal, good: st==='good', bad: st==='bad'}));
       }
       slotsRow.appendChild(s);
     }
@@ -328,12 +571,13 @@ function viewQ2(container){
     reveal = ok;
     result.className = 'banner ' + (ok?'ok':'badmsg');
     result.textContent = ok ? '答對！已揭示 L*、C*、h°' : '順序不正確（已標示錯誤）';
+    clearSelection();
     renderPool(status); renderSlots(status);
   };
 
   const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換色，再一次';
-  nextBtn.onclick=()=>{ data=genQ2(); slots=Array(5).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
-  btns.appendChild(checkBtn); 
+  nextBtn.onclick=()=>{ data=genQ2(); slots=Array(5).fill(null); reveal=false; clearSelection(); renderPool(); renderSlots(); result.textContent=''; result.className=''; };
+  btns.appendChild(checkBtn);
   btns.appendChild(nextBtn);
   renderPool(); renderSlots(); container.appendChild(card);
 }
@@ -345,7 +589,6 @@ function genQ3(){
   const L = rand(40,75);
   let C = rand(28,55);
   const hues=[];
-  // ensure minimum angular separation (>= 20°) & span > 120° to avoid near-linear ambiguity
   function farEnough(h){
     return hues.every(x=>{
       const d=Math.abs(h-x);
@@ -360,7 +603,6 @@ function genQ3(){
     if(farEnough(h)) hues.push(h);
   }
   hues.sort((a,b)=>a-b);
-  // Build chips with safe gamut check, reduce C if needed
   const chips=hues.map((h,i)=>{
     let tryC=C, rgb=null, a=0, b=0, tries=0;
     while(tries<200 && !rgb){
@@ -369,30 +611,38 @@ function genQ3(){
       const test=labToRgb(L,ab.a,ab.b);
       if(rgbInGamut(test)){ rgb=test; a=ab.a; b=ab.b; break; }
       tryC-=2;
-      if(tryC<12){ // last resort tweak L
-        tryC=18;
-      }
+      if(tryC<12){ tryC=18; }
     }
     if(!rgb){ const ab=polarToAB(18,h); a=ab.a; b=ab.b; rgb=labToRgb(L,a,b); }
     return { id:`q3_${i}`, L, a, b, h, rgb };
   });
-  const baseOrder=[...chips].sort((p,q)=>p.h-q.h).map(c=>c.id); // increasing hue
+  const baseOrder=[...chips].sort((p,q)=>p.h-q.h).map(c=>c.id);
   return { chips: shuffle(chips), correctBase: baseOrder };
 }
 function viewQ3(container){
   container.innerHTML='';
+  clearSelection();
   const card=document.createElement('div'); card.className='card';
-  card.innerHTML='<h2>第 3 題｜依 色相順序 排序（圓周任意起點，雙向皆可）</h2>';
+  const h2=document.createElement('h2'); h2.textContent='第 3 題｜依 色相順序 排序（圓周任意起點，雙向皆可）'; card.appendChild(h2);
   const tip=document.createElement('div'); tip.className='tip';
   tip.textContent='說明：評分時接受任何起點與方向（順／逆時針），只要色相順序遞增即可。';
   card.appendChild(tip);
+  const hint=document.createElement('div'); hint.className='hint';
+  hint.textContent='手機可點選色塊後再點空格；也可按住拖曳。'; card.appendChild(hint);
 
-  const poolRow=document.createElement('div'); poolRow.className='row'; card.appendChild(poolRow);
-  const slotsRow=document.createElement('div'); slotsRow.className='row'; card.appendChild(slotsRow);
-  const btns=document.createElement('div'); btns.className='row'; btns.style.marginTop='8px'; card.appendChild(btns);
+  const poolRow=document.createElement('div'); poolRow.className='row pool'; card.appendChild(poolRow);
+  const slotsRow=document.createElement('div'); slotsRow.className='row slots'; card.appendChild(slotsRow);
+  const btns=document.createElement('div'); btns.className='row btns'; card.appendChild(btns);
   const result=document.createElement('div'); card.appendChild(result);
 
   let data=genQ3(); let slots=Array(6).fill(null); let reveal=false;
+
+  activePlaceHandler = (id, slotIndex)=>{
+    const from=slots.indexOf(id);
+    if(from!==-1) slots[from]=null;
+    if(slotIndex!=null) slots[slotIndex]=id;
+    renderPool(); renderSlots();
+  };
 
   function renderPool(status=null){
     poolRow.innerHTML='';
@@ -404,18 +654,8 @@ function viewQ3(container){
   function renderSlots(status=null){
     slotsRow.innerHTML='';
     for(let i=0;i<6;i++){
-      const s=makeSlotEl();
+      const s=makeSlotEl(i);
       if(status && status.slot[i]) s.classList.add(status.slot[i]);
-      s.addEventListener('drop',e=>{
-        e.preventDefault(); e.stopPropagation();
-        const id=e.dataTransfer.getData('text/plain')||currentDragId;
-        if(!id) return;
-        const from=slots.indexOf(id);
-        if(from!==-1) slots[from]=null;
-        slots[i]=id;
-        currentDragId=null;
-        renderPool(status); renderSlots(status);
-      });
       if(slots[i]){
         const chip=data.chips.find(c=>c.id===slots[i]);
         const st = status ? status.slot[i] : null;
@@ -436,12 +676,13 @@ function viewQ3(container){
     reveal = ok;
     result.className = 'banner ' + (ok?'ok':'badmsg');
     result.textContent = ok ? '答對！已揭示 L*、C*、h°（任意起點與方向皆可）' : '順序不正確（已標示錯誤；提示：沿圓周單調遞增）';
+    clearSelection();
     renderPool(status); renderSlots(status);
   };
 
   const nextBtn=document.createElement('button'); nextBtn.className='btn'; nextBtn.textContent='換色，再一次';
-  nextBtn.onclick=()=>{ data=genQ3(); slots=Array(6).fill(null); reveal=false; renderPool(); renderSlots(); result.textContent=''; result.className=''; };
-  btns.appendChild(checkBtn); 
+  nextBtn.onclick=()=>{ data=genQ3(); slots=Array(6).fill(null); reveal=false; clearSelection(); renderPool(); renderSlots(); result.textContent=''; result.className=''; };
+  btns.appendChild(checkBtn);
   btns.appendChild(nextBtn);
 
   renderPool(); renderSlots(); container.appendChild(card);
@@ -453,16 +694,16 @@ function viewQ3(container){
 const tabsEl=document.getElementById('tabs');
 const viewEl=document.getElementById('view');
 const tabs=[
-  {id:1, label:'第1題 彩度 排序', render:viewQ1},
-  {id:2, label:'第2題 明度 排序', render:viewQ2},
-  {id:3, label:'第3題 色相 排序', render:viewQ3},
+  {id:1, label:'第1題 彩度', render:viewQ1},
+  {id:2, label:'第2題 明度', render:viewQ2},
+  {id:3, label:'第3題 色相', render:viewQ3},
 ];
 let active=1;
 function renderTabs(){
   tabsEl.innerHTML='';
   tabs.forEach(t=>{
     const b=document.createElement('button');
-    b.className='tab'+(active===t.id?' active':'');;
+    b.className='tab'+(active===t.id?' active':'');
     b.textContent=t.label;
     b.onclick=()=>{ active=t.id; renderTabs(); renderView(); };
     tabsEl.appendChild(b);
