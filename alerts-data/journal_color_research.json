@@ -20,6 +20,12 @@
       "description": ""
     },
     {
+      "title": "Improving the Empirical Formulae for\n                    <scp>CIE</scp>\n                    Daylight Illuminants",
+      "link": "https://doi.org/10.1002/col.70128",
+      "published": "2026-09",
+      "description": ""
+    },
+    {
       "title": "No title",
       "link": "https://doi.org/10.1002/col.v51.5",
       "published": "2026-09",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1002/col.70117",
       "published": "2026-08-16",
       "description": ""
-    },
-    {
-      "title": "Deep Learning‐Based White Balance Correction Using Spectrum Estimation From Multispectral Imaging",
-      "link": "https://doi.org/10.1002/col.70118",
-      "published": "2026-08-16",
-      "description": ""
     }
   ],
-  "updated": "2026-09-21T15:28:10Z"
+  "updated": "2026-09-22T13:45:59Z"
 }
