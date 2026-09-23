@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>抽籤產生器</title>
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -13,483 +12,67 @@
     gtag('config', 'G-N8QWS5JKZD');
   </script>
   <style>
-    :root {
-      --bg: #0f1220;
-      --card: rgba(255, 255, 255, 0.08);
-      --stroke: rgba(255, 255, 255, 0.14);
-      --text: #f4f6ff;
-      --muted: #a7b0d0;
-      --accent: #7c5cff;
-      --accent2: #22d3ee;
-      --danger: #fb7185;
-      --ok: #34d399;
-      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-      --radius: 22px;
-      --pad: clamp(14px, 3.5vw, 28px);
-    }
-    *, *::before, *::after { box-sizing: border-box; }
-    html {
-      -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;
-    }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      min-height: 100dvh;
-      font-family: "Segoe UI", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(1200px 600px at 10% -10%, rgba(124, 92, 255, 0.35), transparent 60%),
-        radial-gradient(900px 500px at 100% 0%, rgba(34, 211, 238, 0.22), transparent 55%),
-        var(--bg);
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: var(--pad);
-      padding-top: clamp(16px, 4vh, 36px);
-      padding-bottom: clamp(20px, 5vh, 40px);
-    }
-    .app {
-      width: min(720px, 100%);
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      border-radius: clamp(16px, 3vw, var(--radius));
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      padding: clamp(18px, 4vw, 28px) clamp(14px, 3.5vw, 24px) clamp(16px, 3vw, 22px);
-    }
-    h1 {
-      margin: 0 0 6px;
-      font-size: clamp(1.45rem, 5vw, 2rem);
-      letter-spacing: 0.02em;
-      line-height: 1.25;
-    }
-    .sub {
-      margin: 0 0 clamp(14px, 3vw, 22px);
-      color: var(--muted);
-      font-size: clamp(0.88rem, 2.6vw, 0.95rem);
-      line-height: 1.55;
-    }
-    label {
-      display: block;
-      font-size: 0.9rem;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }
-    textarea {
-      width: 100%;
-      min-height: clamp(120px, 28vh, 180px);
-      max-height: 50vh;
-      resize: vertical;
-      border-radius: 16px;
-      border: 1px solid var(--stroke);
-      background: rgba(0, 0, 0, 0.25);
-      color: var(--text);
-      padding: 14px 16px;
-      font-size: 16px; /* avoid iOS zoom on focus */
-      line-height: 1.6;
-      outline: none;
-    }
-    textarea:focus, input[type="number"]:focus {
-      border-color: rgba(124, 92, 255, 0.7);
-      box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.2);
-    }
-    .hint {
-      margin: 8px 0 14px;
-      font-size: clamp(0.78rem, 2.4vw, 0.82rem);
-      color: var(--muted);
-      line-height: 1.45;
-    }
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: end;
-      gap: 14px;
-      margin-bottom: 16px;
-    }
-    .field-count {
-      flex: 1 1 140px;
-      max-width: 220px;
-    }
-    .field-count input {
-      width: 100%;
-      max-width: 140px;
-      border-radius: 14px;
-      border: 1px solid var(--stroke);
-      background: rgba(0, 0, 0, 0.25);
-      color: var(--text);
-      padding: 12px 14px;
-      font-size: 16px;
-      font-weight: 700;
-      outline: none;
-    }
-    .row {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-    .row .btn-primary {
-      grid-column: 1 / -1;
-    }
-    button {
-      appearance: none;
-      -webkit-appearance: none;
-      border: 0;
-      border-radius: 999px;
-      padding: 12px 16px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.12s ease, opacity 0.12s ease, background 0.12s ease;
-      min-height: 48px;
-      width: 100%;
-      touch-action: manipulation;
-    }
-    button:active { transform: scale(0.97); }
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #5b8cff);
-      color: white;
-      font-size: 1.05rem;
-    }
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text);
-      border: 1px solid var(--stroke);
-    }
-    .btn-danger {
-      background: rgba(251, 113, 133, 0.15);
-      color: #fecdd3;
-      border: 1px solid rgba(251, 113, 133, 0.35);
-    }
-    .result-wrap {
-      margin-top: 8px;
-      border-radius: 18px;
-      border: 1px dashed rgba(255, 255, 255, 0.18);
-      background: rgba(0, 0, 0, 0.22);
-      padding: clamp(16px, 3vw, 22px) clamp(12px, 3vw, 16px);
-      text-align: center;
-      min-height: clamp(96px, 18vh, 120px);
-      display: grid;
-      place-items: center;
-      gap: 10px;
-      overflow-wrap: anywhere;
-    }
-    .result-label {
-      color: var(--muted);
-      font-size: 0.85rem;
-    }
-    .result {
-      font-size: clamp(1.25rem, 5.5vw, 2.4rem);
-      font-weight: 800;
-      letter-spacing: 0.03em;
-      background: linear-gradient(90deg, #fff, var(--accent2), #c4b5fd);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      overflow-wrap: anywhere;
-      word-break: break-word;
-      width: 100%;
-      line-height: 1.35;
-    }
-    .result.multi {
-      font-size: clamp(1.05rem, 3.5vw, 1.55rem);
-      line-height: 1.55;
-      text-align: left;
-    }
-    .result.spin {
-      animation: pulse 0.12s linear infinite;
-      filter: blur(0.2px);
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.55; transform: scale(1.03); }
-    }
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 14px;
-    }
-    .chip {
-      font-size: 0.82rem;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid var(--stroke);
-      color: var(--muted);
-    }
-    .footer {
-      margin-top: 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px 16px;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: clamp(0.72rem, 2.3vw, 0.78rem);
-      line-height: 1.4;
-    }
-    .site-link {
-      color: var(--muted);
-      text-decoration: none;
-      border-bottom: 1px dashed rgba(167, 176, 208, 0.45);
-      max-width: 100%;
-      overflow-wrap: anywhere;
-    }
-    .site-link:hover { color: var(--accent2); }
-    .ok { color: var(--ok); }
-    .err { color: var(--danger); }
-
-    /* tablet+ : buttons in one row-ish */
-    @media (min-width: 560px) {
-      body {
-        align-items: center;
-      }
-      .row {
-        display: flex;
-        flex-wrap: wrap;
-      }
-      .row .btn-primary {
-        flex: 1 1 180px;
-        width: auto;
-        grid-column: auto;
-      }
-      .btn-secondary, .btn-danger {
-        width: auto;
-        flex: 0 1 auto;
-      }
-      .field-count {
-        flex: 0 0 auto;
-      }
-      .field-count input {
-        width: 96px;
-      }
-    }
-
-    @media (max-width: 380px) {
-      .row {
-        grid-template-columns: 1fr;
-      }
-      .footer {
-        flex-direction: column;
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .result.spin { animation: none; }
-      button { transition: none; }
-    }
+    :root{--bg:#0f1220;--card:rgba(255,255,255,.08);--stroke:rgba(255,255,255,.14);--text:#f4f6ff;--muted:#a7b0d0;--accent:#7c5cff;--accent2:#22d3ee;--danger:#fb7185;--ok:#34d399;--shadow:0 20px 50px rgba(0,0,0,.35);--pad:clamp(14px,3.5vw,28px)}
+    *,*::before,*::after{box-sizing:border-box}html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+    body{margin:0;min-height:100vh;min-height:100dvh;font-family:"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;color:var(--text);background:radial-gradient(1200px 600px at 10% -10%,rgba(124,92,255,.35),transparent 60%),radial-gradient(900px 500px at 100% 0%,rgba(34,211,238,.22),transparent 55%),var(--bg);display:flex;align-items:flex-start;justify-content:center;padding:var(--pad);padding-top:clamp(16px,4vh,36px);padding-bottom:clamp(20px,5vh,40px)}
+    .app{width:min(720px,100%);background:var(--card);border:1px solid var(--stroke);border-radius:clamp(16px,3vw,22px);box-shadow:var(--shadow);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);padding:clamp(18px,4vw,28px) clamp(14px,3.5vw,24px) clamp(16px,3vw,22px)}
+    h1{margin:0 0 6px;font-size:clamp(1.45rem,5vw,2rem);letter-spacing:.02em;line-height:1.25}.sub{margin:0 0 clamp(14px,3vw,22px);color:var(--muted);font-size:clamp(.88rem,2.6vw,.95rem);line-height:1.55}label{display:block;font-size:.9rem;color:var(--muted);margin-bottom:8px}
+    textarea{width:100%;min-height:clamp(120px,28vh,180px);max-height:50vh;resize:vertical;border-radius:16px;border:1px solid var(--stroke);background:rgba(0,0,0,.25);color:var(--text);padding:14px 16px;font-size:16px;line-height:1.6;outline:none}textarea:focus,.count-input:focus{border-color:rgba(124,92,255,.7);box-shadow:0 0 0 3px rgba(124,92,255,.2)}
+    .hint{margin:8px 0 14px;font-size:clamp(.78rem,2.4vw,.82rem);color:var(--muted);line-height:1.45}.controls{display:flex;flex-wrap:wrap;align-items:end;gap:14px;margin-bottom:16px}.field-count{flex:1 1 180px;max-width:260px}
+    .count-control{display:flex;align-items:center;max-width:220px;border:1px solid var(--stroke);border-radius:14px;overflow:hidden;background:rgba(0,0,0,.25)}
+    .count-input{width:96px;min-width:0;border:0;border-radius:0;background:transparent;color:var(--text);padding:12px 8px;text-align:center;font-size:18px;font-weight:700;outline:none}
+    .count-btn{width:48px!important;min-height:48px!important;padding:0!important;border:0!important;border-radius:0!important;background:rgba(255,255,255,.08);color:var(--text);font-size:1.5rem;line-height:1;touch-action:manipulation}.count-btn:hover{background:rgba(255,255,255,.16)}
+    .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:18px}.row .btn-primary{grid-column:1/-1}button{appearance:none;-webkit-appearance:none;border:0;border-radius:999px;padding:12px 16px;font-size:.95rem;font-weight:700;cursor:pointer;transition:transform .12s ease,opacity .12s ease,background .12s ease;min-height:48px;width:100%;touch-action:manipulation}button:active{transform:scale(.97)}button:disabled{opacity:.45;cursor:not-allowed}.btn-primary{background:linear-gradient(135deg,var(--accent),#5b8cff);color:white;font-size:1.05rem}.btn-secondary{background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--stroke)}.btn-danger{background:rgba(251,113,133,.15);color:#fecdd3;border:1px solid rgba(251,113,133,.35)}
+    .result-wrap{margin-top:8px;border-radius:18px;border:1px dashed rgba(255,255,255,.18);background:rgba(0,0,0,.22);padding:clamp(16px,3vw,22px) clamp(12px,3vw,16px);text-align:center;min-height:clamp(96px,18vh,120px);display:grid;place-items:center;gap:10px;overflow-wrap:anywhere}.result-label{color:var(--muted);font-size:.85rem}.result{font-size:clamp(1.25rem,5.5vw,2.4rem);font-weight:800;letter-spacing:.03em;background:linear-gradient(90deg,#fff,var(--accent2),#c4b5fd);-webkit-background-clip:text;background-clip:text;color:transparent;overflow-wrap:anywhere;word-break:break-word;width:100%;line-height:1.35}.result.spin{animation:pulse .12s linear infinite;filter:blur(.2px)}@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(1.03)}}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.chip{font-size:.82rem;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--stroke);color:var(--muted)}.footer{margin-top:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px 16px;flex-wrap:wrap;color:var(--muted);font-size:clamp(.72rem,2.3vw,.78rem);line-height:1.4}.site-link{color:var(--muted);text-decoration:none;border-bottom:1px dashed rgba(167,176,208,.45);max-width:100%;overflow-wrap:anywhere}.site-link:hover{color:var(--accent2)}.ok{color:var(--ok)}.err{color:var(--danger)}
+    @media(min-width:560px){body{align-items:center}.row{display:flex;flex-wrap:wrap}.row .btn-primary{flex:1 1 180px;width:auto}.btn-secondary,.btn-danger{width:auto;flex:0 1 auto}.field-count{flex:0 0 auto}}
+    @media(max-width:380px){.row{grid-template-columns:1fr}.footer{flex-direction:column}}
+    @media(prefers-reduced-motion:reduce){.result.spin{animation:none}button{transition:none}}
   </style>
 </head>
 <body>
   <main class="app">
-<h1>抽籤產生器</h1>
+    <h1>抽籤產生器</h1>
     <p class="sub">把選項一行一個貼進去，設定抽出數量後按下抽籤。適合：今天吃什麼、分組、點名、決定下一步。</p>
-
     <label for="options">選項清單</label>
     <textarea id="options" placeholder="火鍋&#10;拉麵&#10;壽司&#10;義大利麵&#10;自己帶便當"></textarea>
     <p class="hint">可用換行或逗號分隔。空白行會自動忽略。選項與抽出數量會暫存在這個瀏覽器。抽出時不會重複（不放回）。</p>
-
     <div class="controls">
       <div class="field-count">
         <label for="count">抽出數量</label>
-        <input id="count" type="number" min="1" step="1" value="1" inputmode="numeric" />
+        <div class="count-control" role="group" aria-label="抽出數量">
+          <button class="count-btn" id="decreaseBtn" type="button" aria-label="減少抽出數量">−</button>
+          <input class="count-input" id="count" type="number" min="1" step="1" value="1" inputmode="numeric" aria-label="抽出數量" />
+          <button class="count-btn" id="increaseBtn" type="button" aria-label="增加抽出數量">＋</button>
+        </div>
       </div>
     </div>
-
     <div class="row">
       <button class="btn-primary" id="drawBtn" type="button">抽籤</button>
       <button class="btn-secondary" id="demoBtn" type="button">填入範例</button>
       <button class="btn-secondary" id="shuffleBtn" type="button">打亂順序</button>
       <button class="btn-danger" id="clearBtn" type="button">清空</button>
     </div>
-
-    <div class="result-wrap" aria-live="polite">
-      <div class="result-label">抽中的結果</div>
-      <div class="result" id="result">尚未抽籤</div>
-    </div>
-
+    <div class="result-wrap" aria-live="polite"><div class="result-label">抽中的結果</div><div class="result" id="result">尚未抽籤</div></div>
     <div class="chips" id="countChip"></div>
-
-    <div class="footer">
-      <span id="status" class="ok">就緒</span>
-      <a class="site-link" href="https://wylee-sudo.github.io/wenyuanlee/">Color &amp; Design Research Lab | Wen-Yuan Lee</a>
-    </div>
+    <div class="footer"><span id="status" class="ok">就緒</span><a class="site-link" href="https://wylee-sudo.github.io/wenyuanlee/">Color &amp; Design Research Lab | Wen-Yuan Lee</a></div>
   </main>
-
   <script>
-    const STORAGE_KEY = "lottery-picker-state-v2";
-    const optionsEl = document.getElementById("options");
-    const countEl = document.getElementById("count");
-    const resultEl = document.getElementById("result");
-    const statusEl = document.getElementById("status");
-    const countChip = document.getElementById("countChip");
-    const drawBtn = document.getElementById("drawBtn");
-
-    const DEMO = ["火鍋", "拉麵", "壽司", "義大利麵", "漢堡", "自己帶便當"];
-
-    function parseOptions(raw) {
-      return raw
-        .split(/[\n,，、]+/)
-        .map((s) => s.trim())
-        .filter(Boolean);
-    }
-
-    function setStatus(text, ok = true) {
-      statusEl.textContent = text;
-      statusEl.className = ok ? "ok" : "err";
-    }
-
-    function getCount() {
-      const n = Number.parseInt(countEl.value, 10);
-      if (!Number.isFinite(n) || n < 1) return 1;
-      return n;
-    }
-
-    function clampCount() {
-      const list = parseOptions(optionsEl.value);
-      let n = getCount();
-      if (list.length > 0 && n > list.length) {
-        n = list.length;
-        countEl.value = String(n);
-      } else if (n < 1) {
-        n = 1;
-        countEl.value = "1";
-      } else {
-        countEl.value = String(n);
-      }
-      return n;
-    }
-
-    function refreshMeta() {
-      const list = parseOptions(optionsEl.value);
-      const n = clampCount();
-      countChip.innerHTML =
-        `<span class="chip">目前 ${list.length} 個選項</span>` +
-        `<span class="chip">將抽出 ${Math.min(n, Math.max(list.length, 0))} 個</span>`;
-      drawBtn.disabled = list.length === 0;
-    }
-
-    function save() {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          options: optionsEl.value,
-          count: getCount(),
-        })
-      );
-      refreshMeta();
-    }
-
-    function load() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const data = JSON.parse(raw);
-          if (data && typeof data.options === "string") {
-            optionsEl.value = data.options;
-            countEl.value = String(Math.max(1, Number(data.count) || 1));
-            refreshMeta();
-            return;
-          }
-        }
-      } catch (_) {}
-
-      const legacy = localStorage.getItem("lottery-picker-options-v1");
-      if (legacy != null && legacy.trim()) {
-        optionsEl.value = legacy;
-      } else {
-        optionsEl.value = DEMO.join("\n");
-      }
-      countEl.value = "1";
-      refreshMeta();
-    }
-
-    function shuffleInPlace(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
-
-    function pickMany(list, count) {
-      const pool = shuffleInPlace([...list]);
-      return pool.slice(0, count);
-    }
-
-    function formatResult(winners) {
-      return winners.join(", ");
-    }
-
-    async function draw() {
-      const list = parseOptions(optionsEl.value);
-      if (!list.length) {
-        setStatus("請先輸入至少一個選項", false);
-        resultEl.classList.remove("multi");
-        resultEl.textContent = "沒有可抽的選項";
-        return;
-      }
-
-      const count = Math.min(clampCount(), list.length);
-      drawBtn.disabled = true;
-      resultEl.classList.add("spin");
-      resultEl.classList.remove("multi");
-      setStatus("抽籤中…");
-
-      const rounds = 14;
-      for (let i = 0; i < rounds; i++) {
-        resultEl.textContent = formatResult(pickMany(list, count));
-        await new Promise((r) => setTimeout(r, 45 + i * 12));
-      }
-
-      const winners = pickMany(list, count);
-      resultEl.classList.remove("spin");
-      resultEl.classList.remove("multi");
-      resultEl.textContent = formatResult(winners);
-      setStatus(
-        winners.length === 1
-          ? `抽中：${winners[0]}`
-          : `已抽出 ${winners.length} 個（不重複）`
-      );
-      drawBtn.disabled = false;
-      refreshMeta();
-    }
-
-    document.getElementById("demoBtn").addEventListener("click", () => {
-      optionsEl.value = DEMO.join("\n");
-      save();
-      setStatus("已填入範例");
-    });
-
-    document.getElementById("clearBtn").addEventListener("click", () => {
-      optionsEl.value = "";
-      resultEl.classList.remove("multi");
-      resultEl.textContent = "尚未抽籤";
-      save();
-      setStatus("已清空", false);
-    });
-
-    document.getElementById("shuffleBtn").addEventListener("click", () => {
-      const list = parseOptions(optionsEl.value);
-      shuffleInPlace(list);
-      optionsEl.value = list.join("\n");
-      save();
-      setStatus("已打亂順序");
-    });
-
-    drawBtn.addEventListener("click", draw);
-    optionsEl.addEventListener("input", save);
-    countEl.addEventListener("input", save);
-    countEl.addEventListener("change", save);
-
-    load();
+    const STORAGE_KEY="lottery-picker-state-v2",optionsEl=document.getElementById("options"),countEl=document.getElementById("count"),resultEl=document.getElementById("result"),statusEl=document.getElementById("status"),countChip=document.getElementById("countChip"),drawBtn=document.getElementById("drawBtn"),decreaseBtn=document.getElementById("decreaseBtn"),increaseBtn=document.getElementById("increaseBtn");
+    const DEMO=["火鍋","拉麵","壽司","義大利麵","漢堡","自己帶便當"];
+    function parseOptions(raw){return raw.split(/[\n,，、]+/).map(s=>s.trim()).filter(Boolean)}
+    function setStatus(text,ok=true){statusEl.textContent=text;statusEl.className=ok?"ok":"err"}
+    function getCount(){const n=Number.parseInt(countEl.value,10);return Number.isFinite(n)&&n>=1?n:1}
+    function clampCount(){const list=parseOptions(optionsEl.value),max=list.length||1,n=Math.min(Math.max(getCount(),1),max);countEl.value=String(n);return n}
+    function refreshMeta(){const list=parseOptions(optionsEl.value),n=clampCount();countChip.innerHTML=`<span class="chip">目前 ${list.length} 個選項</span><span class="chip">將抽出 ${Math.min(n,list.length)} 個</span>`;drawBtn.disabled=!list.length;decreaseBtn.disabled=n<=1;increaseBtn.disabled=!list.length||n>=list.length}
+    function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify({options:optionsEl.value,count:getCount()}));refreshMeta()}
+    function load(){try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const data=JSON.parse(raw);if(data&&typeof data.options==="string"){optionsEl.value=data.options;countEl.value=String(Math.max(1,Number(data.count)||1));refreshMeta();return}}}catch(_){}const legacy=localStorage.getItem("lottery-picker-options-v1");optionsEl.value=legacy!=null&&legacy.trim()?legacy:DEMO.join("\n");countEl.value="1";refreshMeta()}
+    function shuffleInPlace(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
+    function pickMany(list,count){return shuffleInPlace([...list]).slice(0,count)}
+    function formatResult(winners){return winners.join(", ")}
+    function changeCount(delta){const list=parseOptions(optionsEl.value),max=list.length||1;countEl.value=String(Math.min(Math.max(getCount()+delta,1),max));save();countEl.focus()}
+    async function draw(){const list=parseOptions(optionsEl.value);if(!list.length){setStatus("請先輸入至少一個選項",false);resultEl.textContent="沒有可抽的選項";return}const count=Math.min(clampCount(),list.length);drawBtn.disabled=true;resultEl.classList.add("spin");setStatus("抽籤中…");for(let i=0;i<14;i++){resultEl.textContent=formatResult(pickMany(list,count));await new Promise(r=>setTimeout(r,45+i*12))}const winners=pickMany(list,count);resultEl.classList.remove("spin");resultEl.textContent=formatResult(winners);setStatus(winners.length===1?`抽中：${winners[0]}`:`已抽出 ${winners.length} 個（不重複）`);drawBtn.disabled=false;refreshMeta()}
+    document.getElementById("demoBtn").addEventListener("click",()=>{optionsEl.value=DEMO.join("\n");save();setStatus("已填入範例")});document.getElementById("clearBtn").addEventListener("click",()=>{optionsEl.value="";resultEl.textContent="尚未抽籤";save();setStatus("已清空",false)});document.getElementById("shuffleBtn").addEventListener("click",()=>{const list=parseOptions(optionsEl.value);shuffleInPlace(list);optionsEl.value=list.join("\n");save();setStatus("已打亂順序")});drawBtn.addEventListener("click",draw);decreaseBtn.addEventListener("click",()=>changeCount(-1));increaseBtn.addEventListener("click",()=>changeCount(1));optionsEl.addEventListener("input",save);countEl.addEventListener("input",save);countEl.addEventListener("change",()=>{clampCount();save()});load();
   </script>
 </body>
 </html>
