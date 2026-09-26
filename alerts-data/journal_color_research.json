@@ -2,6 +2,12 @@
   "journal": "Color Research & Application",
   "items": [
     {
+      "title": "Color Distribution Rarity in Naturalistic Scenes as a Possible Integrative Descriptor of Preference for Abstract Paintings",
+      "link": "https://doi.org/10.1002/col.70129",
+      "published": "2026-09",
+      "description": ""
+    },
+    {
       "title": "Camera Spectral Response Function Estimation and Color Calibration Based on Raw Response Prediction",
       "link": "https://doi.org/10.1002/col.70124",
       "published": "2026-09",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1002/col.70125",
       "published": "2026-09",
       "description": ""
-    },
-    {
-      "title": "Chromaticity Points of Real Spectra Outside the\n                    <scp>CIE</scp>\n                    Chromaticity Diagram",
-      "link": "https://doi.org/10.1002/col.70120",
-      "published": "2026-08-30",
-      "description": ""
     }
   ],
-  "updated": "2026-09-25T14:17:46Z"
+  "updated": "2026-09-26T13:28:27Z"
 }
