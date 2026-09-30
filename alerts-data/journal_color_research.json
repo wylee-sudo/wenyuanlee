@@ -2,14 +2,26 @@
   "journal": "Color Research & Application",
   "items": [
     {
-      "title": "Color Distribution Rarity in Naturalistic Scenes as a Possible Integrative Descriptor of Preference for Abstract Paintings",
-      "link": "https://doi.org/10.1002/col.70129",
-      "published": "2026-09",
+      "title": "No title",
+      "link": "https://doi.org/10.1002/col.v51.6",
+      "published": "2026-11",
       "description": ""
     },
     {
-      "title": "Camera Spectral Response Function Estimation and Color Calibration Based on Raw Response Prediction",
-      "link": "https://doi.org/10.1002/col.70124",
+      "title": "Predicting Post‐Foundation Skin Color With a Coverage‐Dependent Optical Mixing Model Beyond the Continuous‐Film Assumption",
+      "link": "https://doi.org/10.1002/col.70130",
+      "published": "2026-09-29",
+      "description": ""
+    },
+    {
+      "title": "Issue Information",
+      "link": "https://doi.org/10.1002/col.70094",
+      "published": "2026-09-29",
+      "description": ""
+    },
+    {
+      "title": "Color Distribution Rarity in Naturalistic Scenes as a Possible Integrative Descriptor of Preference for Abstract Paintings",
+      "link": "https://doi.org/10.1002/col.70129",
       "published": "2026-09",
       "description": ""
     },
@@ -20,14 +32,20 @@
       "description": ""
     },
     {
-      "title": "Temporal Dynamics of Color and Brightness Adaptation in Reported Non–Ocular Visual Experiences: A Case Study",
-      "link": "https://doi.org/10.1002/col.70123",
+      "title": "Camera Spectral Response Function Estimation and Color Calibration Based on Raw Response Prediction",
+      "link": "https://doi.org/10.1002/col.70124",
       "published": "2026-09",
       "description": ""
     },
     {
       "title": "Learning Turkish Color Names Through Crowdsourcing",
       "link": "https://doi.org/10.1002/col.70121",
+      "published": "2026-09",
+      "description": ""
+    },
+    {
+      "title": "Temporal Dynamics of Color and Brightness Adaptation in Reported Non–Ocular Visual Experiences: A Case Study",
+      "link": "https://doi.org/10.1002/col.70123",
       "published": "2026-09",
       "description": ""
     },
@@ -42,25 +60,7 @@
       "link": "https://doi.org/10.1002/col.v51.5",
       "published": "2026-09",
       "description": ""
-    },
-    {
-      "title": "Optimizing Pseudo‐Isochromatic Plates Based Testing Through Adaptive Spatial and Chromatic Modulation",
-      "link": "https://doi.org/10.1002/col.70122",
-      "published": "2026-09",
-      "description": ""
-    },
-    {
-      "title": "Does Short‐Term Ambient Music Modify Perceptual and Cognitive Effects of Lighting Hue? A Brightness‐Controlled Study",
-      "link": "https://doi.org/10.1002/col.70126",
-      "published": "2026-09",
-      "description": ""
-    },
-    {
-      "title": "Research on Visual Aesthetic Emotion of Different Color Schemes Based on Event‐Related Potential Technology: A Case Study of Miao Embroidery",
-      "link": "https://doi.org/10.1002/col.70111",
-      "published": "2026-09",
-      "description": ""
     }
   ],
-  "updated": "2026-09-29T15:13:12Z"
+  "updated": "2026-09-30T15:27:39Z"
 }
