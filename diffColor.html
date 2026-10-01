@@ -98,6 +98,29 @@
     .stat .k { display:block; font-size: clamp(22px, 4vw, 36px); font-weight: 900; }
     .stat .t { color: var(--muted); font-size: 13px; }
 
+    /* ====== 紀錄與排行榜 ====== */
+    .save-row { display:flex; gap:8px; justify-content:center; margin: 0 0 14px 0; flex-wrap: wrap; }
+    .save-row input {
+      flex: 1 1 200px; max-width: 320px;
+      padding: 12px 14px; border-radius: 12px; border: 1px solid #2a3446;
+      background: #0f141c; color: var(--text); font-size: 16px;
+    }
+    .save-row input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .btn.sm { padding: 12px 16px; font-size: 16px; }
+    .btn.ghost { background: transparent; color: var(--muted); border: 1px solid #2a3446; box-shadow: none; }
+    .best-line { color: var(--text); font-weight: 700; margin: 0 0 10px 0; font-size: clamp(14px, 2.4vw, 17px); }
+    .best-line .accent { font-weight: 900; }
+    .board-title { font-size: 14px; color: var(--muted); margin: 6px 0 6px 0; text-align: left; }
+    .rank { width: 100%; border-collapse: collapse; font-size: 14px; margin-bottom: 14px; }
+    .rank th, .rank td { padding: 6px 8px; border-bottom: 1px solid #2a3446; text-align: center; }
+    .rank th { color: var(--muted); font-weight: 600; }
+    .rank td.name { text-align: left; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rank tr.me td { color: var(--accent); font-weight: 800; }
+    .rank-wrap { max-height: 32vh; overflow-y: auto; }
+    .rank td.msg { color: var(--muted); padding: 14px 8px; }
+    .muted-sm { color: var(--muted); font-size: 12px; }
+    .card { max-height: calc(100dvh - 32px); overflow-y: auto; }
+
     /* 提示放到左上角，避免與底部 HUD 打架 */
     .hint {
       position: fixed; top: 10px; left: 10px;
@@ -133,7 +156,8 @@
   <div class="hud" aria-live="polite">
     <div class="badge">等級 <span id="level" class="accent">1</span></div>
     <div class="badge">分數 <span id="score" class="accent">0</span></div>
-    <div class="badge">剩餘 <span id="time" class="accent">60</span>s</div>
+    <div class="badge">正確率 <span id="acc" class="accent">—</span></div>
+    <div class="badge">剩餘 <span id="time" class="accent">20</span>s</div>
   </div>
 
   <!-- 主畫面 -->
@@ -150,9 +174,8 @@
     <div class="card">
       <h1>找出不同色 Odd-One-Out</h1>
       <p>試試看，你的眼力好不好</p>
+      <p id="intro-best" class="best-line"></p>
       <button id="start-btn" class="btn" autofocus>Start</button>
-      <p><a href="https://wylee-sudo.github.io/wenyuanlee/" target="_blank"
-         style="color:var(--muted);font-size:14px;text-decoration:underline;">返回 CDR Lab</a></p>
     </div>
   </section>
 
@@ -160,20 +183,35 @@
   <section id="gameover" class="overlay" aria-modal="true" style="display:none">
     <div class="card">
       <h1>時間到！</h1>
-      <div class="stats" style="grid-template-columns:1fr;">
-  <div class="stat"><span id="st-clears" class="k">0</span><span class="t">通關數</span></div>
-</div>
+      <p id="comment" style="margin:0 0 6px 0;color:var(--muted);font-weight:600"></p>
+      <div class="stats">
+        <div class="stat"><span id="st-clears" class="k">0</span><span class="t">通過關數</span></div>
+        <div class="stat"><span id="st-acc" class="k">0%</span><span class="t">正確率</span></div>
+        <div class="stat"><span id="st-clicks" class="k">0/0</span><span class="t">正確／總點擊</span></div>
+      </div>
+
+      <div id="save-row" class="save-row">
+        <input id="player-name" type="text" maxlength="12" placeholder="輸入你的名字" autocomplete="nickname" />
+        <button id="save-btn" class="btn sm">儲存紀錄</button>
+      </div>
+      <p id="best-line" class="best-line"></p>
+
+      <div class="board-title">🏆 <span id="rank-title">全體玩家歷史排名</span></div>
+      <div class="rank-wrap">
+        <table class="rank">
+          <thead><tr><th>#</th><th style="text-align:left">名字</th><th>關數</th><th>正確率</th><th>日期</th></tr></thead>
+          <tbody id="rank-body"></tbody>
+        </table>
+      </div>
+
       <button id="restart-btn" class="btn">再玩一次</button>
-      <p id="comment" style="margin-top:10px;color:var(--muted);font-weight:600"></p>
-<a href="https://wylee-sudo.github.io/wenyuanlee/" target="_blank"
-         style="color:var(--muted);font-size:14px;text-decoration:underline;">返回 CDR Lab</a>
-      
+      <p id="store-note" class="muted-sm" style="margin-top:12px"></p>
     </div>
   </section>
 
   <script>
   // ====== 遊戲核心參數 ======
-  const GAME_TIME = 30;           // 總秒數
+  const GAME_TIME = 20;           // 總秒數
   const START_GRID = 2;           // 起始 NxN
   const GRID_STEP_EVERY = 3;      // 每幾關增加一次棋盤大小
   const DELTA_START = 18;         // 起始顏色差（HSL）
@@ -185,11 +223,46 @@
   let gridN=START_GRID, delta=DELTA_START;
   let specialIndex=0; // 正解索引
   let focusIndex=0;   // 鍵盤導覽
+  let totalClicks=0, correctClicks=0; // 點擊統計
+  let lastResult=null, savedThisRound=false, lastSavedId=null;
+
+  // ====== 雲端排行榜（Google 試算表 + Apps Script）======
+  // 把部署好的「網頁應用程式網址」貼在這裡（以 /exec 結尾）
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwY574m1jUrXqfNjYWAcv1Sb2_qO8YKlXwe7yH0JxjgHAff_fHe-6S60c5M7j9E27Gp/exec';
+  const NAME_KEY = 'oddOneOut.lastName';   // 只用來記住上次輸入的名字
+  const LOCAL_KEY = 'oddOneOut.records.v1'; // 沒設定 API_URL 時的備用本機紀錄
+
+  function sortRecords(list){
+    return list.slice().sort((a,b)=> b.clears-a.clears || b.accuracy-a.accuracy || a.time-b.time);
+  }
+  function loadLocal(){ try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || []; } catch(e){ return []; } }
+
+  async function fetchTop(){
+    if (!API_URL) return { ok:true, top: sortRecords(loadLocal()).slice(0,20), local:true };
+    const res = await fetch(API_URL + '?action=top', { cache:'no-store' });
+    return res.json();
+  }
+  async function postScore(rec){
+    if (!API_URL){
+      const id = Date.now() + '-' + Math.random().toString(36).slice(2,6);
+      const r = { id, time: Date.now(), ...rec, accuracy: rec.total ? rec.correct/rec.total : 0 };
+      const list = sortRecords([...loadLocal(), r]).slice(0,100);
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(list));
+      const mine = list.filter(x=>x.name===rec.name);
+      return { ok:true, id, rank: list.findIndex(x=>x.id===id)+1, count: list.length, best: mine[0], myCount: mine.length, top: list.slice(0,20), local:true };
+    }
+    // 用 text/plain 送出，避免瀏覽器的跨網域預檢（Apps Script 不支援）
+    const res = await fetch(API_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(rec) });
+    return res.json();
+  }
+  function accText(correct,total){ return total ? Math.round(correct/total*100) + '%' : '—'; }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
   const boardEl = document.getElementById('board');
   const levelEl = document.getElementById('level');
   const scoreEl = document.getElementById('score');
   const timeEl = document.getElementById('time');
+  const accEl = document.getElementById('acc');
 
   const introEl = document.getElementById('intro');
   const overEl = document.getElementById('gameover');
@@ -265,7 +338,11 @@
   }
 
   function choose(idx){
+    if (!timer) return;
     const correct = idx === specialIndex;
+    totalClicks++;
+    if (correct) correctClicks++;
+    accEl.textContent = accText(correctClicks, totalClicks);
     if (correct){
       score += Math.max(1, Math.round(6 - Math.log(level+1)));
       level++;
@@ -281,6 +358,8 @@
     introEl.style.display = 'none';
     overEl.style.display = 'none';
     level = 1; score = 0; timeLeft = GAME_TIME; gridN = START_GRID; delta = DELTA_START;
+    totalClicks = 0; correctClicks = 0; savedThisRound = false; lastSavedId = null;
+    accEl.textContent = '—';
     levelEl.textContent = level; scoreEl.textContent = score; timeEl.textContent = timeLeft;
     nextRound();
     clearInterval(timer);
@@ -295,7 +374,22 @@
     boardEl.innerHTML = '';
 const clears = Math.max(0, level - 1);
 stClears.textContent = clears;
+    const accuracy = totalClicks ? correctClicks/totalClicks : 0;
+    lastResult = { clears, accuracy, correct: correctClicks, total: totalClicks };
+    document.getElementById('st-acc').textContent = accText(correctClicks, totalClicks);
+    document.getElementById('st-clicks').textContent = correctClicks + '/' + totalClicks;
     overEl.style.display = 'grid';
+
+    // 名字輸入：沒點任何格子就不給存
+    const saveRow = document.getElementById('save-row');
+    const nameInput = document.getElementById('player-name');
+    const saveBtn = document.getElementById('save-btn');
+    nameInput.value = localStorage.getItem(NAME_KEY) || '';
+    nameInput.disabled = false; saveBtn.disabled = false; saveBtn.textContent = '儲存紀錄';
+    saveRow.style.display = totalClicks ? 'flex' : 'none';
+    document.getElementById('best-line').innerHTML = '';
+    loadBoard();
+    if (totalClicks) setTimeout(()=> nameInput.focus(), 50);
 
 // 顯示評語
 const commentEl = document.getElementById('comment');
@@ -309,6 +403,78 @@ commentEl.textContent = msg;
 
   }
 
+  let saving = false;
+  async function saveResult(){
+    if (!lastResult || savedThisRound || saving || !lastResult.total) return;
+    const nameInput = document.getElementById('player-name');
+    const btn = document.getElementById('save-btn');
+    const name = (nameInput.value || '').trim().slice(0,12) || '無名氏';
+    localStorage.setItem(NAME_KEY, name);
+    saving = true; btn.disabled = true; nameInput.disabled = true; btn.textContent = '上傳中…';
+    try {
+      const r = await postScore({ name, clears:lastResult.clears, correct:lastResult.correct, total:lastResult.total });
+      if (!r.ok) throw new Error(r.error || '儲存失敗');
+      savedThisRound = true; lastSavedId = r.id;
+      btn.textContent = '已儲存 ✓';
+      renderTable(r.top, r.local);
+      renderIntroBest(r.top);
+      let html = `這局排名第 <span class="accent">${r.rank}</span> 名`;
+      if (r.count) html += `（共 ${r.count} 筆）`;
+      html += '。';
+      if (r.best){
+        html += ` ${escapeHtml(name)} 的歷史最佳：<span class="accent">${r.best.clears}</span> 關、正確率 <span class="accent">${accText(r.best.correct, r.best.total)}</span>`;
+        if (r.best.id === r.id && r.myCount > 1) html += '（新紀錄！🎉）';
+      }
+      document.getElementById('best-line').innerHTML = html;
+      if (typeof gtag === 'function') gtag('event', 'save_score', { clears: lastResult.clears, accuracy: Math.round(lastResult.accuracy*100) });
+    } catch(err){
+      btn.disabled = false; nameInput.disabled = false; btn.textContent = '重試儲存';
+      document.getElementById('best-line').innerHTML = '<span style="color:#ff8a8a">儲存失敗，請檢查網路後再按一次。</span>';
+    } finally { saving = false; }
+  }
+
+  function renderTable(list, isLocal){
+    const body = document.getElementById('rank-body');
+    document.getElementById('rank-title').textContent = isLocal ? '歷史高分（這台裝置）' : '全體玩家歷史排名';
+    document.getElementById('store-note').textContent = isLocal
+      ? '尚未設定雲端資料庫：紀錄只存在這個瀏覽器（localStorage）。'
+      : '排行榜存在雲端資料庫，所有玩家看到的是同一份。';
+    if (!list || !list.length){
+      body.innerHTML = '<tr><td colspan="5" class="msg">還沒有紀錄，留下你的名字當第一名！</td></tr>';
+      return;
+    }
+    body.innerHTML = list.slice(0,10).map((r,i)=>{
+      const d = new Date(r.time);
+      const date = (d.getMonth()+1) + '/' + d.getDate();
+      return `<tr class="${r.id===lastSavedId?'me':''}"><td>${i+1}</td><td class="name">${escapeHtml(r.name)}</td><td>${r.clears}</td><td>${accText(r.correct,r.total)}</td><td>${date}</td></tr>`;
+    }).join('');
+  }
+
+  async function loadBoard(){
+    document.getElementById('rank-body').innerHTML = '<tr><td colspan="5" class="msg">排行榜載入中…</td></tr>';
+    try {
+      const r = await fetchTop();
+      renderTable(r.top, r.local);
+      renderIntroBest(r.top);
+    } catch(err){
+      document.getElementById('rank-body').innerHTML = '<tr><td colspan="5" class="msg">排行榜暫時載入失敗（請檢查網路）。</td></tr>';
+    }
+  }
+
+  function renderIntroBest(list){
+    const el = document.getElementById('intro-best');
+    if (!list || !list.length){ el.textContent = ''; return; }
+    const top = list[0];
+    el.innerHTML = `目前最高紀錄：${escapeHtml(top.name)}　<span class="accent">${top.clears}</span> 關・正確率 <span class="accent">${accText(top.correct,top.total)}</span>`;
+  }
+
+  document.getElementById('save-btn').addEventListener('click', saveResult);
+  document.getElementById('player-name').addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter'){ e.preventDefault(); e.stopPropagation(); saveResult(); }
+    else e.stopPropagation(); // 打字時不觸發全域快捷鍵
+  });
+  fetchTop().then(r=> renderIntroBest(r.top)).catch(()=>{});
+
   // 事件綁定
   document.getElementById('start-btn').addEventListener('click', startGame);
   document.getElementById('restart-btn').addEventListener('click', startGame);
@@ -317,6 +483,8 @@ commentEl.textContent = msg;
   window.addEventListener('keydown', (e)=>{
     const onIntro = introEl.style.display !== 'none';
     const onOver  = overEl.style.display !== 'none';
+    // 焦點在按鈕／輸入框／連結上時，交給元素本身處理（避免按「儲存」時被當成重開一局）
+    if (e.target && ['INPUT','BUTTON','A'].includes(e.target.tagName) && (onIntro || onOver)) return;
     if ((e.key==='Enter' || e.key===' ') && (onIntro || onOver)) { e.preventDefault(); startGame(); return; }
     if (e.key==='Escape' && timer) { e.preventDefault(); endGame(); return; }
 
@@ -329,5 +497,3 @@ commentEl.textContent = msg;
   </script>
 </body>
 </html>
-
-
