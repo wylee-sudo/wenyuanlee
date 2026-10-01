@@ -438,7 +438,7 @@ commentEl.textContent = msg;
     document.getElementById('rank-title').textContent = isLocal ? '歷史高分（這台裝置）' : '全體玩家歷史排名';
     document.getElementById('store-note').textContent = isLocal
       ? '尚未設定雲端資料庫：紀錄只存在這個瀏覽器（localStorage）。'
-      : '排行榜存在雲端資料庫，所有玩家看到的是同一份。';
+      : '歷年排行榜';
     if (!list || !list.length){
       body.innerHTML = '<tr><td colspan="5" class="msg">還沒有紀錄，留下你的名字當第一名！</td></tr>';
       return;
