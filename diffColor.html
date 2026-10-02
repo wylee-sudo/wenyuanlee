@@ -1,4 +1,16 @@
 <!DOCTYPE html>
+<!--
+  找出不同色 Odd-One-Out — 加速版（2026-10）
+  變更重點（遊戲玩法、樣式、20 秒、前 10 名、文字皆未改動）：
+  1. 預熱：頁面載入時（以及開局時若距上次連線 > 4 分鐘）在背景 GET 一次 API，
+     喚醒 Apps Script 並快取排行榜；離線或 file:// 失敗時靜默忽略。
+  2. 樂觀更新：按「儲存紀錄」後立刻把分數依相同排序規則插入排行榜並標示「儲存中…」，
+     防止重複送出，POST 在背景進行；成功後換成伺服器的排行榜並顯示「已儲存」，
+     失敗則顯示「儲存失敗，重試」按鈕並保留本機那一列（標示未儲存）。
+  3. 排行榜快取在 localStorage，結束畫面先秒顯示快取、再背景更新。
+  4. POST 附帶 cid（同一局同名重送用同一個），搭配新版 Code.gs 可避免重複寫入；舊版後端會忽略它。
+  個人最佳／localStorage／GA 事件 save_score 行為維持不變。
+-->
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
@@ -118,6 +130,11 @@
     .rank tr.me td { color: var(--accent); font-weight: 800; }
     .rank-wrap { max-height: 32vh; overflow-y: auto; }
     .rank td.msg { color: var(--muted); padding: 14px 8px; }
+    /* 加速版：樂觀更新列的狀態標籤 */
+    .rank tr.pending td { opacity: .8; }
+    .rank .tag { font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .rank tr.failed .tag { color: #ff8a8a; }
+    .rank tr.gap td { color: var(--muted); padding: 2px 8px; border-bottom: none; }
     .muted-sm { color: var(--muted); font-size: 12px; }
     .card { max-height: calc(100dvh - 32px); overflow-y: auto; }
 
@@ -225,6 +242,7 @@
   let focusIndex=0;   // 鍵盤導覽
   let totalClicks=0, correctClicks=0; // 點擊統計
   let lastResult=null, savedThisRound=false, lastSavedId=null;
+  let roundToken=0, pendingEntry=null; // 加速版：局次代號、樂觀更新中的本機紀錄
 
   // ====== 雲端排行榜（Google 試算表 + Apps Script）======
   // 把部署好的「網頁應用程式網址」貼在這裡（以 /exec 結尾）
@@ -232,28 +250,72 @@
   const NAME_KEY = 'oddOneOut.lastName';   // 只用來記住上次輸入的名字
   const LOCAL_KEY = 'oddOneOut.records.v1'; // 沒設定 API_URL 時的備用本機紀錄
 
+  const TOP_CACHE_KEY = 'oddOneOut.topCache.v1'; // 加速版：快取最近一次的雲端排行榜（秒開用）
+  const WARM_AFTER_MS = 4 * 60 * 1000;            // 距上次連線超過 4 分鐘就重新預熱
+  const GET_TIMEOUT_MS = 20000, POST_TIMEOUT_MS = 30000;
+
   function sortRecords(list){
     return list.slice().sort((a,b)=> b.clears-a.clears || b.accuracy-a.accuracy || a.time-b.time);
   }
   function loadLocal(){ try { return JSON.parse(localStorage.getItem(LOCAL_KEY)) || []; } catch(e){ return []; } }
 
+  // ====== 加速版：排行榜快取 + 預熱 ======
+  let cachedTop = null, cachedCount = null, lastContact = 0, warmPromise = null, lastSaveRespAt = 0;
+  try {
+    const c = JSON.parse(localStorage.getItem(TOP_CACHE_KEY) || 'null');
+    if (c && Array.isArray(c.top)) { cachedTop = c.top; cachedCount = c.count ?? null; }
+  } catch(e){}
+  function rememberTop(r){
+    if (!r || !r.ok || !Array.isArray(r.top)) return;
+    cachedTop = r.top; cachedCount = (typeof r.count === 'number') ? r.count : cachedCount;
+    if (!r.local) {
+      lastContact = Date.now();
+      try { localStorage.setItem(TOP_CACHE_KEY, JSON.stringify({ top: r.top, count: cachedCount, at: Date.now() })); } catch(e){}
+    }
+  }
+  async function fetchWithTimeout(url, opts, ms){
+    const ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
+    const t = ctrl ? setTimeout(()=> ctrl.abort(), ms) : null;
+    try { return await fetch(url, ctrl ? { ...opts, signal: ctrl.signal } : opts); }
+    finally { if (t) clearTimeout(t); }
+  }
+
   async function fetchTop(){
     if (!API_URL) return { ok:true, top: sortRecords(loadLocal()).slice(0,20), local:true };
-    const res = await fetch(API_URL + '?action=top', { cache:'no-store' });
-    return res.json();
+    const startedAt = Date.now();
+    const res = await fetchWithTimeout(API_URL + '?action=top', { cache:'no-store' }, GET_TIMEOUT_MS);
+    const r = await res.json();
+    if (startedAt >= lastSaveRespAt) rememberTop(r); // 比最近一次儲存結果舊的 GET 不覆蓋快取
+    return r;
+  }
+  // 背景預熱：喚醒 Apps Script 並更新快取；任何錯誤（離線、file://）都靜默忽略、不阻塞
+  function warmUp(){
+    if (!API_URL) return Promise.resolve(null);
+    if (warmPromise) return warmPromise;
+    warmPromise = fetchTop()
+      .then(r => { renderIntroBest(r.top); return r; })
+      .catch(() => null)
+      .finally(() => { warmPromise = null; });
+    return warmPromise;
+  }
+  function maybeWarm(){
+    if (API_URL && Date.now() - lastContact > WARM_AFTER_MS) warmUp();
   }
   async function postScore(rec){
     if (!API_URL){
       const id = Date.now() + '-' + Math.random().toString(36).slice(2,6);
-      const r = { id, time: Date.now(), ...rec, accuracy: rec.total ? rec.correct/rec.total : 0 };
+      const { cid, ...plain } = rec;
+      const r = { id, time: Date.now(), ...plain, accuracy: rec.total ? rec.correct/rec.total : 0 };
       const list = sortRecords([...loadLocal(), r]).slice(0,100);
       localStorage.setItem(LOCAL_KEY, JSON.stringify(list));
       const mine = list.filter(x=>x.name===rec.name);
       return { ok:true, id, rank: list.findIndex(x=>x.id===id)+1, count: list.length, best: mine[0], myCount: mine.length, top: list.slice(0,20), local:true };
     }
     // 用 text/plain 送出，避免瀏覽器的跨網域預檢（Apps Script 不支援）
-    const res = await fetch(API_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(rec) });
-    return res.json();
+    const res = await fetchWithTimeout(API_URL, { method:'POST', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body: JSON.stringify(rec) }, POST_TIMEOUT_MS);
+    const r = await res.json();
+    if (r && r.ok){ lastSaveRespAt = Date.now(); rememberTop(r); }
+    return r;
   }
   function accText(correct,total){ return total ? Math.round(correct/total*100) + '%' : '—'; }
   function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -359,6 +421,8 @@
     overEl.style.display = 'none';
     level = 1; score = 0; timeLeft = GAME_TIME; gridN = START_GRID; delta = DELTA_START;
     totalClicks = 0; correctClicks = 0; savedThisRound = false; lastSavedId = null;
+    roundToken++; pendingEntry = null; saving = false;
+    maybeWarm(); // 加速版：距上次連線太久就在背景喚醒後端（不阻塞開局）
     accEl.textContent = '—';
     levelEl.textContent = level; scoreEl.textContent = score; timeEl.textContent = timeLeft;
     nextRound();
@@ -404,19 +468,48 @@ commentEl.textContent = msg;
   }
 
   let saving = false;
+  // 加速版：依目前顯示的排行榜 + 本機待存紀錄，算出要顯示的清單
+  function displayList(base){
+    const list = (base || []).slice();
+    if (pendingEntry && !list.some(r => r.id === pendingEntry.id)) list.push(pendingEntry);
+    return sortRecords(list);
+  }
+  function renderBoardNow(isLocal){
+    renderTable(displayList(cachedTop), isLocal);
+  }
+
   async function saveResult(){
     if (!lastResult || savedThisRound || saving || !lastResult.total) return;
     const nameInput = document.getElementById('player-name');
     const btn = document.getElementById('save-btn');
+    const bestLine = document.getElementById('best-line');
     const name = (nameInput.value || '').trim().slice(0,12) || '無名氏';
     localStorage.setItem(NAME_KEY, name);
-    saving = true; btn.disabled = true; nameInput.disabled = true; btn.textContent = '上傳中…';
+    saving = true; btn.disabled = true; nameInput.disabled = true; btn.textContent = '儲存中…';
+    const token = roundToken;
+    const res = lastResult;
+
+    // 樂觀更新：立刻插入排行榜（同一局同名重試沿用同一個 cid，避免後端重複寫入）
+    const cid = (pendingEntry && pendingEntry.name === name && pendingEntry.cid) ||
+      ('c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+    pendingEntry = {
+      id: 'local-' + cid, cid, time: Date.now(), name,
+      clears: res.clears, correct: res.correct, total: res.total,
+      accuracy: Math.round(res.correct / res.total * 10000) / 10000,
+      _state: 'pending'
+    };
+    renderBoardNow(!API_URL);
+    bestLine.innerHTML = '<span style="color:var(--muted)">儲存中…</span>';
+
     try {
-      const r = await postScore({ name, clears:lastResult.clears, correct:lastResult.correct, total:lastResult.total });
-      if (!r.ok) throw new Error(r.error || '儲存失敗');
+      const r = await postScore({ name, clears:res.clears, correct:res.correct, total:res.total, cid });
+      if (!r || !r.ok) throw new Error((r && r.error) || '儲存失敗');
+      if (token !== roundToken) return; // 已開新局：只更新快取，不動畫面狀態
+      lastSaveRespAt = Date.now();
+      pendingEntry = null;
       savedThisRound = true; lastSavedId = r.id;
       btn.textContent = '已儲存 ✓';
-      renderTable(r.top, r.local);
+      renderTable(r.top, r.local, { flashSaved: true });
       renderIntroBest(r.top);
       let html = `這局排名第 <span class="accent">${r.rank}</span> 名`;
       if (r.count) html += `（共 ${r.count} 筆）`;
@@ -425,39 +518,65 @@ commentEl.textContent = msg;
         html += ` ${escapeHtml(name)} 的歷史最佳：<span class="accent">${r.best.clears}</span> 關、正確率 <span class="accent">${accText(r.best.correct, r.best.total)}</span>`;
         if (r.best.id === r.id && r.myCount > 1) html += '（新紀錄！🎉）';
       }
-      document.getElementById('best-line').innerHTML = html;
-      if (typeof gtag === 'function') gtag('event', 'save_score', { clears: lastResult.clears, accuracy: Math.round(lastResult.accuracy*100) });
+      bestLine.innerHTML = html;
+      if (typeof gtag === 'function') gtag('event', 'save_score', { clears: res.clears, accuracy: Math.round(res.accuracy*100) });
     } catch(err){
-      btn.disabled = false; nameInput.disabled = false; btn.textContent = '重試儲存';
-      document.getElementById('best-line').innerHTML = '<span style="color:#ff8a8a">儲存失敗，請檢查網路後再按一次。</span>';
-    } finally { saving = false; }
+      if (token !== roundToken) return;
+      if (pendingEntry) pendingEntry._state = 'failed';
+      renderBoardNow(!API_URL);
+      btn.disabled = false; nameInput.disabled = false; btn.textContent = '儲存失敗，重試';
+      bestLine.innerHTML = '<span style="color:#ff8a8a">儲存失敗，請檢查網路後再按一次。</span>';
+    } finally { if (token === roundToken) saving = false; }
   }
 
-  function renderTable(list, isLocal){
+  function renderTable(list, isLocal, opts){
     const body = document.getElementById('rank-body');
     document.getElementById('rank-title').textContent = isLocal ? '歷史高分（這台裝置）' : '全體玩家歷史排名';
     document.getElementById('store-note').textContent = isLocal
       ? '尚未設定雲端資料庫：紀錄只存在這個瀏覽器（localStorage）。'
-      : '歷年排行榜';
+      : '排行榜存在雲端資料庫，所有玩家看到的是同一份。';
     if (!list || !list.length){
       body.innerHTML = '<tr><td colspan="5" class="msg">還沒有紀錄，留下你的名字當第一名！</td></tr>';
       return;
     }
-    body.innerHTML = list.slice(0,10).map((r,i)=>{
+    const flash = opts && opts.flashSaved;
+    const row = (r, rankLabel) => {
       const d = new Date(r.time);
-      const date = (d.getMonth()+1) + '/' + d.getDate();
-      return `<tr class="${r.id===lastSavedId?'me':''}"><td>${i+1}</td><td class="name">${escapeHtml(r.name)}</td><td>${r.clears}</td><td>${accText(r.correct,r.total)}</td><td>${date}</td></tr>`;
-    }).join('');
+      let date = (d.getMonth()+1) + '/' + d.getDate();
+      let cls = r.id===lastSavedId ? 'me' : '';
+      if (r._state === 'pending'){ cls = 'me pending'; date = '<span class="tag">儲存中…</span>'; }
+      else if (r._state === 'failed'){ cls = 'me failed'; date = '<span class="tag">未儲存</span>'; }
+      else if (flash && r.id===lastSavedId){ date = '<span class="tag">已儲存</span>'; }
+      return `<tr class="${cls}"><td>${rankLabel}</td><td class="name">${escapeHtml(r.name)}</td><td>${r.clears}</td><td>${accText(r.correct,r.total)}</td><td>${date}</td></tr>`;
+    };
+    let html = list.slice(0,10).map((r,i)=> row(r, i+1)).join('');
+    // 本機待存紀錄排在前 10 名以外時，另外附在表格最後讓玩家看得到
+    const pi = list.findIndex(r => r._state);
+    if (pi >= 10){
+      const serverLen = list.length - 1;
+      const exact = pi < serverLen || (cachedCount !== null && serverLen >= cachedCount);
+      html += '<tr class="gap"><td colspan="5">⋯</td></tr>' + row(list[pi], exact ? pi+1 : '>' + serverLen);
+    }
+    body.innerHTML = html;
+    if (flash) setTimeout(()=>{ // 「已儲存」短暫顯示後恢復日期
+      if (savedThisRound && !pendingEntry && overEl.style.display !== 'none') renderTable(list, isLocal);
+    }, 2500);
   }
 
   async function loadBoard(){
-    document.getElementById('rank-body').innerHTML = '<tr><td colspan="5" class="msg">排行榜載入中…</td></tr>';
+    const startedAt = Date.now(), token = roundToken;
+    // 加速版：有快取就先秒顯示，再背景更新（這次 GET 也順便喚醒後端，讓接著的儲存更快）
+    if (cachedTop && API_URL) renderBoardNow(false);
+    else document.getElementById('rank-body').innerHTML = '<tr><td colspan="5" class="msg">排行榜載入中…</td></tr>';
     try {
       const r = await fetchTop();
-      renderTable(r.top, r.local);
       renderIntroBest(r.top);
+      if (token !== roundToken || startedAt < lastSaveRespAt) return; // 已有更新的儲存結果，別用舊資料蓋掉
+      if (r.local) renderTable(displayList(r.top), true);
+      else renderBoardNow(false);
     } catch(err){
-      document.getElementById('rank-body').innerHTML = '<tr><td colspan="5" class="msg">排行榜暫時載入失敗（請檢查網路）。</td></tr>';
+      if (token !== roundToken) return;
+      if (!cachedTop) document.getElementById('rank-body').innerHTML = '<tr><td colspan="5" class="msg">排行榜暫時載入失敗（請檢查網路）。</td></tr>';
     }
   }
 
@@ -473,7 +592,10 @@ commentEl.textContent = msg;
     if (e.key === 'Enter'){ e.preventDefault(); e.stopPropagation(); saveResult(); }
     else e.stopPropagation(); // 打字時不觸發全域快捷鍵
   });
-  fetchTop().then(r=> renderIntroBest(r.top)).catch(()=>{});
+  // 加速版：先用快取顯示最高紀錄，再於背景預熱（喚醒 Apps Script、更新快取）
+  if (cachedTop && API_URL) renderIntroBest(cachedTop);
+  if (API_URL) warmUp(); else fetchTop().then(r=> renderIntroBest(r.top)).catch(()=>{});
+  document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState === 'visible') maybeWarm(); });
 
   // 事件綁定
   document.getElementById('start-btn').addEventListener('click', startGame);
