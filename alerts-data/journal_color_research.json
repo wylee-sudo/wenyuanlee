@@ -26,26 +26,26 @@
       "description": ""
     },
     {
-      "title": "An Effective\n                    <scp>EOTF</scp>\n                    for Showing Gradients on 10 000 Nit Rec. 2020 Displays",
-      "link": "https://doi.org/10.1002/col.70127",
-      "published": "2026-09",
-      "description": ""
-    },
-    {
       "title": "Camera Spectral Response Function Estimation and Color Calibration Based on Raw Response Prediction",
       "link": "https://doi.org/10.1002/col.70124",
       "published": "2026-09",
       "description": ""
     },
     {
-      "title": "Temporal Dynamics of Color and Brightness Adaptation in Reported Non–Ocular Visual Experiences: A Case Study",
-      "link": "https://doi.org/10.1002/col.70123",
+      "title": "An Effective\n                    <scp>EOTF</scp>\n                    for Showing Gradients on 10 000 Nit Rec. 2020 Displays",
+      "link": "https://doi.org/10.1002/col.70127",
       "published": "2026-09",
       "description": ""
     },
     {
       "title": "Learning Turkish Color Names Through Crowdsourcing",
       "link": "https://doi.org/10.1002/col.70121",
+      "published": "2026-09",
+      "description": ""
+    },
+    {
+      "title": "Temporal Dynamics of Color and Brightness Adaptation in Reported Non–Ocular Visual Experiences: A Case Study",
+      "link": "https://doi.org/10.1002/col.70123",
       "published": "2026-09",
       "description": ""
     },
@@ -62,5 +62,5 @@
       "description": ""
     }
   ],
-  "updated": "2026-10-01T15:48:48Z"
+  "updated": "2026-10-02T15:10:33Z"
 }
