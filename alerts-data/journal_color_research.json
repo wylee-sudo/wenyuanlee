@@ -8,6 +8,12 @@
       "description": ""
     },
     {
+      "title": "Semantic Perception of Color Schemes Across Contrasting Semi‐Public Study Environments",
+      "link": "https://doi.org/10.1002/col.70133",
+      "published": "2026-10-04",
+      "description": ""
+    },
+    {
       "title": "Predicting Post‐Foundation Skin Color With a Coverage‐Dependent Optical Mixing Model Beyond the Continuous‐Film Assumption",
       "link": "https://doi.org/10.1002/col.70130",
       "published": "2026-09-29",
@@ -38,14 +44,14 @@
       "description": ""
     },
     {
-      "title": "Learning Turkish Color Names Through Crowdsourcing",
-      "link": "https://doi.org/10.1002/col.70121",
+      "title": "Temporal Dynamics of Color and Brightness Adaptation in Reported Non–Ocular Visual Experiences: A Case Study",
+      "link": "https://doi.org/10.1002/col.70123",
       "published": "2026-09",
       "description": ""
     },
     {
-      "title": "Temporal Dynamics of Color and Brightness Adaptation in Reported Non–Ocular Visual Experiences: A Case Study",
-      "link": "https://doi.org/10.1002/col.70123",
+      "title": "Learning Turkish Color Names Through Crowdsourcing",
+      "link": "https://doi.org/10.1002/col.70121",
       "published": "2026-09",
       "description": ""
     },
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1002/col.70128",
       "published": "2026-09",
       "description": ""
-    },
-    {
-      "title": "No title",
-      "link": "https://doi.org/10.1002/col.v51.5",
-      "published": "2026-09",
-      "description": ""
     }
   ],
-  "updated": "2026-10-04T14:30:00Z"
+  "updated": "2026-10-05T17:34:24Z"
 }
