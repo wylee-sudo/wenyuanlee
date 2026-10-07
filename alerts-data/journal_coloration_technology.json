@@ -2,6 +2,12 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "Environmentally friendly pre‐treatments for sustainable coloration: Enhancing natural dyeing of polyester fabric via\n                    <scp>ultraviolet</scp>\n                    rays and\n                    <scp>ozone</scp>\n                    modification",
+      "link": "https://doi.org/10.1111/cote.70109",
+      "published": "2026-10-07",
+      "description": ""
+    },
+    {
       "title": "Chitosan pre‐ and post‐treatments for improving the fastness and\n                    <scp>UV</scp>\n                    protection of wool fabrics dyed with\n                    <i>Datisca cannabina</i>\n                    <scp>L</scp>\n                    . via sonication",
       "link": "https://doi.org/10.1111/cote.70112",
       "published": "2026-10-02",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70105",
       "published": "2026-09-18",
       "description": ""
-    },
-    {
-      "title": "Bio‐based dyeing of polyester fabric using bamboo leaf extract: A new approach in synthetic fabric colouration",
-      "link": "https://doi.org/10.1111/cote.70103",
-      "published": "2026-09-08",
-      "description": ""
     }
   ],
-  "updated": "2026-10-06T15:32:40Z"
+  "updated": "2026-10-07T15:53:58Z"
 }
