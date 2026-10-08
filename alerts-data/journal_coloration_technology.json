@@ -2,6 +2,12 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "Towards predictive and sustainable indigo dyeing of denim: Linking redox chemistry, dye transport and yarn architecture",
+      "link": "https://doi.org/10.1111/cote.70111",
+      "published": "2026-10-08",
+      "description": ""
+    },
+    {
       "title": "Environmentally friendly pre‐treatments for sustainable coloration: Enhancing natural dyeing of polyester fabric via\n                    <scp>ultraviolet</scp>\n                    rays and\n                    <scp>ozone</scp>\n                    modification",
       "link": "https://doi.org/10.1111/cote.70109",
       "published": "2026-10-07",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70074",
       "published": "2026-09-24",
       "description": ""
-    },
-    {
-      "title": "Reactive Red 195‐loaded halloysite for cotton dyeing and printing: Adsorption, characterisation and comparison with conventional exhaustion dyeing",
-      "link": "https://doi.org/10.1111/cote.70105",
-      "published": "2026-09-18",
-      "description": ""
     }
   ],
-  "updated": "2026-10-07T15:53:58Z"
+  "updated": "2026-10-08T15:56:48Z"
 }
