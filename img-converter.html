@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>圖檔轉換器｜HEIC → JPG／PDF</title>
-<meta name="description" content="在瀏覽器內把 HEIC、PNG、WebP、TIFF 等圖檔轉成 JPG 或 PDF，檔案不會上傳。">
+<title>圖檔轉換器 v3｜HEIC → JPG／PDF（保留 EXIF 與色彩描述檔）</title>
+<meta name="description" content="在瀏覽器內把 HEIC、PNG、WebP、TIFF 等圖檔轉成 JPG 或 PDF，可保留拍攝資訊（EXIF、時間、GPS）和原檔的 ICC 色彩描述檔，檔案不會上傳。">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
 <script>
@@ -75,6 +75,17 @@
   .hint{font-size:13px;color:var(--grey);margin-top:6px}
   .pdf-only{display:contents}
   body:not(.out-pdf) .pdf-only>.field{opacity:.35;pointer-events:none}
+  .checks{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center}
+  .chk{display:inline-flex;align-items:center;gap:10px;font-weight:700;cursor:pointer;line-height:1.3}
+  .chk input{appearance:none;-webkit-appearance:none;width:22px;height:22px;border:2px solid var(--black);background:#fff;flex:none;margin:0;cursor:pointer;display:grid;place-content:center}
+  .chk input:checked{background:var(--black)}
+  .chk input:checked::after{content:"";width:6px;height:11px;border:solid #fff;border-width:0 3px 3px 0;transform:translate(0,-1px) rotate(45deg)}
+  .chk.sub{font-weight:500;padding-left:14px;border-left:2px solid var(--red)}
+  .chk.sub input:checked{background:var(--red);border-color:var(--red)}
+  .chk.off{opacity:.35;pointer-events:none}
+  .info.exif{color:var(--black)}
+  .info.exif .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.04em;border:1px solid var(--black);padding:0 4px;margin-left:4px;line-height:1.5;vertical-align:1px}
+  .info.exif .tag.red{border-color:var(--red);color:var(--red)}
   #stale{display:none;margin-top:20px;border-left:6px solid var(--red);padding:8px 14px;font-weight:700;align-items:center;gap:16px;flex-wrap:wrap}
   #stale.on{display:flex}
 
@@ -122,8 +133,8 @@
 <header class="grid">
   <div class="kicker">Image Converter <span>■</span> HEIC／PNG／WebP／TIFF → JPG／PDF</div>
   <h1>圖檔<br>轉換器</h1>
-  <p class="lead">把 iPhone 的 HEIC 照片和各種圖檔，轉成 JPG 或 PDF。可以一次丟很多張，也能合併成一份 PDF。預設保留原始尺寸。</p>
-  <p class="privacy"><b>隱私</b>所有轉換都在你的瀏覽器裡完成，圖檔不會上傳到任何伺服器。轉出的 JPG 不含 EXIF（拍攝地點等資訊會一併移除）。</p>
+  <p class="lead">把 iPhone 的 HEIC 照片和各種圖檔，轉成 JPG 或 PDF。可以一次丟很多張，也能合併成一份 PDF。預設保留原始尺寸、拍攝資訊和色彩描述檔。</p>
+  <p class="privacy"><b>隱私</b>所有轉換都在你的瀏覽器裡完成，圖檔不會上傳到任何伺服器。預設會把原檔的拍攝資訊（相機型號、拍攝時間、曝光、GPS 地點）一起寫進轉出的 JPG。要分享給別人時，可以勾「移除 GPS 地點」只拿掉位置，或關掉「保留拍攝資訊」全部移除。</p>
 </header>
 
 <main>
@@ -172,6 +183,18 @@
             <option value="1080">長邊最多 1080 px</option>
           </select>
           <div class="hint">只會縮小、不會放大。透明的地方會填成白色。</div>
+        </div>
+        <div class="field full">
+          <span class="label">拍攝資訊</span>
+          <div class="checks">
+            <label class="chk"><input type="checkbox" id="keepExif" checked><span>保留拍攝資訊（EXIF、時間、GPS 地點）</span></label>
+            <label class="chk sub" id="dropGpsWrap"><input type="checkbox" id="dropGps"><span>移除 GPS 地點</span></label>
+          </div>
+          <div class="hint">JPG：保留相機型號、拍攝時間（含時區）、光圈快門 ISO、焦距、鏡頭和 GPS；照片已轉正，方向標記一律設為「正常」，舊的縮圖會拿掉。PDF：只寫入拍攝時間和相機資訊（不含 GPS）。分享前建議勾「移除 GPS 地點」。</div>
+        </div>
+        <div class="field full">
+          <span class="label">色彩描述檔</span>
+          <div class="hint" style="margin-top:0">一律保留：轉出的 JPG 沿用原檔的像素數值，並把原檔的 ICC 色彩描述檔原封不動嵌回去（Adobe RGB、ProPhoto、Display P3、掃描器或相機的自訂描述檔都可以）。數值和描述檔一致，不做色彩換算，也不會裁切色域。PDF 也嵌入同一份描述檔（ICCBased）。CMYK、Lab 無法放進 RGB 的 JPG，會用瀏覽器的色彩管理轉成 Display P3（瀏覽器不支援時為 sRGB）；CMYK 的 TIFF 只能近似換算，清單上會以紅字標示。16 bit 的 PNG／TIFF 會降為 8 bit。每個檔案的原檔描述檔和輸出結果會列在檔案清單裡。</div>
         </div>
         <div class="pdf-only">
           <div class="field full">
@@ -225,8 +248,11 @@
 </main>
 
 <footer>
-  <p>需要網路的時候：第一次轉 HEIC、TIFF、PDF 或打包 ZIP 時，會從 jsDelivr 下載對應的開源函式庫（heic-to／libheif、UTIF.js、jsPDF、JSZip），之後瀏覽器會快取。</p>
+  <p>需要網路的時候：第一次轉 HEIC、TIFF 或打包 ZIP 時，會從 jsDelivr 下載對應的開源函式庫（heic-to／libheif、UTIF.js、JSZip），之後瀏覽器會快取。PDF 由本頁直接產生。</p>
   <p>HEIC 在 Safari 會用系統內建解碼；其他瀏覽器用 libheif（WebAssembly），每張大約 1～3 秒。</p>
+  <p>拍攝資訊：可讀取 JPG、HEIC／HEIF、AVIF、TIFF、PNG（eXIf）、WebP 裡的 EXIF；GIF、BMP、SVG 沒有 EXIF。</p>
+  <p>色彩描述檔：讀取 JPG（APP2）、PNG（iCCP、cICP、sRGB、gAMA／cHRM）、TIFF、WebP、HEIC／AVIF（colr：ICC 或 nclx）裡的色彩資訊。ICC 會原樣複製；nclx／cICP 和 PNG 的 gAMA／cHRM 會換成對應的 ICC（例如 Display P3、BT.2020）；灰階描述檔會換成曲線相同的 RGB 描述檔。HDR（PQ／HLG）無法保留。清單上的縮圖經過色彩管理，只是預覽。</p>
+  <p>在手機上從「照片」挑選時，系統可能先把地點拿掉：iPhone 請在選取畫面上方點「選項」，打開「位置」；Android 的相片挑選器也可能移除 GPS。從「檔案」App 選原始檔最完整。</p>
 </footer>
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -240,7 +266,6 @@ const LIBS = {
   heic:  { path: 'heic-to@1.6.5/dist/iife/heic-to.js', test: () => window.HeicTo },
   pako:  { path: 'pako@1.0.11/dist/pako.min.js',       test: () => window.pako },
   utif:  { path: 'utif@3.1.0/UTIF.js',                 test: () => window.UTIF, deps: ['pako'] },
-  jspdf: { path: 'jspdf@4.2.1/dist/jspdf.umd.min.js',   test: () => window.jspdf && window.jspdf.jsPDF },
   jszip: { path: 'jszip@3.10.1/dist/jszip.min.js',      test: () => window.JSZip },
 };
 const libPromises = {};
@@ -302,6 +327,715 @@ function downloadBlob(blob, name) {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
+
+/* ---------- colour: ICC profile info, nclx/cICP → ICC, untagged decode copies ---------- */
+// Colour policy (v3): keep the source's own pixel numbers and attach the source's own ICC
+// profile byte-for-byte, so numbers and tag always match (no double conversion, no clipping).
+const COLOR = (() => {
+  const asc = (b, o, n) => { let s = ''; for (let i = o; i < o + n && i < b.length; i++) s += String.fromCharCode(b[i]); return s; };
+  const be16 = (b, o) => (b[o] << 8) | b[o + 1];
+  const be32 = (b, o) => b[o] * 16777216 + ((b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3]);
+  const le32 = (b, o) => (b[o] | (b[o + 1] << 8) | (b[o + 2] << 16)) + b[o + 3] * 16777216;
+  const concat = (parts) => { const n = parts.reduce((a, p) => a + p.length, 0), o = new Uint8Array(n); let k = 0; for (const p of parts) { o.set(p, k); k += p.length; } return o; };
+
+  /* ---- reading an ICC profile ---- */
+  function tagTable(icc) {
+    const n = be32(icc, 128), t = {};
+    for (let i = 0; i < n && 132 + i * 12 + 12 <= icc.length; i++) { const p = 132 + i * 12; t[asc(icc, p, 4)] = { o: be32(icc, p + 4), len: be32(icc, p + 8) }; }
+    return t;
+  }
+  function textTag(icc, tg) {
+    if (!tg || tg.o + 12 > icc.length) return '';
+    const o = tg.o, type = asc(icc, o, 4);
+    if (type === 'desc') { const n = be32(icc, o + 8); return asc(icc, o + 12, Math.min(n, 256)).replace(/\0[\s\S]*$/, '').trim(); }
+    if (type === 'text') return asc(icc, o + 8, Math.min(tg.len - 8, 256)).replace(/\0[\s\S]*$/, '').trim();
+    if (type === 'mluc') {
+      const n = be32(icc, o + 8), rs = be32(icc, o + 12) || 12, recs = [];
+      for (let i = 0; i < n && i < 64; i++) { const r = o + 16 + i * rs; recs.push({ lang: asc(icc, r, 2), cc: asc(icc, r + 2, 2), len: be32(icc, r + 4), off: be32(icc, r + 8) }); }
+      // prefer Traditional Chinese (Taiwan), then English, then whatever comes first
+      const pick = recs.find(r => r.lang === 'zh' && r.cc === 'TW') || recs.find(r => r.lang === 'en' && r.cc === 'US') || recs.find(r => r.lang === 'en') || recs[0];
+      if (!pick) return '';
+      let s = ''; for (let k = 0; k + 1 < pick.len && k < 512; k += 2) s += String.fromCharCode(be16(icc, o + pick.off + k));
+      return s.replace(/\0[\s\S]*$/, '').trim();
+    }
+    return '';
+  }
+  const SPACE = { 'RGB ': 'RGB', 'GRAY': 'Gray', 'CMYK': 'CMYK', 'Lab ': 'Lab', 'XYZ ': 'XYZ', 'YCbr': 'YCbCr', 'CMY ': 'CMY' };
+  function parse(icc) {
+    if (!icc || icc.length < 132 || asc(icc, 36, 4) !== 'acsp') return null;
+    const tags = tagTable(icc);
+    const minor = icc[9] >> 4, fix = icc[9] & 15;
+    const sp = asc(icc, 16, 4);
+    return {
+      size: icc.length, tags,
+      version: icc[8] + '.' + minor + (fix ? '.' + fix : ''),
+      space: SPACE[sp] || sp.trim(), cls: asc(icc, 12, 4),
+      name: textTag(icc, tags.desc) || '（未命名描述檔）',
+    };
+  }
+
+  /* ---- writing a small ICC v4 matrix/TRC profile ---- */
+  const D50 = [0.9642, 1.0, 0.8249];
+  const BFD = [[0.8951, 0.2664, -0.1614], [-0.7502, 1.7135, 0.0367], [0.0389, -0.0685, 1.0296]];
+  const mul = (A, B) => A.map(r => B[0].map((_, j) => r.reduce((s, v, k) => s + v * B[k][j], 0)));
+  const mv = (A, v) => A.map(r => r[0] * v[0] + r[1] * v[1] + r[2] * v[2]);
+  function inv(m) {
+    const [a, b, c] = m[0], [d, e, f] = m[1], [g, h, i] = m[2];
+    const A = e * i - f * h, B = -(d * i - f * g), C = d * h - e * g, det = a * A + b * B + c * C;
+    return [[A / det, -(b * i - c * h) / det, (b * f - c * e) / det], [B / det, (a * i - c * g) / det, -(a * f - c * d) / det], [C / det, -(a * h - b * g) / det, (a * e - b * d) / det]];
+  }
+  const xyz = ([x, y]) => [x / y, 1, (1 - x - y) / y];
+  function bradford(wsrc) {   // adapts XYZ under wsrc to the ICC PCS illuminant D50
+    const s = mv(BFD, wsrc), d = mv(BFD, D50);
+    return mul(inv(BFD), mul([[d[0] / s[0], 0, 0], [0, d[1] / s[1], 0], [0, 0, d[2] / s[2]]], BFD));
+  }
+  function rgbToXYZ(prim, white) {   // columns = XYZ of R, G, B (Y of white = 1)
+    const P = [0, 1, 2].map(r => prim.map(p => xyz(p)[r]));
+    const S = mv(inv(P), xyz(white));
+    return P.map(r => r.map((v, j) => v * S[j]));
+  }
+  const s15 = (v) => { const x = Math.round(v * 65536); return [(x >>> 24) & 255, (x >>> 16) & 255, (x >>> 8) & 255, x & 255]; };
+  const u32 = (v) => [(v >>> 24) & 255, (v >>> 16) & 255, (v >>> 8) & 255, v & 255];
+  const sig = (s) => [...s].map(c => c.charCodeAt(0));
+  const pad4 = (a) => { while (a.length % 4) a.push(0); return a; };
+  function mluc(text) { const u = []; for (const ch of text) { const c = ch.charCodeAt(0); u.push(c >> 8, c & 255); } return pad4([...sig('mluc'), 0, 0, 0, 0, ...u32(1), ...u32(12), ...sig('enUS'), ...u32(u.length), ...u32(28), ...u]); }
+  const XYZt = (v) => [...sig('XYZ '), 0, 0, 0, 0, ...s15(v[0]), ...s15(v[1]), ...s15(v[2])];
+  function para(trc) {   // ICC parametric curve: 0 = gamma, 3 = sRGB-style (g, a, b, c, d)
+    const p = trc.type === 3 ? trc.p : [trc.g];
+    return pad4([...sig('para'), 0, 0, 0, 0, 0, trc.type === 3 ? 3 : 0, 0, 0, ...p.flatMap(s15)]);
+  }
+  // cols: D50-adapted XYZ of the R, G, B primaries; trcBytes: one curve tag shared by r/g/bTRC.
+  function build(name, cols, trcBytes, chad) {
+    const tags = [['desc', mluc(name)], ['cprt', mluc('No copyright, use freely')], ['wtpt', XYZt(D50)]];
+    if (chad) tags.push(['chad', [...sig('sf32'), 0, 0, 0, 0, ...chad.flat().flatMap(s15)]]);
+    tags.push(['rXYZ', XYZt(cols.map(r => r[0]))], ['gXYZ', XYZt(cols.map(r => r[1]))], ['bXYZ', XYZt(cols.map(r => r[2]))]);
+    const trc = pad4([...trcBytes]);
+    const n = tags.length + 3, dataStart = 128 + 4 + 12 * n;
+    const table = [], data = []; let off = dataStart;
+    for (const [s, d] of tags) { table.push(...sig(s), ...u32(off), ...u32(d.length)); data.push(...d); off += d.length; }
+    for (const s of ['rTRC', 'gTRC', 'bTRC']) table.push(...sig(s), ...u32(off), ...u32(trcBytes.length));
+    data.push(...trc); off += trc.length;
+    const hdr = new Array(128).fill(0);
+    hdr.splice(0, 4, ...u32(off)); hdr.splice(8, 4, 4, 0x30, 0, 0);
+    hdr.splice(12, 12, ...sig('mntrRGB XYZ ')); hdr.splice(24, 12, 0x07, 0xE8, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0);
+    hdr.splice(36, 4, ...sig('acsp')); hdr.splice(68, 12, ...s15(D50[0]), ...s15(D50[1]), ...s15(D50[2]));
+    return new Uint8Array([...hdr, ...u32(n), ...table, ...data]);
+  }
+  function fromPrimaries(name, prim, white, trc) {
+    const M = rgbToXYZ(prim, white), chad = bradford(xyz(white));
+    return build(name, mul(chad, M), para(trc), chad);
+  }
+
+  /* ---- ITU-T H.273 code points (HEIF/AVIF nclx, PNG cICP) ---- */
+  const D65 = [0.3127, 0.3290];
+  const PRIM = {
+    1: { n: 'BT.709／sRGB', p: [[0.64, 0.33], [0.30, 0.60], [0.15, 0.06]], w: D65 },
+    5: { n: 'BT.470BG', p: [[0.64, 0.33], [0.29, 0.60], [0.15, 0.06]], w: D65 },
+    6: { n: 'BT.601', p: [[0.630, 0.340], [0.310, 0.595], [0.155, 0.070]], w: D65 },
+    7: { n: 'SMPTE 240M', p: [[0.630, 0.340], [0.310, 0.595], [0.155, 0.070]], w: D65 },
+    9: { n: 'BT.2020', p: [[0.708, 0.292], [0.170, 0.797], [0.131, 0.046]], w: D65 },
+    11: { n: 'DCI-P3', p: [[0.680, 0.320], [0.265, 0.690], [0.150, 0.060]], w: [0.314, 0.351] },
+    12: { n: 'P3-D65', p: [[0.680, 0.320], [0.265, 0.690], [0.150, 0.060]], w: D65 },
+  };
+  PRIM[2] = PRIM[1];   // unspecified → treat as sRGB
+  const SRGB_TRC = { type: 3, p: [2.4, 1 / 1.055, 0.055 / 1.055, 1 / 12.92, 0.04045] };
+  const BT709_TRC = { type: 3, p: [1 / 0.45, 1 / 1.099, 0.099 / 1.099, 1 / 4.5, 0.081] };
+  const TRC = {
+    13: { n: 'sRGB 曲線', c: SRGB_TRC }, 2: { n: 'sRGB 曲線', c: SRGB_TRC },
+    1: { n: 'BT.709 曲線', c: BT709_TRC }, 6: { n: 'BT.709 曲線', c: BT709_TRC }, 14: { n: 'BT.709 曲線', c: BT709_TRC }, 15: { n: 'BT.709 曲線', c: BT709_TRC },
+    4: { n: 'Gamma 2.2', c: { type: 0, g: 2.2 } }, 5: { n: 'Gamma 2.8', c: { type: 0, g: 2.8 } },
+    8: { n: '線性', c: { type: 0, g: 1 } }, 17: { n: 'Gamma 2.6', c: { type: 0, g: 2.6 } },
+    16: { n: 'PQ（HDR）', hdr: true }, 18: { n: 'HLG（HDR）', hdr: true },
+  };
+  function cicpInfo(c, via) {   // c = { p, t, m, f }
+    const P = PRIM[c.p], T = TRC[c.t];
+    const words = `${via}：${P ? P.n : '原色 ' + c.p}／${T ? T.n : '曲線 ' + c.t}`;
+    if (!P || !T) return { kind: 'unsupported', words };
+    if (T.hdr) return { kind: 'hdr', words, name: (c.p === 9 ? 'BT.2100 ' : '') + T.n };
+    if ((c.p === 1 || c.p === 2) && T.c === SRGB_TRC) return { kind: 'srgb', words, name: 'sRGB' };
+    const name = c.p === 12 && T.c === SRGB_TRC ? 'Display P3' : c.p === 9 && T.c === BT709_TRC ? 'BT.2020' : c.p === 1 && T.c === BT709_TRC ? 'BT.709' : `${P.n} ${T.n}`;
+    return { kind: 'gen', words, name, icc: () => fromPrimaries(name, P.p, P.w, T.c) };
+  }
+  let p3cache = null;
+  const P3 = () => p3cache || (p3cache = fromPrimaries('Display P3', PRIM[12].p, D65, SRGB_TRC));
+
+  // Gray profile → RGB matrix/TRC profile with the very same curve. For R = G = B = v both give
+  // PCS XYZ = D50 · TRC(v), so the grey values stay unchanged and render identically.
+  function grayToRGB(icc, info) {
+    const t = info.tags.kTRC; if (!t || t.o + t.len > icc.length) return null;
+    const curve = icc.slice(t.o, t.o + t.len), type = asc(curve, 0, 4);
+    if (type !== 'curv' && type !== 'para') return null;
+    const M = rgbToXYZ(PRIM[1].p, D65), chad = bradford(xyz(D65));
+    return build(info.name + '（RGB 等效）', mul(chad, M), curve, chad);
+  }
+
+  /* ---- decide what to do with the colour of one source ---- */
+  // r: what META's container readers found. Returns { mode, name, detail, out, warn, outICC }.
+  //  keep    – RGB ICC: raw values + the same ICC bytes
+  //  gray    – Gray ICC: raw values + RGB-equivalent profile
+  //  gen     – nclx / cICP / PNG gAMA+cHRM: raw values + a generated matching ICC
+  //  none    – untagged / sRGB: raw values, no profile (sRGB)
+  //  managed – CMYK, Lab, HDR…: the browser's colour management converts to the canvas space
+  //  naive   – CMYK TIFF: UTIF's simple CMYK→RGB (no colour management)
+  function analyze(r, fmt) {
+    const bits = !!r.bits16;
+    if (r.icc) {
+      const info = parse(r.icc);
+      if (!info) return { mode: 'none', name: '無法解析的描述檔', detail: r.icc.length + ' bytes', out: 'sRGB（原描述檔無法解析，未保留）', warn: true, bits };
+      const detail = `ICC v${info.version} · ${info.space}`;
+      if (info.space === 'RGB') return { mode: 'keep', name: info.name, detail, out: '原樣保留', outICC: r.icc, info, bits };
+      if (info.space === 'Gray') {
+        const g = grayToRGB(r.icc, info);
+        if (g) return { mode: 'gray', name: info.name, detail, out: '灰階值不變，改嵌同曲線的 RGB 描述檔', outICC: g, info, bits };
+      }
+      if (fmt === 'TIFF') return { mode: 'naive', name: info.name, detail, out: info.space + '→RGB 近似換算（未經色彩管理）', warn: true, info, bits };
+      return { mode: 'managed', name: info.name, detail, out: managedOut(info.space + ' 無法放進 JPG'), warn: true, info, bits };
+    }
+    if (r.cmyk) {
+      if (fmt === 'TIFF') return { mode: 'naive', name: '無（CMYK）', detail: 'CMYK', out: 'CMYK→RGB 近似換算（未經色彩管理）', warn: true, bits };
+      return { mode: 'managed', name: '無（CMYK）', detail: 'CMYK', out: managedOut('CMYK 無法放進 JPG'), warn: true, bits };
+    }
+    const cicp = r.cicp || r.nclx;
+    if (cicp) {
+      const ci = cicpInfo(cicp, r.cicp ? 'PNG cICP' : 'nclx');
+      if (ci.kind === 'srgb') return { mode: 'none', name: 'sRGB', detail: ci.words, out: 'sRGB', bits };
+      if (ci.kind === 'gen') return { mode: 'gen', name: ci.name, detail: ci.words, out: `嵌入對應的 ICC（${ci.name}）`, outICC: ci.icc(), bits };
+      return { mode: 'managed', name: ci.name || '無法對應的 nclx', detail: ci.words, out: managedOut(ci.kind === 'hdr' ? 'HDR 無法保留' : '無法對應成 ICC'), warn: true, bits };
+    }
+    if (r.srgbChunk) return { mode: 'none', name: 'sRGB', detail: 'PNG sRGB 標記', out: 'sRGB', bits };
+    if (r.gama || r.chrm) {
+      const g = r.gama ? r.gama / 100000 : 1 / 2.2;
+      const c = r.chrm, P = PRIM[1];
+      const prim = c ? [[c[2], c[3]], [c[4], c[5]], [c[6], c[7]]] : P.p, white = c ? [c[0], c[1]] : D65;
+      const nearSRGB = Math.abs(g - 0.45455) < 0.005 && (!c || [0.3127, 0.329, 0.64, 0.33, 0.30, 0.60, 0.15, 0.06].every((v, i) => Math.abs(c[i] - v) < 0.01));
+      const detail = 'PNG ' + [r.gama ? `gAMA 1/${(1 / g).toFixed(2)}` : '', c ? 'cHRM' : ''].filter(Boolean).join(' + ');
+      if (nearSRGB) return { mode: 'none', name: 'sRGB', detail, out: 'sRGB', bits };
+      const name = `PNG gamma ${(1 / g).toFixed(2)}${c ? ' + cHRM' : ''}`;
+      return { mode: 'gen', name, detail, out: `嵌入對應的 ICC（${name}）`, outICC: fromPrimaries(name, prim, white, { type: 0, g: 1 / g }), bits };
+    }
+    return { mode: 'none', name: '無（視為 sRGB）', detail: '', out: 'sRGB', bits };
+  }
+  function managedOut(why) { return `轉為 ${P3_CANVAS ? 'Display P3' : 'sRGB'}（${why}）`; }
+
+  /* ---- untagged copies: the browser then decodes the stored numbers with no conversion ---- */
+  function untagJPEG(b) {
+    const parts = [b.subarray(0, 2)]; let o = 2, cut = false;
+    while (o + 4 <= b.length && b[o] === 0xFF) {
+      const m = b[o + 1];
+      if (m === 0xFF) { parts.push(b.subarray(o, o + 1)); o++; continue; }
+      if (m === 0xDA || m === 0xD9) break;
+      if (m === 0x01 || (m >= 0xD0 && m <= 0xD7)) { parts.push(b.subarray(o, o + 2)); o += 2; continue; }
+      const e = o + 2 + be16(b, o + 2);
+      if (m === 0xE2 && asc(b, o + 4, 12) === 'ICC_PROFILE\0') cut = true; else parts.push(b.subarray(o, e));
+      o = e;
+    }
+    return cut ? concat([...parts, b.subarray(o)]) : b;
+  }
+  const PNG_COLOR = new Set(['iCCP', 'sRGB', 'gAMA', 'cHRM', 'cICP']);
+  function untagPNG(b) {
+    const parts = [b.subarray(0, 8)]; let o = 8, cut = false;
+    while (o + 12 <= b.length) {
+      const len = be32(b, o), type = asc(b, o + 4, 4), e = o + 12 + len;
+      if (e > b.length) { parts.push(b.subarray(o)); o = b.length; break; }
+      if (PNG_COLOR.has(type)) cut = true; else parts.push(b.subarray(o, e));
+      o = e;
+      if (type === 'IEND') break;
+    }
+    if (o < b.length) parts.push(b.subarray(o));
+    return cut ? concat(parts) : b;
+  }
+  function untagWebP(b) {
+    const parts = []; let o = 12, cut = false;
+    while (o + 8 <= b.length) {
+      const type = asc(b, o, 4), len = le32(b, o + 4), e = Math.min(b.length, o + 8 + len + (len & 1));
+      if (type === 'ICCP') cut = true;
+      else if (type === 'VP8X') { const c = b.slice(o, e); c[8] &= ~0x20; parts.push(c); }
+      else parts.push(b.subarray(o, e));
+      o = e;
+    }
+    if (!cut) return b;
+    const out = concat([b.subarray(0, 12), ...parts]), n = out.length - 8;
+    out[4] = n & 255; out[5] = (n >> 8) & 255; out[6] = (n >> 16) & 255; out[7] = (n >>> 24) & 255;
+    return out;
+  }
+  // HEIF/AVIF: patch the colr properties in place (same length): nclx → BT.709 primaries + sRGB
+  // curve (matrix and range untouched, so YCbCr→RGB is unchanged); ICC colr → unknown type.
+  function untagHEIF(src) {
+    const b = src.slice();
+    const boxes = (s, e, fn) => { let o = s; while (o + 8 <= e) { let size = be32(b, o), h = 8; if (size === 1) { size = be32(b, o + 8) * 4294967296 + be32(b, o + 12); h = 16; } else if (size === 0) size = e - o; if (size < h || o + size > e) break; fn(asc(b, o + 4, 4), o + h, o + size); o += size; } };
+    let n = 0;
+    boxes(0, b.length, (t, s, e) => {
+      if (t !== 'meta') return;
+      boxes(s + 4, e, (t2, s2, e2) => {
+        if (t2 !== 'iprp') return;
+        boxes(s2, e2, (t3, s3, e3) => {
+          if (t3 !== 'ipco') return;
+          boxes(s3, e3, (t4, s4) => {
+            if (t4 !== 'colr') return;
+            const k = asc(b, s4, 4);
+            if (k === 'nclx') { b[s4 + 4] = 0; b[s4 + 5] = 1; b[s4 + 6] = 0; b[s4 + 7] = 13; n++; }
+            else if (k === 'prof' || k === 'rICC') { b.set([0x78, 0x78, 0x78, 0x78], s4); n++; }
+          });
+        });
+      });
+    });
+    return n ? b : src;
+  }
+  async function untag(file, fmt) {
+    const f = { JPG: untagJPEG, PNG: untagPNG, WebP: untagWebP, HEIC: untagHEIF, HEIF: untagHEIF, AVIF: untagHEIF }[fmt];
+    if (!f) return file;
+    const b = new Uint8Array(await file.arrayBuffer()), u = f(b);
+    return u === b ? file : new Blob([u], { type: file.type || 'application/octet-stream' });
+  }
+
+  return { parse, analyze, untag, P3, fromPrimaries, grayToRGB, cicpInfo, untagJPEG, untagPNG, untagWebP, untagHEIF };
+})();
+
+/* ---------- metadata: read EXIF / ICC from the source, write EXIF + ICC into the JPEG ---------- */
+// No library needed: we pull the raw Exif TIFF block out of the container (JPEG APP1,
+// HEIC/AVIF "Exif" item, PNG eXIf, WebP EXIF, TIFF IFDs) and patch it in place, so every
+// tag – including maker notes – survives byte-for-byte.
+const META = (() => {
+  const asc = (b, o, n) => { let s = ''; for (let i = o; i < o + n && i < b.length; i++) s += String.fromCharCode(b[i]); return s; };
+  const be16 = (b, o) => (b[o] << 8) | b[o + 1];
+  const be32 = (b, o) => b[o] * 16777216 + ((b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3]);
+  const le32 = (b, o) => (b[o] | (b[o + 1] << 8) | (b[o + 2] << 16)) + b[o + 3] * 16777216;
+  const isTiff = (b, o) => o >= 0 && o + 8 <= b.length &&
+    ((b[o] === 0x49 && b[o + 1] === 0x49 && b[o + 2] === 42 && b[o + 3] === 0) ||
+     (b[o] === 0x4D && b[o + 1] === 0x4D && b[o + 2] === 0 && b[o + 3] === 42));
+  const findTiff = (b, s, max) => { for (let i = s; i < Math.min(b.length - 8, s + max); i++) if (isTiff(b, i)) return i; return -1; };
+  const concat = (parts) => { const n = parts.reduce((a, p) => a + p.length, 0), o = new Uint8Array(n); let k = 0; for (const p of parts) { o.set(p, k); k += p.length; } return o; };
+  const MAX_TIFF = 65527;   // APP1 payload limit (65535 − 2 length bytes − 6 "Exif\0\0")
+
+  /* ---- TIFF / IFD primitives ---- */
+  const TSIZE = [0, 1, 1, 2, 4, 8, 1, 1, 2, 4, 8, 4, 8, 4];
+  function tv(b) {
+    const le = b[0] === 0x49;
+    return {
+      le,
+      r16: o => le ? b[o] | (b[o + 1] << 8) : (b[o] << 8) | b[o + 1],
+      r32: o => le ? (b[o] | (b[o + 1] << 8) | (b[o + 2] << 16)) + b[o + 3] * 16777216 : b[o] * 16777216 + ((b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3]),
+      w16: (o, v) => { if (le) { b[o] = v & 255; b[o + 1] = (v >> 8) & 255; } else { b[o] = (v >> 8) & 255; b[o + 1] = v & 255; } },
+      w32: (o, v) => { if (le) { b[o] = v & 255; b[o + 1] = (v >>> 8) & 255; b[o + 2] = (v >>> 16) & 255; b[o + 3] = (v >>> 24) & 255; } else { b[o] = (v >>> 24) & 255; b[o + 1] = (v >>> 16) & 255; b[o + 2] = (v >>> 8) & 255; b[o + 3] = v & 255; } },
+    };
+  }
+  function readIFD(b, t, off) {
+    if (!off || off < 8 || off + 2 > b.length) return null;
+    const n = t.r16(off);
+    if (n === 0 || n > 1000 || off + 2 + n * 12 > b.length) return null;
+    const entries = [];
+    for (let i = 0; i < n; i++) {
+      const p = off + 2 + i * 12;
+      const tag = t.r16(p), type = t.r16(p + 2), count = t.r32(p + 4);
+      const sz = (TSIZE[type] || 1) * count;
+      const inline = sz <= 4;
+      const valOff = inline ? p + 8 : t.r32(p + 8);
+      entries.push({ tag, type, count, sz, p, valOff, inline, ok: inline || valOff + sz <= b.length });
+    }
+    const end = off + 2 + n * 12 + 4;
+    return { off, n, entries, next: end <= b.length ? t.r32(off + 2 + n * 12) : 0, end: Math.min(end, b.length) };
+  }
+  const entry = (ifd, tag) => ifd && ifd.entries.find(e => e.tag === tag);
+  const subIFD = (b, t, ifd, tag) => { const e = entry(ifd, tag); return e ? readIFD(b, t, t.r32(e.p + 8)) : null; };
+
+  /* ---- value readers (for the summary shown in the list and in PDF metadata) ---- */
+  function vStr(b, e) { if (!e || !e.ok) return ''; let s = asc(b, e.valOff, e.count); const z = s.indexOf('\0'); if (z >= 0) s = s.slice(0, z); return s.trim(); }
+  function vNum(b, t, e, i = 0) {
+    if (!e || !e.ok) return null;
+    const o = e.valOff + i * (TSIZE[e.type] || 1);
+    switch (e.type) {
+      case 3: return t.r16(o);
+      case 4: return t.r32(o);
+      case 5: { const d = t.r32(o + 4); return d ? t.r32(o) / d : null; }
+      case 10: { const n = t.r32(o) | 0, d = t.r32(o + 4) | 0; return d ? n / d : null; }
+      case 1: case 7: return b[o];
+      default: return null;
+    }
+  }
+  function summarize(tiff) {
+    if (!tiff || !isTiff(tiff, 0)) return null;
+    const b = tiff, t = tv(b), i0 = readIFD(b, t, t.r32(4));
+    if (!i0) return null;
+    const ex = subIFD(b, t, i0, 0x8769), gp = subIFD(b, t, i0, 0x8825);
+    const s = {
+      make: vStr(b, entry(i0, 0x010F)), model: vStr(b, entry(i0, 0x0110)),
+      dto: vStr(b, entry(ex, 0x9003)) || vStr(b, entry(ex, 0x9004)) || vStr(b, entry(i0, 0x0132)),
+      offset: vStr(b, entry(ex, 0x9011)) || vStr(b, entry(ex, 0x9010)),
+      fnum: vNum(b, t, entry(ex, 0x829D)), exp: vNum(b, t, entry(ex, 0x829A)),
+      iso: vNum(b, t, entry(ex, 0x8827)), focal: vNum(b, t, entry(ex, 0x920A)),
+      lens: vStr(b, entry(ex, 0xA434)), gps: null,
+    };
+    if (gp) {
+      const dms = (tag) => { const e = entry(gp, tag); if (!e || e.count < 3) return null; const v = [0, 1, 2].map(k => vNum(b, t, e, k)); return v.some(x => x == null) ? null : v[0] + v[1] / 60 + v[2] / 3600; };
+      const lat = dms(2), lon = dms(4);
+      if (lat != null && lon != null && (lat || lon)) {
+        s.gps = { lat: vStr(b, entry(gp, 1)) === 'S' ? -lat : lat, lon: vStr(b, entry(gp, 3)) === 'W' ? -lon : lon };
+      }
+    }
+    s.camera = (s.model && s.make && !s.model.toLowerCase().startsWith(s.make.toLowerCase().split(' ')[0]) ? s.make + ' ' : '') + (s.model || s.make || '');
+    s.useful = !!(s.make || s.model || s.dto || s.gps || ex);
+    return s;
+  }
+
+  /* ---- maker notes that only use offsets relative to themselves survive relocation ---- */
+  function selfContainedMakerNote(b, e) {
+    const h = asc(b, e.valOff, 12);
+    return h.startsWith('Apple iOS') || h.startsWith('Nikon\0\x02') || h.startsWith('FUJIFILM') || h.startsWith('OLYMPUS\0') || h.startsWith('OM SYSTEM');
+  }
+
+  /* ---- rebuild a compact Exif block (used for TIFF sources and as an oversize fallback) ---- */
+  // Structural / image-data tags of a TIFF IFD0 that must not end up in a JPEG Exif IFD0.
+  const DROP0 = new Set([0x00FE, 0x00FF, 0x0100, 0x0101, 0x0102, 0x0103, 0x0106, 0x0107, 0x0108, 0x0109, 0x010A, 0x010D,
+    0x0111, 0x0115, 0x0116, 0x0117, 0x0118, 0x0119, 0x011C, 0x011D, 0x011E, 0x011F, 0x0120, 0x0121, 0x0122, 0x0123, 0x0124, 0x0125,
+    0x0129, 0x013D, 0x0140, 0x0141, 0x0142, 0x0143, 0x0144, 0x0145, 0x014A, 0x014C, 0x0152, 0x0153, 0x0154, 0x0155,
+    0x0201, 0x0202, 0x0211, 0x0212, 0x02BC, 0x83BB, 0x8649, 0x8773, 0x935C, 0x9C9B, 0x9C9C, 0x9C9D, 0x9C9E, 0x9C9F, 0xC612, 0xC613, 0xC614]);
+  function rebuild(b, ifdOff, opt = {}) {
+    const t = tv(b), i0 = readIFD(b, t, ifdOff);
+    if (!i0) return null;
+    const pick = (ifd, drop) => ifd ? ifd.entries.filter(e => e.ok && !drop(e)).map(e => ({
+      tag: e.tag, type: e.type, count: e.count, data: e.inline ? b.slice(e.p + 8, e.p + 12) : b.slice(e.valOff, e.valOff + e.sz),
+    })) : null;
+    const PTR = new Set([0x8769, 0x8825, 0xA005]);
+    const exI = subIFD(b, t, i0, 0x8769), gpI = opt.dropGPS ? null : subIFD(b, t, i0, 0x8825);
+    const inI = exI ? subIFD(b, t, exI, 0xA005) : null;
+    const big = (e) => opt.maxValue && e.sz > opt.maxValue;   // e.g. a 70 KB UserComment that can't fit in APP1
+    const L0 = pick(i0, e => DROP0.has(e.tag) || PTR.has(e.tag) || big(e));
+    const LE = pick(exI, e => PTR.has(e.tag) || big(e) || (e.tag === 0x927C && !(opt.keepMakerNote && selfContainedMakerNote(b, e))));
+    const LG = pick(gpI, () => false), LI = pick(inI, () => false);
+    // writer, same byte order as the source so raw value bytes can be copied unchanged
+    const o = new Uint8Array(8); o.set(t.le ? [0x49, 0x49, 42, 0, 8, 0, 0, 0] : [0x4D, 0x4D, 0, 42, 0, 0, 0, 8]);
+    const groups = [{ k: '0', L: L0 }];
+    if (LE) groups.push({ k: 'E', L: LE });
+    if (LI) groups.push({ k: 'I', L: LI });
+    if (LG) groups.push({ k: 'G', L: LG });
+    const ptr = (tag) => ({ tag, type: 4, count: 1, data: new Uint8Array(4), ptr: true });
+    if (LE) { L0.push(Object.assign(ptr(0x8769), { to: 'E' })); if (LI) LE.push(Object.assign(ptr(0xA005), { to: 'I' })); }
+    if (LG) L0.push(Object.assign(ptr(0x8825), { to: 'G' }));
+    groups.forEach(g => g.L.sort((a, c) => a.tag - c.tag));
+    let pos = 8; const at = {};
+    for (const g of groups) { at[g.k] = pos; pos += 2 + 12 * g.L.length + 4; for (const e of g.L) if (e.data.length > 4) pos += e.data.length + (e.data.length & 1); }
+    const out = new Uint8Array(pos); out.set(o);
+    const w = tv(out);
+    for (const g of groups) {
+      let p = at[g.k]; w.w16(p, g.L.length); p += 2;
+      let d = p + 12 * g.L.length + 4;
+      for (const e of g.L) {
+        w.w16(p, e.tag); w.w16(p + 2, e.type); w.w32(p + 4, e.count);
+        if (e.ptr) w.w32(p + 8, at[e.to]);
+        else if (e.data.length <= 4) out.set(e.data, p + 8);
+        else { w.w32(p + 8, d); out.set(e.data, d); d += e.data.length + (e.data.length & 1); }
+        p += 12;
+      }
+      w.w32(p, 0);
+    }
+    return out;
+  }
+
+  /* ---- patch a standalone Exif block in place for the converted pixels ---- */
+  // Orientation → 1 (pixels are already upright), PixelX/YDimension → output size,
+  // IFD1 thumbnail dropped, optionally the GPS IFD removed. Offsets never move, so
+  // maker notes and unknown tags stay valid.
+  function patch(src, W, H, dropGPS) {
+    if (!src || !isTiff(src, 0)) return null;
+    const b = src.slice(), t = tv(b);
+    const i0 = readIFD(b, t, t.r32(4));
+    if (!i0) return null;
+    const keep = new Uint8Array(b.length), removed = [];
+    const mark = (s, e) => keep.fill(1, Math.max(0, s), Math.min(b.length, e));
+    const regions = (ifd) => { const r = [[ifd.off, ifd.end]]; for (const e of ifd.entries) if (!e.inline && e.ok) r.push([e.valOff, e.valOff + e.sz]); return r; };
+    const markIFD = (ifd) => regions(ifd).forEach(([s, e]) => mark(s, e));
+    const setNum = (ifd, tag, v) => {
+      const e = entry(ifd, tag); if (!e) return;
+      if (v > 65535 || (e.type === 4 && tag !== 0x0112)) { t.w16(e.p + 2, 4); t.w32(e.p + 4, 1); t.w32(e.p + 8, v); }
+      else { t.w16(e.p + 2, 3); t.w32(e.p + 4, 1); t.w16(e.p + 8, v); t.w16(e.p + 10, 0); }
+    };
+    const ex = subIFD(b, t, i0, 0x8769), gp = subIFD(b, t, i0, 0x8825);
+    const io = ex ? subIFD(b, t, ex, 0xA005) : null;
+    const i1 = readIFD(b, t, i0.next);
+    mark(0, 8); markIFD(i0);
+    if (ex) markIFD(ex);
+    if (io) markIFD(io);
+    if (gp && !dropGPS) markIFD(gp);
+    setNum(i0, 0x0112, 1);
+    setNum(i0, 0x0100, W); setNum(i0, 0x0101, H);
+    if (ex) { setNum(ex, 0xA002, W); setNum(ex, 0xA003, H); }
+    // thumbnail (IFD1): unlink and wipe – it would show the old, unrotated picture
+    if (i0.off + 2 + i0.n * 12 + 4 <= b.length) t.w32(i0.off + 2 + i0.n * 12, 0);
+    if (i1) {
+      removed.push(...regions(i1));
+      const jo = entry(i1, 0x0201), jl = entry(i1, 0x0202);
+      if (jo && jl) { const s = t.r32(jo.p + 8); removed.push([s, s + t.r32(jl.p + 8)]); }
+      const so = entry(i1, 0x0111), sc = entry(i1, 0x0117);
+      if (so && sc) for (let k = 0; k < so.count; k++) { const s = vNum(b, t, so, k), n = vNum(b, t, sc, k); if (s != null && n != null) removed.push([s, s + n]); }
+    }
+    if (gp && dropGPS) {
+      removed.push(...regions(gp));
+      const e = entry(i0, 0x8825), tail = Math.min(b.length, i0.off + 2 + i0.n * 12 + 4);
+      b.copyWithin(e.p, e.p + 12, tail);       // shift the following entries + next-IFD pointer up
+      t.w16(i0.off, i0.n - 1);
+      b.fill(0, tail - 12, tail);
+    }
+    for (const [s, e] of removed) for (let k = Math.max(8, s); k < Math.min(b.length, e); k++) if (!keep[k]) b[k] = 0;
+    let end = b.length;
+    while (end > 8 && !keep[end - 1] && b[end - 1] === 0) end--;
+    return b.subarray(0, end);
+  }
+
+  /* ---- ICC profile helpers ---- */
+  function iccIsP3(icc) {
+    if (!icc || icc.length < 132 || asc(icc, 16, 4) !== 'RGB ') return false;
+    const n = be32(icc, 128), tags = {};
+    for (let i = 0; i < n && 132 + i * 12 + 12 <= icc.length; i++) { const p = 132 + i * 12; tags[asc(icc, p, 4)] = [be32(icc, p + 4), be32(icc, p + 8)]; }
+    const xyz = (k) => { const v = tags[k]; if (!v || v[0] + 20 > icc.length) return null; const f = (o) => (be32(icc, o) | 0) / 65536; return [f(v[0] + 8), f(v[0] + 12), f(v[0] + 16)]; };
+    const r = xyz('rXYZ'), g = xyz('gXYZ');
+    if (r && g) return Math.abs(r[0] - 0.5151) < 0.01 && Math.abs(r[1] - 0.2412) < 0.01 && Math.abs(g[0] - 0.2919) < 0.01 && Math.abs(g[1] - 0.6922) < 0.01;
+    const d = tags.desc ? asc(icc, tags.desc[0], Math.min(tags.desc[1], 200)).replace(/\0/g, '') : '';
+    return /display p3/i.test(d);
+  }
+  function iccName(icc) {
+    if (!icc || icc.length < 132) return '';
+    const n = be32(icc, 128);
+    for (let i = 0; i < n && 132 + i * 12 + 12 <= icc.length; i++) {
+      const p = 132 + i * 12; if (asc(icc, p, 4) !== 'desc') continue;
+      const o = be32(icc, p + 4), type = asc(icc, o, 4);
+      if (type === 'desc') return asc(icc, o + 12, Math.min(be32(icc, o + 8), 100)).replace(/\0/g, '').trim();
+      if (type === 'mluc') { const len = be32(icc, o + 20), so = be32(icc, o + 24); let s = ''; for (let k = 0; k + 1 < len && k < 200; k += 2) s += String.fromCharCode(be16(icc, o + so + k)); return s.replace(/\0/g, '').trim(); }
+    }
+    return '';
+  }
+  async function inflate(data) {
+    if (typeof DecompressionStream === 'undefined') return null;
+    const ds = new DecompressionStream('deflate');
+    return new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(ds)).arrayBuffer());
+  }
+
+  /* ---- container readers: return { exif (TIFF block), icc, p3hint } ---- */
+  function fromJPEG(b) {
+    let exif = null, cmyk = false; const icc = []; let o = 2;
+    while (o + 4 <= b.length) {
+      if (b[o] !== 0xFF) break;
+      const m = b[o + 1];
+      if (m === 0xFF) { o++; continue; }
+      if (m === 0xD8 || m === 0x01 || (m >= 0xD0 && m <= 0xD7)) { o += 2; continue; }
+      if (m === 0xDA || m === 0xD9) break;
+      const len = be16(b, o + 2), s = o + 4, e = o + 2 + len;
+      if (e > b.length) break;
+      if (m === 0xE1 && !exif && asc(b, s, 5) === 'Exif\0' && isTiff(b, s + 6)) exif = b.slice(s + 6, e);
+      else if (m === 0xE2 && asc(b, s, 12) === 'ICC_PROFILE\0') icc.push({ n: b[s + 12], d: b.subarray(s + 14, e) });
+      else if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC) cmyk = b[s + 5] === 4;
+      o = e;
+    }
+    icc.sort((a, c) => a.n - c.n);
+    return { exif, cmyk, icc: icc.length ? concat(icc.map(x => x.d)) : null };
+  }
+  async function fromPNG(b) {
+    let o = 8, exif = null, icc = null; const r = {};
+    while (o + 12 <= b.length) {
+      const len = be32(b, o), type = asc(b, o + 4, 4), s = o + 8, e = s + len;
+      if (e > b.length) break;
+      if (type === 'eXIf') { const k = isTiff(b, s) ? s : findTiff(b, s, 16); if (k >= 0) exif = b.slice(k, e); }
+      else if (type === 'iCCP') { let z = s; while (z < e && b[z] !== 0) z++; try { icc = await inflate(b.subarray(z + 2, e)); } catch (_) {} }
+      else if (type === 'IHDR') r.bits16 = b[s + 8] === 16;
+      else if (type === 'cICP' && len >= 4) r.cicp = { p: b[s], t: b[s + 1], m: b[s + 2], f: b[s + 3] };
+      else if (type === 'sRGB') r.srgbChunk = true;
+      else if (type === 'gAMA' && len >= 4) r.gama = be32(b, s);
+      else if (type === 'cHRM' && len >= 32) r.chrm = [0, 1, 2, 3, 4, 5, 6, 7].map(i => be32(b, s + 4 * i) / 100000);
+      else if (type === 'IEND') break;
+      o = e + 4;
+    }
+    // PNG precedence: cICP > iCCP > sRGB > gAMA/cHRM
+    if (r.cicp) icc = null;
+    if (icc || r.cicp) { r.srgbChunk = false; r.gama = r.chrm = null; }
+    if (r.srgbChunk) r.gama = r.chrm = null;
+    return Object.assign(r, { exif, icc });
+  }
+  function fromWebP(b) {
+    let o = 12, exif = null, icc = null;
+    while (o + 8 <= b.length) {
+      const type = asc(b, o, 4), len = le32(b, o + 4), s = o + 8, e = s + len;
+      if (e > b.length) break;
+      if (type === 'EXIF') { const k = findTiff(b, s, 16); if (k >= 0) exif = b.slice(k, e); }
+      else if (type === 'ICCP') icc = b.slice(s, e);
+      o = e + (len & 1);
+    }
+    return { exif, icc };
+  }
+  function fromHEIF(b) {   // HEIC, HEIF and AVIF (ISO-BMFF)
+    const boxes = (s, e) => {
+      const out = []; let o = s;
+      while (o + 8 <= e) {
+        let size = be32(b, o), h = 8; const type = asc(b, o + 4, 4);
+        if (size === 1) { size = be32(b, o + 8) * 4294967296 + be32(b, o + 12); h = 16; } else if (size === 0) size = e - o;
+        if (size < h || o + size > e) break;
+        out.push({ type, s: o, h, e: o + size }); o += size;
+      }
+      return out;
+    };
+    const meta = boxes(0, b.length).find(x => x.type === 'meta');
+    if (!meta) return {};
+    const mk = boxes(meta.s + meta.h + 4, meta.e), get = (k) => mk.find(x => x.type === k);
+    let primary = null; const pitm = get('pitm');
+    if (pitm) { const q = pitm.s + pitm.h; primary = b[q] === 0 ? be16(b, q + 4) : be32(b, q + 4); }
+    const exifIds = [], iinf = get('iinf');
+    if (iinf) {
+      const q = iinf.s + iinf.h;
+      for (const inf of boxes(q + 4 + (b[q] === 0 ? 2 : 4), iinf.e)) {
+        if (inf.type !== 'infe') continue;
+        const r0 = inf.s + inf.h, v = b[r0]; if (v < 2) continue;
+        let r = r0 + 4; const id = v === 2 ? be16(b, r) : be32(b, r); r += (v === 2 ? 2 : 4) + 2;
+        if (asc(b, r, 4) === 'Exif') exifIds.push(id);
+      }
+    }
+    let exif = null; const iloc = get('iloc');
+    if (iloc && exifIds.length) {
+      const q = iloc.s + iloc.h, v = b[q]; let r = q + 4;
+      const os = b[r] >> 4, ls = b[r] & 15, bs = b[r + 1] >> 4, is = (v === 1 || v === 2) ? b[r + 1] & 15 : 0; r += 2;
+      const rd = (n) => { let x = 0; for (let i = 0; i < n; i++) x = x * 256 + b[r + i]; r += n; return x; };
+      const cnt = v < 2 ? rd(2) : rd(4);
+      for (let i = 0; i < cnt && r < iloc.e; i++) {
+        const id = v < 2 ? rd(2) : rd(4);
+        const cm = (v === 1 || v === 2) ? rd(2) & 15 : 0;
+        rd(2); const base = rd(bs), ec = rd(2), ext = [];
+        for (let k = 0; k < ec; k++) { if (is) rd(is); ext.push([rd(os), rd(ls)]); }
+        if (exif || !exifIds.includes(id)) continue;
+        let sb = base;
+        if (cm === 1) { const idat = get('idat'); if (!idat) continue; sb = idat.s + idat.h + base; } else if (cm !== 0) continue;
+        const data = concat(ext.map(([o2, l]) => b.subarray(sb + o2, l ? sb + o2 + l : b.length)));
+        if (data.length > 12) { let k = 4 + be32(data, 0); if (!isTiff(data, k)) k = findTiff(data, 4, 64); if (k >= 0) exif = data.slice(k); }
+      }
+    }
+    let icc = null, p3hint = false, nclx = null;
+    const iprp = get('iprp');
+    if (iprp) {
+      const kids = boxes(iprp.s + iprp.h, iprp.e), ipco = kids.find(x => x.type === 'ipco'), ipma = kids.find(x => x.type === 'ipma');
+      if (ipco) {
+        const props = boxes(ipco.s + ipco.h, ipco.e);
+        let assoc = null;
+        if (ipma && primary != null) {
+          const q = ipma.s + ipma.h, v = b[q], fl = b[q + 3]; let r = q + 4; const n = be32(b, r); r += 4;
+          for (let i = 0; i < n && r < ipma.e; i++) {
+            const id = v < 1 ? be16(b, r) : be32(b, r); r += v < 1 ? 2 : 4;
+            const c = b[r++], list = [];
+            for (let k = 0; k < c; k++) { if (fl & 1) { list.push(be16(b, r) & 0x7FFF); r += 2; } else { list.push(b[r] & 0x7F); r += 1; } }
+            if (id === primary) assoc = list;
+          }
+        }
+        const scan = (list) => {
+          for (const p of list) {
+            if (!p || p.type !== 'colr') continue;
+            const k = asc(b, p.s + p.h, 4);
+            if ((k === 'prof' || k === 'rICC') && !icc) icc = b.slice(p.s + p.h + 4, p.e);
+            else if (k === 'nclx' && !nclx) { const q = p.s + p.h + 4; nclx = { p: be16(b, q), t: be16(b, q + 2), m: be16(b, q + 4), f: b[q + 6] >> 7 }; p3hint = nclx.p === 12; }
+          }
+        };
+        if (assoc) scan(assoc.map(i => props[i - 1]));
+        if (!icc && !nclx) scan(props);
+      }
+    }
+    return { exif, icc, p3hint, nclx: icc ? null : nclx };   // an ICC colr wins over nclx
+  }
+  function fromTIFF(b, page) {
+    if (!isTiff(b, 0)) return {};
+    const t = tv(b); let off = t.r32(4);
+    for (let i = 0; i < page && off; i++) { const d = readIFD(b, t, off); off = d ? d.next : 0; }
+    const ifd = readIFD(b, t, off);
+    if (!ifd) return {};
+    const ie = entry(ifd, 0x8773);
+    const icc = ie && ie.ok ? b.slice(ie.valOff, ie.valOff + ie.sz) : null;
+    const exif = rebuild(b, off, { keepMakerNote: true });
+    const pm = vNum(b, t, entry(ifd, 262)), bps = vNum(b, t, entry(ifd, 258));
+    return { exif, icc, cmyk: pm === 5, bits16: bps === 16 };
+  }
+
+  async function read(file, fmt, page) {
+    const b = new Uint8Array(await file.arrayBuffer());
+    let r = {};
+    if (fmt === 'JPG') r = fromJPEG(b);
+    else if (fmt === 'PNG') r = await fromPNG(b);
+    else if (fmt === 'WebP') r = fromWebP(b);
+    else if (fmt === 'HEIC' || fmt === 'HEIF' || fmt === 'AVIF') r = fromHEIF(b);
+    else if (fmt === 'TIFF') r = fromTIFF(b, page || 0);
+    const summary = summarize(r.exif);
+    return {
+      exif: summary && summary.useful ? r.exif : null,
+      summary: summary && summary.useful ? summary : null,
+      icc: r.icc || null,
+      iccName: iccName(r.icc),
+      p3: iccIsP3(r.icc) || (!r.icc && !!r.p3hint),
+      color: COLOR.analyze(r, fmt),
+    };
+  }
+
+  /* ---- build the final JPEG: SOI, (JFIF), APP1 Exif, [APP2 ICC], rest ---- */
+  function app(marker, payload) { const s = new Uint8Array(4 + payload.length); s[0] = 0xFF; s[1] = marker; s[2] = (payload.length + 2) >> 8; s[3] = (payload.length + 2) & 255; s.set(payload, 4); return s; }
+  function hasICC(j) { return fromJPEG(j).icc != null; }
+  function iccOf(j) { return fromJPEG(j).icc; }
+  function write(jpeg, tiff, icc) {
+    const parts = [jpeg.subarray(0, 2)]; let o = 2; const head = [];
+    while (o + 4 <= jpeg.length && jpeg[o] === 0xFF) {
+      const m = jpeg[o + 1]; if (m === 0xDA) break;
+      const len = be16(jpeg, o + 2), seg = jpeg.subarray(o, o + 2 + len);
+      const isExif = m === 0xE1 && asc(jpeg, o + 4, 4) === 'Exif', isICC = m === 0xE2 && asc(jpeg, o + 4, 11) === 'ICC_PROFILE';
+      if (!(tiff && isExif) && !(icc && isICC)) head.push(seg);
+      o += 2 + len;
+    }
+    if (head.length && head[0][1] === 0xE0) parts.push(head.shift());   // keep JFIF APP0 first
+    if (tiff) parts.push(app(0xE1, concat([new Uint8Array([0x45, 0x78, 0x69, 0x66, 0, 0]), tiff])));
+    if (icc) {
+      const CH = 65519, n = Math.ceil(icc.length / CH);
+      for (let i = 0; i < n; i++) parts.push(app(0xE2, concat([new TextEncoder().encode('ICC_PROFILE\0'), new Uint8Array([i + 1, n]), icc.subarray(i * CH, (i + 1) * CH)])));
+    }
+    parts.push(...head, jpeg.subarray(o));
+    return concat(parts);
+  }
+  // Exif block for the output: patched in place; if it is too big for one APP1 segment
+  // (only happens with huge HEIC/TIFF metadata) rebuild it compactly without maker notes.
+  function exifFor(meta, W, H, dropGPS) {
+    if (!meta || !meta.exif) return null;
+    let x = patch(meta.exif, W, H, dropGPS);
+    if (x && x.length > MAX_TIFF) {
+      let r = rebuild(x, tv(x).r32(4), { dropGPS, keepMakerNote: true });
+      if (!r || r.length > MAX_TIFF) r = rebuild(x, tv(x).r32(4), { dropGPS });
+      if (!r || r.length > MAX_TIFF) r = rebuild(x, tv(x).r32(4), { dropGPS, maxValue: 4096 });
+      x = r && r.length <= MAX_TIFF ? r : null;
+    }
+    return x;
+  }
+
+  return { read, write, exifFor, hasICC, iccOf, summarize, MAX_TIFF };
+})();
+
+// Display P3 canvases (Chrome 111+, Safari 15.2+) keep wide-gamut iPhone colours intact.
+const P3_CANVAS = (() => {
+  try {
+    const c = document.createElement('canvas'); c.width = c.height = 1;
+    const x = c.getContext('2d', { colorSpace: 'display-p3' });
+    const ok = !!(x && x.getContextAttributes && x.getContextAttributes().colorSpace === 'display-p3');
+    if (ok) new ImageData(new Uint8ClampedArray(4), 1, 1, { colorSpace: 'display-p3' });
+    return ok;
+  } catch (_) { return false; }
+})();
+
+function exifDateParts(s) {
+  const m = /^(\d{4}):(\d\d):(\d\d)[ T](\d\d):(\d\d):(\d\d)/.exec(s || '');
+  return m ? m.slice(1).map(Number) : null;
+}
+function pdfDate(sum) {
+  const p = sum && exifDateParts(sum.dto); if (!p) return null;
+  const pad = (n) => String(n).padStart(2, '0');
+  const off = /^([+-])(\d\d):(\d\d)$/.exec(sum.offset || '');
+  if (off) return `D:${p[0]}${pad(p[1])}${pad(p[2])}${pad(p[3])}${pad(p[4])}${pad(p[5])}${off[1]}${off[2]}'${off[3]}'`;
+  return new Date(p[0], p[1] - 1, p[2], p[3], p[4], p[5]);   // no offset recorded: assume this device's zone
+}
+function exposureText(sum) {
+  const a = [];
+  if (sum.fnum) a.push('f/' + (+sum.fnum.toFixed(1)));
+  if (sum.exp) a.push(sum.exp >= 1 ? (+sum.exp.toFixed(1)) + ' s' : '1/' + Math.round(1 / sum.exp) + ' s');
+  if (sum.iso) a.push('ISO ' + sum.iso);
+  if (sum.focal) a.push((+sum.focal.toFixed(1)) + ' mm');
+  return a.join(' ');
+}
+function niceDate(sum) { const p = sum && exifDateParts(sum.dto); if (!p) return ''; const pad = (n) => String(n).padStart(2, '0'); return `${p[0]}-${pad(p[1])}-${pad(p[2])} ${pad(p[3])}:${pad(p[4])}`; }
 
 /* ---------- format detection by magic bytes ---------- */
 async function sniff(file) {
@@ -369,13 +1103,15 @@ async function decodeSVG(file) {
   return { ...d, width: Math.round(w), height: Math.round(h) };
 }
 async function decodeHEIC(file) {
-  // Safari 17+ decodes HEIC natively (fast, applies rotation). Try that first.
-  try { return await decodeNative(file); } catch (_) {}
+  // Safari 17+ decodes HEIC natively (fast, applies rotation). The untagged copy makes it
+  // return the stored numbers instead of converting them.
+  try { return await decodeNative(await COLOR.untag(file, 'HEIC')); } catch (_) {}
   const HeicTo = await loadLib('heic');
   let bmp;
   try { bmp = await HeicTo({ blob: file, type: 'bitmap' }); }
   catch (e) { throw new Error('HEIC 解碼失敗：' + (e && e.message ? e.message : e)); }
-  return { width: bmp.width, height: bmp.height, draw: (ctx, W, H) => ctx.drawImage(bmp, 0, 0, W, H), close: () => bmp.close && bmp.close() };
+  // libheif returns the raw RGB values (no colour management); rasterize() tags them with the source colour space.
+  return { width: bmp.width, height: bmp.height, raw: bmp, draw: (ctx, W, H) => ctx.drawImage(bmp, 0, 0, W, H), close: () => bmp.close && bmp.close() };
 }
 // TIFF orientation tag 274 → transform onto a canvas of the oriented size.
 function orientTransform(ctx, o, W, H) {
@@ -389,6 +1125,19 @@ function orientTransform(ctx, o, W, H) {
     case 8: ctx.transform(0, -1, 1, 0, 0, H); break;
   }
 }
+// 16-bit RGB / grey TIFF → 8 bit with rounding (UTIF.toRGBA8 truncates); everything else via UTIF.
+function tiffRGBA8(UTIF, ifd) {
+  const pm = ifd.t262 ? ifd.t262[0] : 2, bpsArr = ifd.t258 || [1], bps = bpsArr[0], n = bpsArr.length;
+  const planar = ifd.t284 && ifd.t284[0] === 2, fmt = ifd.t339 ? ifd.t339[0] : 1;
+  if (bps !== 16 || planar || fmt !== 1 || !(pm === 1 || pm === 2) || (pm === 2 && n < 3)) return UTIF.toRGBA8(ifd);
+  const w = ifd.width, hh = ifd.height, d = ifd.data, out = new Uint8Array(w * hh * 4);   // UTIF stores 16-bit data little-endian
+  for (let i = 0, s = 0; i < w * hh; i++, s += 2 * n) {
+    const v = (k) => (((d[s + 2 * k] | (d[s + 2 * k + 1] << 8)) * 255 + 32767) / 65535) | 0, q = i * 4;
+    if (pm === 2) { out[q] = v(0); out[q + 1] = v(1); out[q + 2] = v(2); out[q + 3] = n > 3 ? v(3) : 255; }
+    else { out[q] = out[q + 1] = out[q + 2] = v(0); out[q + 3] = n > 1 ? v(1) : 255; }
+  }
+  return out;
+}
 async function decodeTIFFPages(file) {
   const UTIF = await loadLib('utif');
   const buf = await file.arrayBuffer();
@@ -396,9 +1145,10 @@ async function decodeTIFFPages(file) {
   if (!ifds.length) throw new Error('TIFF 裡找不到影像');
   return ifds.map((ifd, idx) => async () => {
     UTIF.decodeImage(buf, ifd, ifds);
-    const rgba = UTIF.toRGBA8(ifd);
+    const rgba = tiffRGBA8(UTIF, ifd);
     const iw = ifd.width, ih = ifd.height;
     const src = document.createElement('canvas'); src.width = iw; src.height = ih;
+    // Raw TIFF samples go into an sRGB canvas unchanged; the source ICC is attached to the JPEG later.
     src.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(rgba.buffer, rgba.byteOffset, iw * ih * 4), iw, ih), 0, 0);
     ifd.data = null;
     const o = ifd.t274 ? ifd.t274[0] : 1;
@@ -424,16 +1174,30 @@ function getSettings() {
     pdfMode: document.querySelector('input[name=pdfMode]:checked').value,
     pageSize: $('#pageSize').value,
     margin: parseInt($('#margin').value, 10),
+    keepExif: $('#keepExif').checked,
+    dropGPS: $('#keepExif').checked && $('#dropGps').checked,
   };
 }
 
 /* ---------- conversion ---------- */
+// Raw decode = an untagged copy of the file (ICC / colour chunks removed), so every browser
+// hands back the stored numbers with no conversion; <img> still applies EXIF orientation.
+async function decodeFor(item, managed) {
+  if (item.tiffPage) return item.tiffPage();
+  const f = item.srcFmt;
+  if (f === 'SVG') return decodeSVG(item.file);
+  if (managed) {   // CMYK / Lab / HDR: let the browser's colour management convert into the canvas space
+    try { return await decodeNative(item.file); }
+    catch (e) { if (f === 'HEIC' || f === 'HEIF') return decodeHEIC(item.file); throw e; }
+  }
+  if (f === 'HEIC' || f === 'HEIF') return decodeHEIC(item.file);
+  return decodeNative(await COLOR.untag(item.file, f));
+}
 async function rasterize(item, s) {
-  let dec;
-  if (item.tiffPage) dec = await item.tiffPage();
-  else if (item.srcFmt === 'HEIC' || item.srcFmt === 'HEIF') dec = await decodeHEIC(item.file);
-  else if (item.srcFmt === 'SVG') dec = await decodeSVG(item.file);
-  else dec = await decodeNative(item.file);
+  const col = (item.meta && item.meta.color) || { mode: 'none' };
+  const managed = col.mode === 'managed';
+  const space = managed && P3_CANVAS ? 'display-p3' : 'srgb';
+  const dec = await decodeFor(item, managed);
   try {
     const sw = dec.width, sh = dec.height;
     let scale = 1, limited = false;
@@ -444,20 +1208,46 @@ async function rasterize(item, s) {
       W = Math.floor(W * k); H = Math.floor(H * k); limited = true;
     }
     const c = document.createElement('canvas'); c.width = W; c.height = H;
-    const ctx = c.getContext('2d', { alpha: false });
+    const ctx = c.getContext('2d', space === 'srgb' ? { alpha: false } : { alpha: false, colorSpace: space });
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
     dec.draw(ctx, W, H);
-    const jpeg = await canvasToBlob(c, 'image/jpeg', s.q);
-    // thumbnail
-    const tk = 144 / Math.max(W, H), t = document.createElement('canvas');
-    t.width = Math.max(1, Math.round(W * Math.min(1, tk))); t.height = Math.max(1, Math.round(H * Math.min(1, tk)));
-    const tctx = t.getContext('2d'); tctx.imageSmoothingQuality = 'high'; tctx.drawImage(c, 0, 0, t.width, t.height);
-    const thumb = t.toDataURL('image/jpeg', 0.8);
-    releaseCanvas(c); releaseCanvas(t);
-    return { jpeg, w: W, h: H, srcW: sw, srcH: sh, thumb, limited };
+    let bytes;
+    try { bytes = new Uint8Array(await (await canvasToBlob(c, 'image/jpeg', s.q)).arrayBuffer()); } finally { releaseCanvas(c); }
+    // Attach the profile that matches the numbers: the source's own ICC (byte-for-byte), a
+    // generated one for nclx/cICP/gAMA, or – after browser conversion – the canvas space.
+    let icc = null;
+    if (managed) icc = META.iccOf(bytes) || (space === 'display-p3' ? COLOR.P3() : null);
+    else if (col.outICC) icc = col.outICC;
+    if (icc) bytes = META.write(bytes, null, icc);
+    else icc = META.iccOf(bytes);
+    const raw = new Blob([bytes], { type: 'image/jpeg' });
+    const thumb = await makeThumb(raw, W, H);
+    return { raw, jpeg: raw, icc, space, w: W, h: H, srcW: sw, srcH: sh, thumb, limited };
   } finally { dec.close && dec.close(); }
 }
+// Preview decoded from the finished JPEG with colour management – i.e. what a viewer will show.
+async function makeThumb(blob, W, H) {
+  const k = Math.min(1, 144 / Math.max(W, H)), t = document.createElement('canvas');
+  t.width = Math.max(1, Math.round(W * k)); t.height = Math.max(1, Math.round(H * k));
+  const tctx = t.getContext('2d', P3_CANVAS ? { colorSpace: 'display-p3' } : undefined);
+  tctx.imageSmoothingEnabled = true; tctx.imageSmoothingQuality = 'high';
+  const d = await decodeNative(blob);
+  try { d.draw(tctx, t.width, t.height); } finally { d.close(); }
+  const url = t.toDataURL('image/jpeg', 0.8); releaseCanvas(t);
+  return url;
+}
+
+// Writes the (patched) source EXIF into the JPEG; the ICC segments from rasterize() stay as they are.
+async function finalizeJPEG(it, s) {
+  const out = it.out;
+  out.metaKey = metaKey(s);
+  const exif = s.keepExif ? META.exifFor(it.meta, out.w, out.h, s.dropGPS) : null;
+  out.exifWritten = !!exif;
+  out.gpsWritten = !!(exif && it.meta.summary && it.meta.summary.gps && !s.dropGPS);
+  out.jpeg = exif ? new Blob([META.write(new Uint8Array(await out.raw.arrayBuffer()), exif, null)], { type: 'image/jpeg' }) : out.raw;
+}
+function metaKey(s) { return s.keepExif + '|' + s.dropGPS; }
 
 const PT_PER_MM = 72 / 25.4;
 function pageFor(w, h, s) {
@@ -480,20 +1270,68 @@ function pageFor(w, h, s) {
   const iw = w * k, ih = h * k;
   return { pw, ph, x: (pw - iw) / 2, y: (ph - ih) / 2, iw, ih };
 }
+// Minimal PDF writer. Each page shows one JPEG, embedded byte-for-byte (DCTDecode, full
+// resolution). A JPEG that carries an ICC profile gets /ColorSpace [/ICCBased n] with exactly
+// that profile, so PDF viewers interpret the numbers the same way as the JPG; else DeviceRGB.
+async function deflateBytes(u8) {
+  if (typeof CompressionStream === 'undefined') return null;
+  try { return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(new CompressionStream('deflate'))).arrayBuffer()); } catch (_) { return null; }
+}
+function pdfText(str) { let x = '<FEFF'; for (let i = 0; i < str.length; i++) x += str.charCodeAt(i).toString(16).padStart(4, '0').toUpperCase(); return x + '>'; }
+function pdfDateStr(d) {
+  if (typeof d === 'string') return d;
+  const pad = (n) => String(n).padStart(2, '0'), o = -d.getTimezoneOffset(), a = Math.abs(o);
+  return `D:${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}${o >= 0 ? '+' : '-'}${pad(Math.floor(a / 60))}'${pad(a % 60)}'`;
+}
+function fnv(u8) { let h = 2166136261; for (let i = 0; i < u8.length; i++) h = Math.imul(h ^ u8[i], 16777619); return (h >>> 0).toString(16) + ':' + u8.length; }
 async function buildPDF(list, s) {
-  const jsPDF = await loadLib('jspdf');
-  let doc = null;
+  const parts = [], offs = []; let pos = 0;
+  const lat = (str) => { const b = new Uint8Array(str.length); for (let i = 0; i < str.length; i++) b[i] = str.charCodeAt(i) & 255; return b; };
+  const put = (x) => { const b = typeof x === 'string' ? lat(x) : x; parts.push(b); pos += b.length; };
+  const obj = (n, dict, stream) => { offs[n] = pos; put(n + ' 0 obj\n' + dict); if (stream) { put('\nstream\n'); put(stream); put('\nendstream'); } put('\nendobj\n'); };
+  const num = (v) => String(Math.round(v * 1000) / 1000);
+  put('%PDF-1.7\n'); put(new Uint8Array([0x25, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A]));
+  let next = 4; const iccNo = new Map(), iccs = [], pages = [];
   for (const it of list) {
-    const p = pageFor(it.out.w, it.out.h, s);
-    const orient = p.pw > p.ph ? 'l' : 'p';
-    if (!doc) doc = new jsPDF({ unit: 'pt', format: [p.pw, p.ph], orientation: orient, compress: true });
-    else doc.addPage([p.pw, p.ph], orient);
-    const bytes = new Uint8Array(await it.out.jpeg.arrayBuffer());
-    // JPEG bytes are embedded as-is (DCTDecode): full resolution, no re-compression.
-    doc.addImage(bytes, 'JPEG', p.x, p.y, p.iw, p.ih, 'img' + it.id, 'NONE');
+    const icc = it.out.icc && it.out.icc.length >= 132 ? it.out.icc : null;
+    let ref = null;
+    if (icc) { const k = fnv(icc); if (!iccNo.has(k)) { iccNo.set(k, next++); iccs.push([iccNo.get(k), icc]); } ref = iccNo.get(k); }
+    pages.push({ it, ref, page: next++, content: next++, img: next++ });
   }
-  doc.setProperties({ title: list.length === 1 ? baseName(list[0].name) : '合併圖檔', creator: '圖檔轉換器' });
-  return doc.output('blob');
+  // document info (title, capture date, camera) – PDF has no EXIF
+  const info = { Title: list.length === 1 ? baseName(list[0].name) : '合併圖檔', Creator: '圖檔轉換器 v3', Producer: '圖檔轉換器 v3' };
+  let created = new Date();
+  if (s.keepExif) {
+    const sums = list.map(it => it.meta && it.meta.summary).filter(Boolean);
+    const dated = sums.filter(x => exifDateParts(x.dto)).sort((a, b) => a.dto < b.dto ? -1 : 1);
+    if (dated.length) { const d = pdfDate(dated[0]); if (d) created = d; }
+    if (sums.length) {
+      const cams = [...new Set(sums.map(x => x.camera).filter(Boolean))];
+      if (list.length === 1) info.Subject = [sums[0].camera, niceDate(sums[0]), exposureText(sums[0]), sums[0].lens].filter(Boolean).join(' | ');
+      else info.Subject = [`${list.length} photos`, cams.join(', '), dated.length ? niceDate(dated[0]) + (dated.length > 1 ? ' - ' + niceDate(dated[dated.length - 1]) : '') : ''].filter(Boolean).join(' | ');
+      info.Keywords = [...new Set(sums.flatMap(x => [x.make, x.model, x.lens]).filter(Boolean))].join(', ');
+    }
+  }
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, `<< /Type /Pages /Count ${pages.length} /Kids [${pages.map(p => p.page + ' 0 R').join(' ')}] >>`);
+  obj(3, '<< ' + Object.entries(info).filter(([, v]) => v).map(([k, v]) => `/${k} ${pdfText(v)}`).join(' ') + ` /CreationDate (${pdfDateStr(created)}) /ModDate (${pdfDateStr(new Date())}) >>`);
+  for (const [n, icc] of iccs) {
+    const z = await deflateBytes(icc);
+    obj(n, `<< /N 3 /Alternate /DeviceRGB /Length ${(z || icc).length}${z ? ' /Filter /FlateDecode' : ''} >>`, z || icc);
+  }
+  for (const p of pages) {
+    const it = p.it, w = it.out.w, h = it.out.h, g = pageFor(w, h, s);
+    const jpeg = new Uint8Array(await it.out.raw.arrayBuffer());
+    obj(p.img, `<< /Type /XObject /Subtype /Image /Width ${w} /Height ${h} /ColorSpace ${p.ref ? `[/ICCBased ${p.ref} 0 R]` : '/DeviceRGB'} /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>`, jpeg);
+    const cs = `q ${num(g.iw)} 0 0 ${num(g.ih)} ${num(g.x)} ${num(g.ph - g.y - g.ih)} cm /Im0 Do Q`;
+    obj(p.content, `<< /Length ${cs.length} >>`, cs);
+    obj(p.page, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${num(g.pw)} ${num(g.ph)}] /Resources << /XObject << /Im0 ${p.img} 0 R >> >> /Contents ${p.content} 0 R >>`);
+  }
+  const xref = pos, idHex = [...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2, '0')).join('');
+  let x = `xref\n0 ${next}\n0000000000 65535 f \n`;
+  for (let n = 1; n < next; n++) x += String(offs[n]).padStart(10, '0') + ' 00000 n \n';
+  put(x + `trailer\n<< /Size ${next} /Root 1 0 R /Info 3 0 R /ID [<${idHex}> <${idHex}>] >>\nstartxref\n${xref}\n%%EOF\n`);
+  return new Blob(parts, { type: 'application/pdf' });
 }
 
 function outName(it, ext) {
@@ -508,8 +1346,10 @@ function convert(item) {
     const s = getSettings();
     item.state = 'busy'; item.error = null; render(item);
     try {
+      await item.metaP;
       const out = await rasterize(item, s);
       item.out = out; item.pdf = null; item.used = s;
+      await finalizeJPEG(item, s);
       item.state = 'done';
       await ensurePDF(item);
     } catch (e) {
@@ -543,11 +1383,17 @@ async function addFiles(files) {
   }
   updateTotals();
 }
+async function loadMeta(it) {
+  try { it.meta = await META.read(it.file, it.srcFmt, it.page); }
+  catch (e) { console.warn('metadata', e); it.meta = null; }
+  render(it);
+}
 function pushItem(o) {
   const it = Object.assign({ id: ++seq, state: 'queued' }, o);
   items.push(it);
   it.el = document.createElement('li');
   listEl.appendChild(it.el);
+  it.metaP = loadMeta(it);
   if (!o.noConvert) convert(it); else render(it);
   return it;
 }
@@ -578,6 +1424,8 @@ function render(it) {
     <div class="meta">
       <div class="name" title="${esc(it.name)}">${esc(it.name)}${pageTag}</div>
       <div class="info">${esc(it.srcFmt)} · ${fmtBytes(it.file.size)}${dims ? ' · ' + dims : ''}</div>
+      ${colorLine(it)}
+      ${exifLine(it, s)}
       <div class="status ${cls}">${esc(status)}</div>
     </div>
     <div class="acts"></div>`;
@@ -594,13 +1442,29 @@ function render(it) {
   mk('↓', () => move(it, 1), '往下移');
   mk('✕', () => removeItem(it), '移除');
 }
+function colorLine(it) {
+  if (it.meta === undefined) return '<div class="info exif">原檔色彩描述檔：讀取中…</div>';
+  const c = (it.meta && it.meta.color) || { mode: 'none', name: '無（視為 sRGB）', detail: '', out: 'sRGB' };
+  const tag = (t, red) => t ? `<span class="tag${red ? ' red' : ''}">${esc(t)}</span>` : '';
+  return `<div class="info exif color" data-mode="${esc(c.mode)}">原檔色彩描述檔：<b>${esc(c.name)}</b>${tag(c.detail)}${c.bits ? tag('16 bit → 8 bit', true) : ''} → 輸出：${tag(c.out, c.warn)}</div>`;
+}
+function exifLine(it, s) {
+  if (!it.meta && it.meta !== null) return '';
+  const m = it.meta || {}, sum = m.summary, tags = [];
+  if (!sum) return `<div class="info exif">EXIF：無${tags.join('')}</div>`;
+  const desc = [sum.camera, niceDate(sum)].filter(Boolean).join(' · ') || '有';
+  if (!s.keepExif) return `<div class="info exif">EXIF：<s>${esc(desc)}</s> <span class="tag red">已移除</span>${tags.join('')}</div>`;
+  if (it.out && !it.out.exifWritten) tags.unshift('<span class="tag red">無法寫入</span>');
+  else if (sum.gps) tags.unshift(s.dropGPS ? '<span class="tag red">GPS 已移除</span>' : `<span class="tag" title="${sum.gps.lat.toFixed(5)}, ${sum.gps.lon.toFixed(5)}">GPS</span>`);
+  return `<div class="info exif">EXIF：${esc(desc)}${tags.join('')}</div>`;
+}
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
 function itemFile(it) {
   if (getSettings().fmt === 'pdf') return new File([it.pdf], outName(it, 'pdf'), { type: 'application/pdf' });
   return new File([it.out.jpeg], outName(it, 'jpg'), { type: 'image/jpeg' });
 }
-function downloadItem(it) { const f = itemFile(it); downloadBlob(f, f.name); }
+async function downloadItem(it) { await queue; const f = itemFile(it); downloadBlob(f, f.name); }
 function canShareFiles() {
   try { return !!(navigator.canShare && navigator.canShare({ files: [new File([''], 'a.jpg', { type: 'image/jpeg' })] })) && matchMedia('(pointer:coarse)').matches; }
   catch (_) { return false; }
@@ -649,6 +1513,7 @@ function updateTotals() {
 }
 
 async function collectOutputs() {
+  await queue;   // let pending EXIF re-wraps finish
   const s = getSettings(), done = doneItems();
   if (s.fmt === 'pdf' && s.pdfMode === 'merge') {
     const blob = await buildPDF(done, s);
@@ -680,7 +1545,7 @@ $('#shareAllBtn').onclick = async () => { try { shareFiles(await collectOutputs(
 // Quality / size need a re-decode (flagged, user confirms). Format and PDF page options
 // only re-wrap the already-converted JPEG data, so they apply immediately.
 function rasterStale(i, s) { return i.state === 'done' && i.used && (i.used.q !== s.q || i.used.maxEdge !== s.maxEdge); }
-function pdfKey(s) { return s.pageSize + '|' + s.margin; }
+function pdfKey(s) { return s.pageSize + '|' + s.margin + '|' + metaKey(s); }
 async function ensurePDF(i) {
   const s = getSettings();
   if (i.state !== 'done' || s.fmt !== 'pdf' || s.pdfMode !== 'each') return;
@@ -690,8 +1555,13 @@ async function ensurePDF(i) {
 }
 function onSettingsChange(e) {
   $('#qVal').textContent = parseFloat($('#quality').value).toFixed(2);
+  $('#dropGpsWrap').classList.toggle('off', !$('#keepExif').checked);
+  $('#dropGps').disabled = !$('#keepExif').checked;
   if (e && e.type === 'input') return;
   const s = getSettings();
+  items.filter(i => i.state === 'done' && i.out && i.out.metaKey !== metaKey(s)).forEach(i => {
+    queue = queue.then(async () => { try { await finalizeJPEG(i, getSettings()); i.pdf = null; } catch (err) { console.error(err); } render(i); updateTotals(); });
+  });
   $('#stale').classList.toggle('on', items.some(i => rasterStale(i, s)));
   if (s.fmt === 'pdf' && s.pdfMode === 'each') {
     items.filter(i => i.state === 'done').forEach(i => {
@@ -700,7 +1570,7 @@ function onSettingsChange(e) {
   }
   items.forEach(render); updateTotals();
 }
-['quality', 'maxEdge', 'pageSize', 'margin'].forEach(id => $('#' + id).addEventListener('change', onSettingsChange));
+['quality', 'maxEdge', 'pageSize', 'margin', 'keepExif', 'dropGps'].forEach(id => $('#' + id).addEventListener('change', onSettingsChange));
 $('#quality').addEventListener('input', onSettingsChange);
 document.querySelectorAll('input[name=fmt],input[name=pdfMode]').forEach(r => r.addEventListener('change', onSettingsChange));
 $('#reconvertBtn').onclick = () => {
@@ -735,8 +1605,18 @@ $('#pasteBtn').onclick = async () => {
 };
 $('#clearBtn').onclick = () => { items.splice(0).forEach(i => i.el.remove()); $('#stale').classList.remove('on'); updateTotals(); };
 
-// expose minimal hooks for automated tests
-window.__imgconv = { items, addFiles, getSettings, collectOutputs, buildPDF, idle: () => queue };
+// expose minimal hooks for automated tests (probe: the decoded numbers of one item as a lossless PNG)
+async function probeRaw(it) {
+  const managed = !!(it.meta && it.meta.color && it.meta.color.mode === 'managed');
+  const dec = await decodeFor(it, managed);
+  try {
+    const c = document.createElement('canvas'); c.width = dec.width; c.height = dec.height;
+    const ctx = c.getContext('2d', { alpha: false }); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+    dec.draw(ctx, c.width, c.height);
+    try { return await canvasToBlob(c, 'image/png'); } finally { releaseCanvas(c); }
+  } finally { dec.close && dec.close(); }
+}
+window.__imgconv = { items, addFiles, getSettings, collectOutputs, buildPDF, idle: () => queue, META, COLOR, P3_CANVAS, probeRaw };
 updateTotals();
 })();
 </script>
