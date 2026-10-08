@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>圖檔轉換器｜HEIC → JPG／PDF</title>
+<meta name="description" content="在瀏覽器內把 HEIC、PNG、WebP、TIFF 等圖檔轉成 JPG 或 PDF，檔案不會上傳。">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-N8QWS5JKZD');
+</script>
+<style>
+  :root{
+    --red:#E30613; --black:#000; --grey:#6b6b6b; --line:#000; --light:#f2f2f2;
+    --gut:24px; --pad:clamp(16px,4vw,48px);
+    --sans:"Helvetica Neue",Helvetica,Arial,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;border-radius:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:#fff;color:var(--black);font-family:var(--sans);font-size:16px;line-height:1.5;padding:0 var(--pad) 64px}
+  .grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--gut)}
+  header{padding-top:clamp(32px,7vw,88px);padding-bottom:28px;border-bottom:6px solid var(--black)}
+  .kicker{grid-column:1/-1;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+  .kicker span{color:var(--red)}
+  h1{grid-column:1/-1;font-size:clamp(48px,11vw,128px);line-height:.95;font-weight:700;letter-spacing:-.03em}
+  .lead{grid-column:1/span 7;margin-top:24px;font-size:clamp(17px,2vw,21px);font-weight:500;line-height:1.4}
+  .privacy{grid-column:9/span 4;margin-top:24px;font-size:14px;border-top:2px solid var(--red);padding-top:10px;align-self:start}
+  .privacy b{display:block;font-size:13px;letter-spacing:.06em;margin-bottom:4px}
+  section{padding-top:40px}
+  .sec-no{grid-column:1/span 2;font-size:14px;font-weight:700;padding-top:6px}
+  .sec-body{grid-column:3/-1}
+  h2{font-size:clamp(24px,3vw,32px);font-weight:700;letter-spacing:-.01em;line-height:1.1;margin-bottom:18px}
+  .rule{border-top:2px solid var(--black);padding-top:12px}
+
+  /* drop zone */
+  #drop{display:block;border:2px solid var(--black);padding:clamp(28px,6vw,56px) clamp(16px,3vw,32px);cursor:pointer;position:relative}
+  #drop:hover,#drop.over{border-color:var(--red)}
+  #drop.over{background:var(--light)}
+  #drop .big{font-size:clamp(22px,3vw,30px);font-weight:700;line-height:1.2}
+  #drop .small{margin-top:8px;font-size:14px;color:var(--grey)}
+  #drop .formats{margin-top:20px;font-size:13px;font-weight:700;letter-spacing:.04em}
+  #file{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .row{display:flex;flex-wrap:wrap;gap:12px;margin-top:16px;align-items:center}
+
+  /* buttons */
+  button,.btn{font:inherit;font-size:15px;font-weight:700;background:#fff;color:var(--black);border:2px solid var(--black);padding:10px 18px;cursor:pointer;line-height:1.2;text-decoration:none;display:inline-block}
+  button:hover,.btn:hover{background:var(--black);color:#fff}
+  button.primary{background:var(--red);border-color:var(--red);color:#fff}
+  button.primary:hover{background:var(--black);border-color:var(--black)}
+  button:disabled{opacity:.35;cursor:not-allowed;background:#fff;color:var(--black);border-color:var(--black)}
+  button.mini{font-size:13px;padding:6px 10px;border-width:1px}
+  button:focus-visible,select:focus-visible,input:focus-visible,#drop:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+
+  /* settings */
+  .settings{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));column-gap:var(--gut);row-gap:24px}
+  .field{grid-column:span 5}
+  .field.full{grid-column:1/-1}
+  .label{font-size:13px;font-weight:700;letter-spacing:.04em;margin-bottom:8px;display:block}
+  .seg{display:flex;border:2px solid var(--black)}
+  .seg label{flex:1;text-align:center;cursor:pointer;position:relative}
+  .seg label+label{border-left:2px solid var(--black)}
+  .seg input{position:absolute;opacity:0;inset:0;cursor:pointer}
+  .seg span{display:block;padding:10px 8px;font-weight:700}
+  .seg input:checked+span{background:var(--black);color:#fff}
+  .seg input:focus-visible+span{outline:3px solid var(--red);outline-offset:-5px}
+  select{font:inherit;font-size:15px;width:100%;border:2px solid var(--black);background:#fff;padding:9px 10px;appearance:none;-webkit-appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,#000 50%),linear-gradient(135deg,#000 50%,transparent 50%);
+    background-position:calc(100% - 18px) 50%,calc(100% - 12px) 50%;background-size:6px 6px;background-repeat:no-repeat;color:var(--black)}
+  input[type=range]{width:100%;accent-color:var(--red);height:28px}
+  .val{font-weight:700;font-variant-numeric:tabular-nums}
+  .hint{font-size:13px;color:var(--grey);margin-top:6px}
+  .pdf-only{display:contents}
+  body:not(.out-pdf) .pdf-only>.field{opacity:.35;pointer-events:none}
+  #stale{display:none;margin-top:20px;border-left:6px solid var(--red);padding:8px 14px;font-weight:700;align-items:center;gap:16px;flex-wrap:wrap}
+  #stale.on{display:flex}
+
+  /* list */
+  .list-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px}
+  .count{font-size:14px;font-weight:700}
+  #list{list-style:none;border-top:2px solid var(--black)}
+  #list li{display:grid;grid-template-columns:72px minmax(0,1fr) auto;column-gap:16px;padding:14px 0;border-bottom:1px solid var(--black);align-items:center}
+  .thumb{width:72px;height:72px;background:var(--light);display:flex;align-items:center;justify-content:center;overflow:hidden;font-size:12px;font-weight:700}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .meta{min-width:0}
+  .name{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .info{font-size:13px;color:var(--grey);font-variant-numeric:tabular-nums}
+  .info .dim{color:var(--black);font-weight:700}
+  .info .diff{color:var(--red);font-weight:700}
+  .status{font-size:13px;font-weight:700;margin-top:2px}
+  .status.err,.status.warn{color:var(--red)}
+  .status.busy::before{content:"";display:inline-block;width:10px;height:10px;background:var(--red);margin-right:6px;animation:blink .8s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .empty{padding:20px 0;color:var(--grey);font-size:14px;border-bottom:1px solid var(--black)}
+  .totals{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+  footer{margin-top:64px;padding-top:12px;border-top:2px solid var(--black);font-size:13px;color:var(--grey)}
+  footer p+p{margin-top:6px}
+  #toast{position:fixed;left:var(--pad);bottom:16px;background:var(--black);color:#fff;padding:10px 16px;font-size:14px;font-weight:700;max-width:calc(100vw - 2*var(--pad));display:none;z-index:9}
+  #toast.on{display:block}
+
+  @media (max-width:820px){
+    .lead{grid-column:1/-1}
+    .privacy{grid-column:1/-1}
+    .sec-no{grid-column:1/-1;padding-top:0;margin-bottom:4px}
+    .sec-body{grid-column:1/-1}
+    .field{grid-column:1/-1}
+  }
+  @media (max-width:520px){
+    #list li{grid-template-columns:56px minmax(0,1fr);row-gap:10px}
+    .thumb{width:56px;height:56px}
+    .acts{grid-column:1/-1;justify-content:flex-start}
+    .seg span{padding:10px 4px;font-size:14px}
+  }
+</style>
+</head>
+<body>
+
+<header class="grid">
+  <div class="kicker">Image Converter <span>■</span> HEIC／PNG／WebP／TIFF → JPG／PDF</div>
+  <h1>圖檔<br>轉換器</h1>
+  <p class="lead">把 iPhone 的 HEIC 照片和各種圖檔，轉成 JPG 或 PDF。可以一次丟很多張，也能合併成一份 PDF。預設保留原始尺寸。</p>
+  <p class="privacy"><b>隱私</b>所有轉換都在你的瀏覽器裡完成，圖檔不會上傳到任何伺服器。轉出的 JPG 不含 EXIF（拍攝地點等資訊會一併移除）。</p>
+</header>
+
+<main>
+  <section class="grid">
+    <div class="sec-no">01</div>
+    <div class="sec-body">
+      <h2>加入圖檔</h2>
+      <label id="drop" tabindex="0" for="file">
+        <div class="big">把圖檔拖到這裡，或點一下選擇檔案</div>
+        <div class="small">可一次選多張。電腦上也可以直接按 Ctrl＋V（Mac 為 ⌘＋V）貼上剪貼簿裡的圖片。</div>
+        <div class="formats">HEIC · HEIF · JPG · PNG · WebP · GIF · BMP · TIFF · AVIF · SVG</div>
+        <input id="file" type="file" multiple accept="image/*,.heic,.heif,.tif,.tiff,.avif,.svg,.bmp">
+      </label>
+      <div class="row">
+        <button type="button" id="pasteBtn">從剪貼簿貼上</button>
+        <button type="button" id="clearBtn" disabled>清除全部</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="sec-no">02</div>
+    <div class="sec-body">
+      <h2>輸出設定</h2>
+      <div class="settings">
+        <div class="field full">
+          <span class="label">輸出格式</span>
+          <div class="seg" role="radiogroup">
+            <label><input type="radio" name="fmt" value="jpg" checked><span>JPG</span></label>
+            <label><input type="radio" name="fmt" value="pdf"><span>PDF</span></label>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label" for="quality">JPG 品質 <span class="val" id="qVal">0.90</span></label>
+          <input type="range" id="quality" min="0.5" max="1" step="0.01" value="0.9">
+          <div class="hint">數字越大越清晰、檔案越大。PDF 內的圖片也用這個品質。</div>
+        </div>
+        <div class="field">
+          <label class="label" for="maxEdge">尺寸</label>
+          <select id="maxEdge">
+            <option value="0" selected>原尺寸（不縮放）</option>
+            <option value="4096">長邊最多 4096 px</option>
+            <option value="3000">長邊最多 3000 px</option>
+            <option value="2048">長邊最多 2048 px</option>
+            <option value="1600">長邊最多 1600 px</option>
+            <option value="1080">長邊最多 1080 px</option>
+          </select>
+          <div class="hint">只會縮小、不會放大。透明的地方會填成白色。</div>
+        </div>
+        <div class="pdf-only">
+          <div class="field full">
+            <span class="label">PDF 頁面</span>
+            <div class="seg" role="radiogroup">
+              <label><input type="radio" name="pdfMode" value="merge" checked><span>合併成一份</span></label>
+              <label><input type="radio" name="pdfMode" value="each"><span>每張一份</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label" for="pageSize">紙張大小</label>
+            <select id="pageSize">
+              <option value="fit" selected>符合圖片（1 px＝1 pt，原尺寸）</option>
+              <option value="a4auto">A4（依圖片自動直／橫）</option>
+              <option value="a4p">A4 直式</option>
+              <option value="a4l">A4 橫式</option>
+              <option value="letterauto">Letter（依圖片自動直／橫）</option>
+            </select>
+            <div class="hint">不論紙張大小，圖片都以完整解析度放進 PDF，不會降採樣。</div>
+          </div>
+          <div class="field">
+            <label class="label" for="margin">邊界</label>
+            <select id="margin">
+              <option value="0" selected>無</option>
+              <option value="5">5 mm</option>
+              <option value="10">10 mm</option>
+              <option value="20">20 mm</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="stale"><span>設定已變更，已轉好的檔案還是舊設定。</span><button type="button" class="primary" id="reconvertBtn">重新轉換全部</button></div>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="sec-no">03</div>
+    <div class="sec-body">
+      <div class="list-head">
+        <h2 style="margin:0">檔案清單</h2>
+        <span class="count" id="count">0 個檔案</span>
+      </div>
+      <ul id="list"></ul>
+      <div class="empty" id="empty">還沒有檔案。加入後會自動開始轉換。</div>
+      <div class="totals">
+        <button type="button" class="primary" id="dlAllBtn" disabled>全部下載（ZIP）</button>
+        <button type="button" id="shareAllBtn" hidden disabled>全部分享</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>需要網路的時候：第一次轉 HEIC、TIFF、PDF 或打包 ZIP 時，會從 jsDelivr 下載對應的開源函式庫（heic-to／libheif、UTIF.js、jsPDF、JSZip），之後瀏覽器會快取。</p>
+  <p>HEIC 在 Safari 會用系統內建解碼；其他瀏覽器用 libheif（WebAssembly），每張大約 1～3 秒。</p>
+</footer>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+/* ---------- libraries (lazy, pinned versions, with fallback CDN) ---------- */
+const CDN = ['https://cdn.jsdelivr.net/npm/', 'https://unpkg.com/'];
+const LIBS = {
+  heic:  { path: 'heic-to@1.6.5/dist/iife/heic-to.js', test: () => window.HeicTo },
+  pako:  { path: 'pako@1.0.11/dist/pako.min.js',       test: () => window.pako },
+  utif:  { path: 'utif@3.1.0/UTIF.js',                 test: () => window.UTIF, deps: ['pako'] },
+  jspdf: { path: 'jspdf@4.2.1/dist/jspdf.umd.min.js',   test: () => window.jspdf && window.jspdf.jsPDF },
+  jszip: { path: 'jszip@3.10.1/dist/jszip.min.js',      test: () => window.JSZip },
+};
+const libPromises = {};
+function addScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src; s.async = true; s.crossOrigin = 'anonymous';
+    s.onload = res; s.onerror = () => { s.remove(); rej(new Error('load ' + src)); };
+    document.head.appendChild(s);
+  });
+}
+function loadLib(key) {
+  const lib = LIBS[key];
+  if (lib.test()) return Promise.resolve(lib.test());
+  if (!libPromises[key]) {
+    libPromises[key] = (async () => {
+      for (const d of lib.deps || []) await loadLib(d);
+      let lastErr;
+      for (const base of CDN) {
+        try { await addScript(base + lib.path); if (lib.test()) return lib.test(); }
+        catch (e) { lastErr = e; }
+      }
+      libPromises[key] = null;
+      throw new Error('無法載入函式庫，請確認網路連線（' + key + '）');
+    })();
+  }
+  return libPromises[key];
+}
+
+/* ---------- helpers ---------- */
+const $ = (s) => document.querySelector(s);
+const listEl = $('#list');
+const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+// Max canvas area the browser can safely allocate. iOS Safari caps canvases at ~16.7 MP.
+const MAX_AREA = isIOS ? 16777216 : 268435456;
+const MAX_SIDE = isIOS ? 16384 : 32767;
+
+function fmtBytes(n) {
+  if (n < 1024) return n + ' B';
+  if (n < 1048576) return (n / 1024).toFixed(n < 10240 ? 1 : 0) + ' KB';
+  return (n / 1048576).toFixed(n < 10485760 ? 2 : 1) + ' MB';
+}
+function baseName(name) {
+  const i = name.lastIndexOf('.');
+  return (i > 0 ? name.slice(0, i) : name) || 'image';
+}
+function toast(msg, ms = 2600) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), ms);
+}
+function canvasToBlob(canvas, type, q) {
+  return new Promise((res, rej) => canvas.toBlob(b => b ? res(b) : rej(new Error('瀏覽器無法輸出這個尺寸的影像（可能超過記憶體上限）')), type, q));
+}
+function releaseCanvas(c) { if (c) { c.width = 1; c.height = 1; } }
+function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+/* ---------- format detection by magic bytes ---------- */
+async function sniff(file) {
+  const buf = new Uint8Array(await file.slice(0, 512).arrayBuffer());
+  const ascii = (a, b) => String.fromCharCode(...buf.slice(a, b));
+  if (buf[0] === 0xFF && buf[1] === 0xD8 && buf[2] === 0xFF) return 'JPG';
+  if (buf[0] === 0x89 && ascii(1, 4) === 'PNG') return 'PNG';
+  if (ascii(0, 4) === 'GIF8') return 'GIF';
+  if (ascii(0, 2) === 'BM') return 'BMP';
+  if (ascii(0, 4) === 'RIFF' && ascii(8, 12) === 'WEBP') return 'WebP';
+  if ((buf[0] === 0x49 && buf[1] === 0x49 && buf[2] === 42 && buf[3] === 0) ||
+      (buf[0] === 0x4D && buf[1] === 0x4D && buf[2] === 0 && buf[3] === 42)) return 'TIFF';
+  if (ascii(4, 8) === 'ftyp') {
+    const size = Math.min((buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3]) >>> 0, buf.length);
+    const brands = [ascii(8, 12)];
+    for (let i = 16; i + 4 <= size; i += 4) brands.push(ascii(i, i + 4));
+    if (brands.some(b => b === 'avif' || b === 'avis')) return 'AVIF';
+    if (brands.some(b => ['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'hevm', 'hevs'].includes(b))) return 'HEIC';
+    if (brands.some(b => b === 'mif1' || b === 'msf1')) return 'HEIF';
+  }
+  const head = new TextDecoder().decode(buf).trimStart().toLowerCase();
+  if (head.includes('<svg') || (head.startsWith('<?xml') && /\.svg$/i.test(file.name)) || file.type === 'image/svg+xml') return 'SVG';
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  const byExt = { heic: 'HEIC', heif: 'HEIF', tif: 'TIFF', tiff: 'TIFF', svg: 'SVG', avif: 'AVIF', ico: 'ICO' };
+  return byExt[ext] || (file.type ? file.type.replace('image/', '').toUpperCase() : '未知');
+}
+
+/* ---------- decoders: each returns {draw(ctx,w,h), width, height, close()} ---------- */
+function loadImg(blob) {
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => res({ img, url });
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('瀏覽器無法解碼這個檔案')); };
+    img.src = url;
+  });
+}
+// <img> applies EXIF orientation in all current browsers (image-orientation: from-image).
+async function decodeNative(blob) {
+  const { img, url } = await loadImg(blob);
+  try { if (img.decode) await img.decode(); } catch (_) {}
+  const w = img.naturalWidth, h = img.naturalHeight;
+  if (!w || !h) { URL.revokeObjectURL(url); throw new Error('瀏覽器無法解碼這個檔案'); }
+  return { width: w, height: h, draw: (ctx, W, H) => ctx.drawImage(img, 0, 0, W, H), close: () => URL.revokeObjectURL(url) };
+}
+async function decodeSVG(file) {
+  const text = await file.text();
+  const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
+  const svg = doc.documentElement;
+  if (!svg || svg.nodeName.toLowerCase() !== 'svg') throw new Error('SVG 格式錯誤');
+  const num = (v) => { const m = /^\s*([\d.]+)\s*(px)?\s*$/.exec(v || ''); return m ? parseFloat(m[1]) : 0; };
+  let w = num(svg.getAttribute('width')), h = num(svg.getAttribute('height'));
+  const vb = (svg.getAttribute('viewBox') || '').split(/[\s,]+/).map(Number);
+  if ((!w || !h) && vb.length === 4 && vb[2] > 0 && vb[3] > 0) {
+    if (w && !h) h = w * vb[3] / vb[2];
+    else if (h && !w) w = h * vb[2] / vb[3];
+    else { w = vb[2]; h = vb[3]; }
+  }
+  if (!w || !h) { w = 1024; h = 1024; }
+  svg.setAttribute('width', w); svg.setAttribute('height', h);
+  const blob = new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml' });
+  const d = await decodeNative(blob);
+  // Vector: use its declared size (the "original" size), rasterised crisply at that size.
+  return { ...d, width: Math.round(w), height: Math.round(h) };
+}
+async function decodeHEIC(file) {
+  // Safari 17+ decodes HEIC natively (fast, applies rotation). Try that first.
+  try { return await decodeNative(file); } catch (_) {}
+  const HeicTo = await loadLib('heic');
+  let bmp;
+  try { bmp = await HeicTo({ blob: file, type: 'bitmap' }); }
+  catch (e) { throw new Error('HEIC 解碼失敗：' + (e && e.message ? e.message : e)); }
+  return { width: bmp.width, height: bmp.height, draw: (ctx, W, H) => ctx.drawImage(bmp, 0, 0, W, H), close: () => bmp.close && bmp.close() };
+}
+// TIFF orientation tag 274 → transform onto a canvas of the oriented size.
+function orientTransform(ctx, o, W, H) {
+  switch (o) {
+    case 2: ctx.transform(-1, 0, 0, 1, W, 0); break;
+    case 3: ctx.transform(-1, 0, 0, -1, W, H); break;
+    case 4: ctx.transform(1, 0, 0, -1, 0, H); break;
+    case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
+    case 6: ctx.transform(0, 1, -1, 0, W, 0); break;
+    case 7: ctx.transform(0, -1, -1, 0, W, H); break;
+    case 8: ctx.transform(0, -1, 1, 0, 0, H); break;
+  }
+}
+async function decodeTIFFPages(file) {
+  const UTIF = await loadLib('utif');
+  const buf = await file.arrayBuffer();
+  const ifds = UTIF.decode(buf).filter(i => i.t256 && i.t257);
+  if (!ifds.length) throw new Error('TIFF 裡找不到影像');
+  return ifds.map((ifd, idx) => async () => {
+    UTIF.decodeImage(buf, ifd, ifds);
+    const rgba = UTIF.toRGBA8(ifd);
+    const iw = ifd.width, ih = ifd.height;
+    const src = document.createElement('canvas'); src.width = iw; src.height = ih;
+    src.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(rgba.buffer, rgba.byteOffset, iw * ih * 4), iw, ih), 0, 0);
+    ifd.data = null;
+    const o = ifd.t274 ? ifd.t274[0] : 1;
+    const swap = o >= 5 && o <= 8;
+    return {
+      width: swap ? ih : iw, height: swap ? iw : ih,
+      draw: (ctx, W, H) => { ctx.save(); orientTransform(ctx, o, W, H); ctx.drawImage(src, 0, 0, swap ? H : W, swap ? W : H); ctx.restore(); },
+      close: () => releaseCanvas(src),
+    };
+  });
+}
+
+/* ---------- state ---------- */
+let seq = 0;
+const items = [];          // {id, file, name, srcFmt, page, pageCount, decoder?, state, out:{jpeg, w, h, srcW, srcH, scaled}, pdf, el}
+let queue = Promise.resolve();
+
+function getSettings() {
+  return {
+    fmt: document.querySelector('input[name=fmt]:checked').value,
+    q: parseFloat($('#quality').value),
+    maxEdge: parseInt($('#maxEdge').value, 10),
+    pdfMode: document.querySelector('input[name=pdfMode]:checked').value,
+    pageSize: $('#pageSize').value,
+    margin: parseInt($('#margin').value, 10),
+  };
+}
+
+/* ---------- conversion ---------- */
+async function rasterize(item, s) {
+  let dec;
+  if (item.tiffPage) dec = await item.tiffPage();
+  else if (item.srcFmt === 'HEIC' || item.srcFmt === 'HEIF') dec = await decodeHEIC(item.file);
+  else if (item.srcFmt === 'SVG') dec = await decodeSVG(item.file);
+  else dec = await decodeNative(item.file);
+  try {
+    const sw = dec.width, sh = dec.height;
+    let scale = 1, limited = false;
+    if (s.maxEdge > 0 && Math.max(sw, sh) > s.maxEdge) scale = s.maxEdge / Math.max(sw, sh);
+    let W = Math.max(1, Math.round(sw * scale)), H = Math.max(1, Math.round(sh * scale));
+    if (W * H > MAX_AREA || Math.max(W, H) > MAX_SIDE) {
+      const k = Math.min(Math.sqrt(MAX_AREA / (W * H)), MAX_SIDE / Math.max(W, H));
+      W = Math.floor(W * k); H = Math.floor(H * k); limited = true;
+    }
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const ctx = c.getContext('2d', { alpha: false });
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+    dec.draw(ctx, W, H);
+    const jpeg = await canvasToBlob(c, 'image/jpeg', s.q);
+    // thumbnail
+    const tk = 144 / Math.max(W, H), t = document.createElement('canvas');
+    t.width = Math.max(1, Math.round(W * Math.min(1, tk))); t.height = Math.max(1, Math.round(H * Math.min(1, tk)));
+    const tctx = t.getContext('2d'); tctx.imageSmoothingQuality = 'high'; tctx.drawImage(c, 0, 0, t.width, t.height);
+    const thumb = t.toDataURL('image/jpeg', 0.8);
+    releaseCanvas(c); releaseCanvas(t);
+    return { jpeg, w: W, h: H, srcW: sw, srcH: sh, thumb, limited };
+  } finally { dec.close && dec.close(); }
+}
+
+const PT_PER_MM = 72 / 25.4;
+function pageFor(w, h, s) {
+  const m = s.margin * PT_PER_MM;
+  const land = w > h;
+  let pw, ph;
+  switch (s.pageSize) {
+    case 'a4auto': [pw, ph] = land ? [841.89, 595.28] : [595.28, 841.89]; break;
+    case 'a4p': [pw, ph] = [595.28, 841.89]; break;
+    case 'a4l': [pw, ph] = [841.89, 595.28]; break;
+    case 'letterauto': [pw, ph] = land ? [792, 612] : [612, 792]; break;
+    default: { // fit: 1 px = 1 pt, page = image + margins (PDF max 14400 pt per side)
+      let k = 1; const lim = 14400 - 2 * m;
+      if (Math.max(w, h) > lim) k = lim / Math.max(w, h);
+      return { pw: w * k + 2 * m, ph: h * k + 2 * m, x: m, y: m, iw: w * k, ih: h * k };
+    }
+  }
+  const aw = pw - 2 * m, ah = ph - 2 * m;
+  const k = Math.min(aw / w, ah / h);
+  const iw = w * k, ih = h * k;
+  return { pw, ph, x: (pw - iw) / 2, y: (ph - ih) / 2, iw, ih };
+}
+async function buildPDF(list, s) {
+  const jsPDF = await loadLib('jspdf');
+  let doc = null;
+  for (const it of list) {
+    const p = pageFor(it.out.w, it.out.h, s);
+    const orient = p.pw > p.ph ? 'l' : 'p';
+    if (!doc) doc = new jsPDF({ unit: 'pt', format: [p.pw, p.ph], orientation: orient, compress: true });
+    else doc.addPage([p.pw, p.ph], orient);
+    const bytes = new Uint8Array(await it.out.jpeg.arrayBuffer());
+    // JPEG bytes are embedded as-is (DCTDecode): full resolution, no re-compression.
+    doc.addImage(bytes, 'JPEG', p.x, p.y, p.iw, p.ih, 'img' + it.id, 'NONE');
+  }
+  doc.setProperties({ title: list.length === 1 ? baseName(list[0].name) : '合併圖檔', creator: '圖檔轉換器' });
+  return doc.output('blob');
+}
+
+function outName(it, ext) {
+  const suffix = it.pageCount > 1 ? '_p' + (it.page + 1) : '';
+  return baseName(it.name) + suffix + '.' + ext;
+}
+
+function convert(item) {
+  item.state = 'queued'; render(item);
+  queue = queue.then(async () => {
+    if (!items.includes(item)) return;
+    const s = getSettings();
+    item.state = 'busy'; item.error = null; render(item);
+    try {
+      const out = await rasterize(item, s);
+      item.out = out; item.pdf = null; item.used = s;
+      item.state = 'done';
+      await ensurePDF(item);
+    } catch (e) {
+      console.error(e);
+      item.state = 'error'; item.error = (e && e.message) || String(e);
+    }
+    render(item); updateTotals();
+    await new Promise(r => setTimeout(r, 0));
+  });
+  return queue;
+}
+
+/* ---------- adding files ---------- */
+async function addFiles(files) {
+  const arr = Array.from(files || []).filter(f => f && f.size > 0);
+  if (!arr.length) return;
+  for (const f of arr) {
+    let srcFmt;
+    try { srcFmt = await sniff(f); } catch (_) { srcFmt = '未知'; }
+    if (srcFmt === 'TIFF') {
+      try {
+        const pages = await decodeTIFFPages(f);
+        pages.forEach((pg, i) => pushItem({ file: f, name: f.name || 'pasted.tif', srcFmt, tiffPage: pg, page: i, pageCount: pages.length }));
+      } catch (e) {
+        const it = pushItem({ file: f, name: f.name, srcFmt, page: 0, pageCount: 1, noConvert: true });
+        it.state = 'error'; it.error = e.message; render(it);
+      }
+      continue;
+    }
+    pushItem({ file: f, name: f.name || ('pasted-' + Date.now() + '.png'), srcFmt, page: 0, pageCount: 1 });
+  }
+  updateTotals();
+}
+function pushItem(o) {
+  const it = Object.assign({ id: ++seq, state: 'queued' }, o);
+  items.push(it);
+  it.el = document.createElement('li');
+  listEl.appendChild(it.el);
+  if (!o.noConvert) convert(it); else render(it);
+  return it;
+}
+
+/* ---------- rendering ---------- */
+function render(it) {
+  const s = getSettings();
+  const el = it.el; if (!el) return;
+  const out = it.out;
+  let status = '', cls = '';
+  if (it.state === 'queued') status = '等待中';
+  else if (it.state === 'busy') { status = (it.srcFmt === 'HEIC' || it.srcFmt === 'HEIF') ? '解碼中（HEIC 需要幾秒）' : '轉換中'; cls = 'busy'; }
+  else if (it.state === 'error') { status = '失敗：' + it.error; cls = 'err'; }
+  else if (it.state === 'done') {
+    if (s.fmt === 'jpg') status = '完成 · JPG ' + fmtBytes(out.jpeg.size);
+    else if (s.pdfMode === 'merge') status = '完成 · 會併入合併 PDF';
+    else status = it.pdf ? '完成 · PDF ' + fmtBytes(it.pdf.size) : '產生 PDF 中';
+    if (out.limited) { status += ' · 已縮小：超過此瀏覽器的畫布上限'; cls = 'warn'; }
+  }
+  const pageTag = it.pageCount > 1 ? `（第 ${it.page + 1}/${it.pageCount} 頁）` : '';
+  let dims = '';
+  if (out) {
+    const same = out.w === out.srcW && out.h === out.srcH;
+    dims = `<span class="dim">${out.srcW}×${out.srcH}</span> → <span class="${same ? 'dim' : 'diff'}">${out.w}×${out.h} px</span>${same ? '（原尺寸）' : ''}`;
+  }
+  el.innerHTML = `
+    <div class="thumb">${out ? `<img alt="" src="${out.thumb}">` : esc(it.srcFmt)}</div>
+    <div class="meta">
+      <div class="name" title="${esc(it.name)}">${esc(it.name)}${pageTag}</div>
+      <div class="info">${esc(it.srcFmt)} · ${fmtBytes(it.file.size)}${dims ? ' · ' + dims : ''}</div>
+      <div class="status ${cls}">${esc(status)}</div>
+    </div>
+    <div class="acts"></div>`;
+  el.dataset.state = it.state;
+  if (out) { el.dataset.w = out.w; el.dataset.h = out.h; el.dataset.srcw = out.srcW; el.dataset.srch = out.srcH; }
+  const acts = el.querySelector('.acts');
+  const mk = (label, fn, title) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mini'; b.textContent = label; if (title) b.title = title; b.onclick = fn; acts.appendChild(b); return b; };
+  if (it.state === 'done' && (s.fmt === 'jpg' || (s.pdfMode === 'each' && it.pdf))) {
+    mk('下載', () => downloadItem(it));
+    if (canShareFiles()) mk('分享', () => shareFiles([itemFile(it)]));
+  }
+  if (it.state === 'error') mk('重試', () => convert(it));
+  mk('↑', () => move(it, -1), '往上移');
+  mk('↓', () => move(it, 1), '往下移');
+  mk('✕', () => removeItem(it), '移除');
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+function itemFile(it) {
+  if (getSettings().fmt === 'pdf') return new File([it.pdf], outName(it, 'pdf'), { type: 'application/pdf' });
+  return new File([it.out.jpeg], outName(it, 'jpg'), { type: 'image/jpeg' });
+}
+function downloadItem(it) { const f = itemFile(it); downloadBlob(f, f.name); }
+function canShareFiles() {
+  try { return !!(navigator.canShare && navigator.canShare({ files: [new File([''], 'a.jpg', { type: 'image/jpeg' })] })) && matchMedia('(pointer:coarse)').matches; }
+  catch (_) { return false; }
+}
+async function shareFiles(files) {
+  try { await navigator.share({ files }); }
+  catch (e) { if (e.name !== 'AbortError') toast('無法分享：' + e.message); }
+}
+function move(it, d) {
+  const i = items.indexOf(it), j = i + d;
+  if (j < 0 || j >= items.length) return;
+  [items[i], items[j]] = [items[j], items[i]];
+  items.forEach(x => listEl.appendChild(x.el));
+}
+function removeItem(it) {
+  const i = items.indexOf(it); if (i >= 0) items.splice(i, 1);
+  it.el.remove(); updateTotals();
+}
+
+function uniqueNames(files) {
+  const seen = new Map();
+  return files.map(f => {
+    let n = f.name; const k = n.toLowerCase();
+    if (seen.has(k)) { const c = seen.get(k) + 1; seen.set(k, c); const dot = n.lastIndexOf('.'); n = n.slice(0, dot) + ` (${c})` + n.slice(dot); }
+    else seen.set(k, 1);
+    return n === f.name ? f : new File([f], n, { type: f.type });
+  });
+}
+function doneItems() { return items.filter(i => i.state === 'done'); }
+
+function updateTotals() {
+  const s = getSettings();
+  const n = items.length, done = doneItems();
+  $('#count').textContent = `${n} 個檔案` + (n ? ` · 完成 ${done.length}` : '');
+  $('#empty').style.display = n ? 'none' : '';
+  $('#clearBtn').disabled = !n;
+  const busy = items.some(i => i.state === 'busy' || i.state === 'queued');
+  const btn = $('#dlAllBtn');
+  const merge = s.fmt === 'pdf' && s.pdfMode === 'merge';
+  btn.textContent = merge ? `下載合併 PDF（${done.length} 頁）` : (s.fmt === 'pdf' ? '全部下載（ZIP，內含 PDF）' : '全部下載（ZIP）');
+  const pdfPending = s.fmt === 'pdf' && s.pdfMode === 'each' && done.some(i => !i.pdf);
+  btn.disabled = busy || pdfPending || !done.length || $('#stale').classList.contains('on');
+  const sh = $('#shareAllBtn');
+  sh.hidden = !canShareFiles(); sh.disabled = btn.disabled;
+  document.body.classList.toggle('out-pdf', s.fmt === 'pdf');
+}
+
+async function collectOutputs() {
+  const s = getSettings(), done = doneItems();
+  if (s.fmt === 'pdf' && s.pdfMode === 'merge') {
+    const blob = await buildPDF(done, s);
+    const name = (done.length === 1 ? baseName(done[0].name) : '合併_' + done.length + '張') + '.pdf';
+    return [new File([blob], name, { type: 'application/pdf' })];
+  }
+  return uniqueNames(done.map(itemFile));
+}
+$('#dlAllBtn').onclick = async () => {
+  const btn = $('#dlAllBtn'); const label = btn.textContent;
+  btn.disabled = true; btn.textContent = '準備中…';
+  try {
+    const files = await collectOutputs();
+    if (files.length === 1) { downloadBlob(files[0], files[0].name); }
+    else {
+      const JSZip = await loadLib('jszip');
+      const zip = new JSZip();
+      files.forEach(f => zip.file(f.name, f));
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+      const s = getSettings();
+      downloadBlob(blob, `轉換_${s.fmt.toUpperCase()}_${files.length}個檔案.zip`);
+    }
+  } catch (e) { console.error(e); toast('下載失敗：' + e.message, 5000); }
+  btn.textContent = label; updateTotals();
+};
+$('#shareAllBtn').onclick = async () => { try { shareFiles(await collectOutputs()); } catch (e) { toast(e.message); } };
+
+/* ---------- settings change ---------- */
+// Quality / size need a re-decode (flagged, user confirms). Format and PDF page options
+// only re-wrap the already-converted JPEG data, so they apply immediately.
+function rasterStale(i, s) { return i.state === 'done' && i.used && (i.used.q !== s.q || i.used.maxEdge !== s.maxEdge); }
+function pdfKey(s) { return s.pageSize + '|' + s.margin; }
+async function ensurePDF(i) {
+  const s = getSettings();
+  if (i.state !== 'done' || s.fmt !== 'pdf' || s.pdfMode !== 'each') return;
+  if (i.pdf && i.pdfKey === pdfKey(s)) return;
+  i.pdf = null; render(i);
+  i.pdf = await buildPDF([i], s); i.pdfKey = pdfKey(s);
+}
+function onSettingsChange(e) {
+  $('#qVal').textContent = parseFloat($('#quality').value).toFixed(2);
+  if (e && e.type === 'input') return;
+  const s = getSettings();
+  $('#stale').classList.toggle('on', items.some(i => rasterStale(i, s)));
+  if (s.fmt === 'pdf' && s.pdfMode === 'each') {
+    items.filter(i => i.state === 'done').forEach(i => {
+      queue = queue.then(async () => { try { await ensurePDF(i); } catch (err) { i.state = 'error'; i.error = err.message; } render(i); updateTotals(); });
+    });
+  }
+  items.forEach(render); updateTotals();
+}
+['quality', 'maxEdge', 'pageSize', 'margin'].forEach(id => $('#' + id).addEventListener('change', onSettingsChange));
+$('#quality').addEventListener('input', onSettingsChange);
+document.querySelectorAll('input[name=fmt],input[name=pdfMode]').forEach(r => r.addEventListener('change', onSettingsChange));
+$('#reconvertBtn').onclick = () => {
+  $('#stale').classList.remove('on');
+  items.forEach(i => { if (i.state !== 'busy' && !i.noConvert) convert(i); });
+  queue.then(updateTotals);
+  updateTotals();
+};
+
+/* ---------- input wiring ---------- */
+const drop = $('#drop'), fileInput = $('#file');
+fileInput.addEventListener('change', () => { addFiles(fileInput.files); fileInput.value = ''; });
+drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); } });
+['dragenter', 'dragover'].forEach(t => document.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => document.addEventListener(t, e => { if (t === 'dragleave' && e.relatedTarget) return; drop.classList.remove('over'); }));
+document.addEventListener('drop', e => { e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files.length) addFiles(e.dataTransfer.files); });
+document.addEventListener('paste', e => {
+  const files = [];
+  for (const it of (e.clipboardData && e.clipboardData.items) || []) if (it.kind === 'file') { const f = it.getAsFile(); if (f) files.push(f); }
+  if (files.length) { e.preventDefault(); addFiles(files); toast(`已貼上 ${files.length} 張圖片`); }
+});
+$('#pasteBtn').onclick = async () => {
+  if (!navigator.clipboard || !navigator.clipboard.read) { toast('這個瀏覽器不支援按鈕貼上，請改用 Ctrl＋V／⌘＋V'); return; }
+  try {
+    const files = [];
+    for (const ci of await navigator.clipboard.read()) {
+      const type = ci.types.find(t => t.startsWith('image/'));
+      if (type) { const b = await ci.getType(type); files.push(new File([b], `貼上_${Date.now()}.${type.split('/')[1].replace('jpeg', 'jpg')}`, { type })); }
+    }
+    if (files.length) { addFiles(files); toast(`已貼上 ${files.length} 張圖片`); } else toast('剪貼簿裡沒有圖片');
+  } catch (e) { toast('無法讀取剪貼簿：' + (e.message || e)); }
+};
+$('#clearBtn').onclick = () => { items.splice(0).forEach(i => i.el.remove()); $('#stale').classList.remove('on'); updateTotals(); };
+
+// expose minimal hooks for automated tests
+window.__imgconv = { items, addFiles, getSettings, collectOutputs, buildPDF, idle: () => queue };
+updateTotals();
+})();
+</script>
+</body>
+</html>
