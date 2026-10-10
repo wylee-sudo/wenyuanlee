@@ -2,6 +2,12 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "Chitosan‐assisted dyeing of cotton with sodium copper chlorophyllin: Effects of process parameters on colour yield and fastness",
+      "link": "https://doi.org/10.1111/cote.70113",
+      "published": "2026-10-09",
+      "description": ""
+    },
+    {
       "title": "Towards predictive and sustainable indigo dyeing of denim: Linking redox chemistry, dye transport and yarn architecture",
       "link": "https://doi.org/10.1111/cote.70111",
       "published": "2026-10-08",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70106",
       "published": "2026-09-28",
       "description": ""
-    },
-    {
-      "title": "The plasticisation model of dye diffusion: Part 10",
-      "link": "https://doi.org/10.1111/cote.70074",
-      "published": "2026-09-24",
-      "description": ""
     }
   ],
-  "updated": "2026-10-09T15:39:16Z"
+  "updated": "2026-10-10T14:54:16Z"
 }
