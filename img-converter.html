@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>圖檔轉換器 v3｜HEIC → JPG／PDF（保留 EXIF 與色彩描述檔）</title>
+<title>Image Converter</title>
 <meta name="description" content="在瀏覽器內把 HEIC、PNG、WebP、TIFF 等圖檔轉成 JPG 或 PDF，可保留拍攝資訊（EXIF、時間、GPS）和原檔的 ICC 色彩描述檔，檔案不會上傳。">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
@@ -128,6 +128,21 @@
   }
   .home{grid-column:1/-1;justify-self:start;display:inline-block;margin:0 0 28px;font-size:15px;font-weight:700;color:#000;text-decoration:none;letter-spacing:.02em}
   .home:hover,.home:focus{color:#E30613}
+
+  #drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;border:3px dashed var(--black);background:#fafafa;min-height:200px;transition:background .15s,border-color .15s}
+  #drop .upicon{color:var(--red)}
+  #drop .pickbtn{display:inline-block;background:var(--red);color:#fff;font-weight:700;font-size:18px;padding:14px 28px;min-height:48px}
+  #drop .draghint{font-size:15px;color:var(--grey)}
+  #drop .formats{margin-top:4px;font-size:12px;color:var(--grey);font-weight:500}
+  #drop:hover,#drop.over{border-color:var(--red);background:#eef3fb}
+  #drop.over{border-style:solid}
+  #drop input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  @media (hover:none),(pointer:coarse){#drop .draghint{display:none}}
+  #help summary{cursor:pointer;font-weight:700;color:var(--black);font-size:15px;padding:8px 0}
+  #help h3{font-size:14px;color:var(--black);margin:14px 0 4px}
+  #help p{margin-top:6px}
+  .lead{grid-column:1/-1}
+  button.mini.save{background:var(--red);border-color:var(--red);color:#fff}
 </style>
 </head>
 <body>
@@ -136,8 +151,7 @@
   <a class="home" href="https://wylee-sudo.github.io/wenyuanlee/">← 回首頁</a>
   <div class="kicker">Image Converter <span>■</span> HEIC／PNG／WebP／TIFF → JPG／PDF</div>
   <h1>圖檔<br>轉換器</h1>
-  <p class="lead">把 iPhone 的 HEIC 照片和各種圖檔，轉成 JPG 或 PDF。可以一次丟很多張，也能合併成一份 PDF。預設保留原始尺寸、拍攝資訊和色彩描述檔。</p>
-  <p class="privacy"><b>隱私</b>所有轉換都在你的瀏覽器裡完成，圖檔不會上傳到任何伺服器。預設會把原檔的拍攝資訊（相機型號、拍攝時間、曝光、GPS 地點）一起寫進轉出的 JPG。要分享給別人時，可以勾「移除 GPS 地點」只拿掉位置，或關掉「保留拍攝資訊」全部移除。</p>
+  <p class="lead">HEIC／PNG／WebP／TIFF 等圖檔轉成 JPG／PDF，全程在瀏覽器完成，不上傳。</p>
 </header>
 
 <main>
@@ -145,10 +159,11 @@
     <div class="sec-no">01</div>
     <div class="sec-body">
       <h2>加入圖檔</h2>
-      <label id="drop" tabindex="0" for="file">
-        <div class="big">把圖檔拖到這裡，或點一下選擇檔案</div>
-        <div class="small">可一次選多張。電腦上也可以直接按 Ctrl＋V（Mac 為 ⌘＋V）貼上剪貼簿裡的圖片。</div>
-        <div class="formats">HEIC · HEIF · JPG · PNG · WebP · GIF · BMP · TIFF · AVIF · SVG</div>
+      <label id="drop" tabindex="0" for="file" aria-label="選擇照片或圖檔上傳">
+        <svg class="upicon" viewBox="0 0 48 48" width="48" height="48" aria-hidden="true"><path d="M24 32V10M14 20l10-10 10 10" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="square"/><path d="M8 30v10h32V30" fill="none" stroke="currentColor" stroke-width="4"/></svg>
+        <span class="pickbtn">選擇照片或圖檔</span>
+        <span class="draghint">或拖曳檔案到這裡</span>
+        <span class="formats">HEIC · JPG · PNG · WebP · TIFF · AVIF …</span>
         <input id="file" type="file" multiple accept="image/*,.heic,.heif,.tif,.tiff,.avif,.svg,.bmp">
       </label>
       <div class="row">
@@ -173,7 +188,6 @@
         <div class="field">
           <label class="label" for="quality">JPG 品質 <span class="val" id="qVal">0.90</span></label>
           <input type="range" id="quality" min="0.5" max="1" step="0.01" value="0.9">
-          <div class="hint">數字越大越清晰、檔案越大。PDF 內的圖片也用這個品質。</div>
         </div>
         <div class="field">
           <label class="label" for="maxEdge">尺寸</label>
@@ -185,7 +199,6 @@
             <option value="1600">長邊最多 1600 px</option>
             <option value="1080">長邊最多 1080 px</option>
           </select>
-          <div class="hint">只會縮小、不會放大。透明的地方會填成白色。</div>
         </div>
         <div class="field full">
           <span class="label">拍攝資訊</span>
@@ -193,11 +206,10 @@
             <label class="chk"><input type="checkbox" id="keepExif" checked><span>保留拍攝資訊（EXIF、時間、GPS 地點）</span></label>
             <label class="chk sub" id="dropGpsWrap"><input type="checkbox" id="dropGps"><span>移除 GPS 地點</span></label>
           </div>
-          <div class="hint">JPG：保留相機型號、拍攝時間（含時區）、光圈快門 ISO、焦距、鏡頭和 GPS；照片已轉正，方向標記一律設為「正常」，舊的縮圖會拿掉。PDF：只寫入拍攝時間和相機資訊（不含 GPS）。分享前建議勾「移除 GPS 地點」。</div>
         </div>
         <div class="field full">
           <span class="label">色彩描述檔</span>
-          <div class="hint" style="margin-top:0">一律保留：轉出的 JPG 沿用原檔的像素數值，並把原檔的 ICC 色彩描述檔原封不動嵌回去（Adobe RGB、ProPhoto、Display P3、掃描器或相機的自訂描述檔都可以）。數值和描述檔一致，不做色彩換算，也不會裁切色域。PDF 也嵌入同一份描述檔（ICCBased）。CMYK、Lab 無法放進 RGB 的 JPG，會用瀏覽器的色彩管理轉成 Display P3（瀏覽器不支援時為 sRGB）；CMYK 的 TIFF 只能近似換算，清單上會以紅字標示。16 bit 的 PNG／TIFF 會降為 8 bit。每個檔案的原檔描述檔和輸出結果會列在檔案清單裡。</div>
+          <p style="margin:4px 0 0;font-size:14px">保留原圖的描述檔（如 Adobe RGB、Display P3），未標示的視為 sRGB。</p>
         </div>
         <div class="pdf-only">
           <div class="field full">
@@ -216,7 +228,6 @@
               <option value="a4l">A4 橫式</option>
               <option value="letterauto">Letter（依圖片自動直／橫）</option>
             </select>
-            <div class="hint">不論紙張大小，圖片都以完整解析度放進 PDF，不會降採樣。</div>
           </div>
           <div class="field">
             <label class="label" for="margin">邊界</label>
@@ -251,11 +262,25 @@
 </main>
 
 <footer>
+  <details id="help"><summary>說明</summary>
+  <h3>iPhone 怎麼存檔</h3>
+  <p>點「存到照片／檔案」會打開分享選單：選「儲存影像」存到「照片」，選「儲存到檔案」存到「檔案」App。若用「下載」，檔案會在「檔案」App ＞「下載項目」。多張時建議用「全部存到照片／檔案」，不要下載 ZIP（ZIP 不能直接進「照片」）。</p>
+  <h3>設定說明</h3>
+  <p>數字越大越清晰、檔案越大。PDF 內的圖片也用這個品質。</p>
+  <p>只會縮小、不會放大。透明的地方會填成白色。</p>
+  <p>JPG：保留相機型號、拍攝時間（含時區）、光圈快門 ISO、焦距、鏡頭和 GPS；照片已轉正，方向標記一律設為「正常」，舊的縮圖會拿掉。PDF：只寫入拍攝時間和相機資訊（不含 GPS）。分享前建議勾「移除 GPS 地點」。</p>
+  <p>一律保留：轉出的 JPG 沿用原檔的像素數值，並把原檔的 ICC 色彩描述檔原封不動嵌回去（Adobe RGB、ProPhoto、Display P3、掃描器或相機的自訂描述檔都可以）。數值和描述檔一致，不做色彩換算，也不會裁切色域。PDF 也嵌入同一份描述檔（ICCBased）。CMYK、Lab 無法放進 RGB 的 JPG，會用瀏覽器的色彩管理轉成 Display P3（瀏覽器不支援時為 sRGB）；CMYK 的 TIFF 只能近似換算，清單上會以紅字標示。16 bit 的 PNG／TIFF 會降為 8 bit。每個檔案的原檔描述檔和輸出結果會列在檔案清單裡。</p>
+  <p>不論紙張大小，圖片都以完整解析度放進 PDF，不會降採樣。</p>
+  <p>隱私：所有轉換都在你的瀏覽器裡完成，圖檔不會上傳。預設會把拍攝資訊（含 GPS）寫進 JPG；分享給別人前可勾「移除 GPS 地點」。電腦上也可以 Ctrl＋V／⌘＋V 貼上圖片。</p>
+  <h3>技術細節</h3>
+
   <p>需要網路的時候：第一次轉 HEIC、TIFF 或打包 ZIP 時，會從 jsDelivr 下載對應的開源函式庫（heic-to／libheif、UTIF.js、JSZip），之後瀏覽器會快取。PDF 由本頁直接產生。</p>
   <p>HEIC 在 Safari 會用系統內建解碼；其他瀏覽器用 libheif（WebAssembly），每張大約 1～3 秒。</p>
   <p>拍攝資訊：可讀取 JPG、HEIC／HEIF、AVIF、TIFF、PNG（eXIf）、WebP 裡的 EXIF；GIF、BMP、SVG 沒有 EXIF。</p>
   <p>色彩描述檔：讀取 JPG（APP2）、PNG（iCCP、cICP、sRGB、gAMA／cHRM）、TIFF、WebP、HEIC／AVIF（colr：ICC 或 nclx）裡的色彩資訊。ICC 會原樣複製；nclx／cICP 和 PNG 的 gAMA／cHRM 會換成對應的 ICC（例如 Display P3、BT.2020）；灰階描述檔會換成曲線相同的 RGB 描述檔。HDR（PQ／HLG）無法保留。清單上的縮圖經過色彩管理，只是預覽。</p>
   <p>在手機上從「照片」挑選時，系統可能先把地點拿掉：iPhone 請在選取畫面上方點「選項」，打開「位置」；Android 的相片挑選器也可能移除 GPS。從「檔案」App 選原始檔最完整。</p>
+
+  </details>
 </footer>
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -327,9 +352,11 @@ function downloadBlob(blob, name) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = name; a.rel = 'noopener';
-  document.body.appendChild(a); a.click(); a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  document.body.appendChild(a); a.click();
+  // iOS Safari reads the blob after the click returns; keep URL + link alive for 60 s
+  setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 60000);
 }
+const IS_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 /* ---------- colour: ICC profile info, nclx/cICP → ICC, untagged decode copies ---------- */
 // Colour policy (v3): keep the source's own pixel numbers and attach the source's own ICC
@@ -1167,7 +1194,8 @@ async function decodeTIFFPages(file) {
 /* ---------- state ---------- */
 let seq = 0;
 const items = [];          // {id, file, name, srcFmt, page, pageCount, decoder?, state, out:{jpeg, w, h, srcW, srcH, scaled}, pdf, el}
-let queue = Promise.resolve();
+let queue = Promise.resolve(), qPending = 0;
+function enq(fn) { qPending++; queue = queue.then(fn).finally(() => { qPending--; if (!qPending) updateTotals(); }); return queue; }
 
 function getSettings() {
   return {
@@ -1344,7 +1372,7 @@ function outName(it, ext) {
 
 function convert(item) {
   item.state = 'queued'; render(item);
-  queue = queue.then(async () => {
+  enq(async () => {
     if (!items.includes(item)) return;
     const s = getSettings();
     item.state = 'busy'; item.error = null; render(item);
@@ -1437,8 +1465,8 @@ function render(it) {
   const acts = el.querySelector('.acts');
   const mk = (label, fn, title) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'mini'; b.textContent = label; if (title) b.title = title; b.onclick = fn; acts.appendChild(b); return b; };
   if (it.state === 'done' && (s.fmt === 'jpg' || (s.pdfMode === 'each' && it.pdf))) {
-    mk('下載', () => downloadItem(it));
-    if (canShareFiles()) mk('分享', () => shareFiles([itemFile(it)]));
+    if (canShareFiles()) { const b = mk(IS_IOS ? '存到照片／檔案' : '分享', () => saveItem(it, true)); b.classList.add('save'); }
+    mk('下載', () => saveItem(it, false));
   }
   if (it.state === 'error') mk('重試', () => convert(it));
   mk('↑', () => move(it, -1), '往上移');
@@ -1467,14 +1495,24 @@ function itemFile(it) {
   if (getSettings().fmt === 'pdf') return new File([it.pdf], outName(it, 'pdf'), { type: 'application/pdf' });
   return new File([it.out.jpeg], outName(it, 'jpg'), { type: 'image/jpeg' });
 }
-async function downloadItem(it) { await queue; const f = itemFile(it); downloadBlob(f, f.name); }
+// Must run synchronously inside the tap: iOS drops share/download once an await intervenes.
+function saveItem(it, share) {
+  if (qPending) { toast('還在處理中，請等一下再點'); return; }
+  const f = itemFile(it);
+  if (share) shareFiles([f]); else downloadBlob(f, f.name);
+}
 function canShareFiles() {
-  try { return !!(navigator.canShare && navigator.canShare({ files: [new File([''], 'a.jpg', { type: 'image/jpeg' })] })) && matchMedia('(pointer:coarse)').matches; }
+  try { return !!(navigator.share && navigator.canShare && navigator.canShare({ files: [new File([''], 'a.jpg', { type: 'image/jpeg' })] })) && (IS_IOS || matchMedia('(pointer:coarse)').matches); }
   catch (_) { return false; }
 }
 async function shareFiles(files) {
+  if (!(navigator.canShare && navigator.canShare({ files }))) { files.forEach(f => downloadBlob(f, f.name)); return; }
   try { await navigator.share({ files }); }
-  catch (e) { if (e.name !== 'AbortError') toast('無法分享：' + e.message); }
+  catch (e) {
+    if (e.name === 'AbortError') return;
+    if (e.name === 'NotAllowedError') toast('請再點一次按鈕', 4000);
+    else { toast('無法分享，改用下載'); files.forEach(f => downloadBlob(f, f.name)); }
+  }
 }
 function move(it, d) {
   const i = items.indexOf(it), j = i + d;
@@ -1512,6 +1550,10 @@ function updateTotals() {
   btn.disabled = busy || pdfPending || !done.length || $('#stale').classList.contains('on');
   const sh = $('#shareAllBtn');
   sh.hidden = !canShareFiles(); sh.disabled = btn.disabled;
+  sh.textContent = IS_IOS ? (merge ? '合併 PDF 存到檔案' : '全部存到照片／檔案') : '全部分享';
+  if (IS_IOS && sh.hidden === false) { sh.classList.add('primary'); btn.classList.remove('primary'); }
+  if (ready && ready.key === outKey() + ready.kind && !qPending) { const b = ready.kind === 'share' ? sh : btn; b.disabled = false; b.textContent = ready.kind === 'share' ? '已準備好，點此存到照片／檔案' : '已準備好，點此下載'; }
+  else ready = null;
   document.body.classList.toggle('out-pdf', s.fmt === 'pdf');
 }
 
@@ -1525,24 +1567,36 @@ async function collectOutputs() {
   }
   return uniqueNames(done.map(itemFile));
 }
-$('#dlAllBtn').onclick = async () => {
-  const btn = $('#dlAllBtn'); const label = btn.textContent;
-  btn.disabled = true; btn.textContent = '準備中…';
+// Two-phase: async work (PDF merge, ZIP, waiting for the queue) happens first; the actual
+// download/share is then fired from a fresh tap so iOS still sees a user gesture.
+let ready = null;   // { key, kind:'dl'|'share', files, blob, name }
+function outKey() { const s = getSettings(); return JSON.stringify([s, doneItems().map(i => i.id || i.name), items.length]); }
+async function prepare(kind) {
+  const files = await collectOutputs();
+  if (kind === 'share' || files.length === 1) return { kind, files };
+  const JSZip = await loadLib('jszip');
+  const zip = new JSZip();
+  files.forEach(f => zip.file(f.name, f));
+  const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+  return { kind, files, blob: new Blob([blob], { type: 'application/zip' }), name: `轉換_${getSettings().fmt.toUpperCase()}_${files.length}個檔案.zip` };
+}
+function fire(r) {
+  if (r.kind === 'share') return shareFiles(r.files);
+  if (r.blob) downloadBlob(r.blob, r.name); else downloadBlob(r.files[0], r.files[0].name);
+}
+async function onAll(kind, btn) {
+  const key = outKey() + kind;
+  if (ready && ready.key === key && !qPending) { const r = ready; ready = null; fire(r); updateTotals(); return; }
+  const label = btn.textContent; btn.disabled = true; btn.textContent = '準備中…';
   try {
-    const files = await collectOutputs();
-    if (files.length === 1) { downloadBlob(files[0], files[0].name); }
-    else {
-      const JSZip = await loadLib('jszip');
-      const zip = new JSZip();
-      files.forEach(f => zip.file(f.name, f));
-      const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
-      const s = getSettings();
-      downloadBlob(blob, `轉換_${s.fmt.toUpperCase()}_${files.length}個檔案.zip`);
-    }
-  } catch (e) { console.error(e); toast('下載失敗：' + e.message, 5000); }
+    const r = await prepare(kind); r.key = key;
+    if (IS_IOS) { ready = r; btn.disabled = false; btn.textContent = kind === 'share' ? '已準備好，點此存到照片／檔案' : '已準備好，點此下載'; btn.classList.add('ready'); return; }
+    fire(r);
+  } catch (e) { console.error(e); toast('失敗：' + e.message, 5000); }
   btn.textContent = label; updateTotals();
-};
-$('#shareAllBtn').onclick = async () => { try { shareFiles(await collectOutputs()); } catch (e) { toast(e.message); } };
+}
+$('#dlAllBtn').onclick = () => onAll('dl', $('#dlAllBtn'));
+$('#shareAllBtn').onclick = () => onAll('share', $('#shareAllBtn'));
 
 /* ---------- settings change ---------- */
 // Quality / size need a re-decode (flagged, user confirms). Format and PDF page options
@@ -1563,12 +1617,12 @@ function onSettingsChange(e) {
   if (e && e.type === 'input') return;
   const s = getSettings();
   items.filter(i => i.state === 'done' && i.out && i.out.metaKey !== metaKey(s)).forEach(i => {
-    queue = queue.then(async () => { try { await finalizeJPEG(i, getSettings()); i.pdf = null; } catch (err) { console.error(err); } render(i); updateTotals(); });
+    enq(async () => { try { await finalizeJPEG(i, getSettings()); i.pdf = null; } catch (err) { console.error(err); } render(i); updateTotals(); });
   });
   $('#stale').classList.toggle('on', items.some(i => rasterStale(i, s)));
   if (s.fmt === 'pdf' && s.pdfMode === 'each') {
     items.filter(i => i.state === 'done').forEach(i => {
-      queue = queue.then(async () => { try { await ensurePDF(i); } catch (err) { i.state = 'error'; i.error = err.message; } render(i); updateTotals(); });
+      enq(async () => { try { await ensurePDF(i); } catch (err) { i.state = 'error'; i.error = err.message; } render(i); updateTotals(); });
     });
   }
   items.forEach(render); updateTotals();
