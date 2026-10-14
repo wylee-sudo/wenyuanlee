@@ -8,6 +8,18 @@
       "description": ""
     },
     {
+      "title": "Color Matching and Observer Metamerism Across Displays With Narrow‐Band Primaries and Color Gamuts Approaching Rec. 2020",
+      "link": "https://doi.org/10.1002/col.70136",
+      "published": "2026-10-14",
+      "description": ""
+    },
+    {
+      "title": "Yellow in Color Naming and Matching: Lexical Concentration and Local Convergence in Delayed Matching",
+      "link": "https://doi.org/10.1002/col.70135",
+      "published": "2026-10-14",
+      "description": ""
+    },
+    {
       "title": "Impact of Material Aging and Time‐Dependent Factors on the Color Stability of Dental Shade Guides: A Spectrophotometric Assessment",
       "link": "https://doi.org/10.1002/col.70134",
       "published": "2026-10-11",
@@ -48,19 +60,7 @@
       "link": "https://doi.org/10.1002/col.70129",
       "published": "2026-09",
       "description": ""
-    },
-    {
-      "title": "Camera Spectral Response Function Estimation and Color Calibration Based on Raw Response Prediction",
-      "link": "https://doi.org/10.1002/col.70124",
-      "published": "2026-09",
-      "description": ""
-    },
-    {
-      "title": "An Effective\n                    <scp>EOTF</scp>\n                    for Showing Gradients on 10 000 Nit Rec. 2020 Displays",
-      "link": "https://doi.org/10.1002/col.70127",
-      "published": "2026-09",
-      "description": ""
     }
   ],
-  "updated": "2026-10-13T16:34:35Z"
+  "updated": "2026-10-14T14:10:33Z"
 }
