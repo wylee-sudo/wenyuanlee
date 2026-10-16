@@ -2,6 +2,12 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "Lanthanide phosphors doped stimuli‐responsive fibres for advanced information encryption and anti‐counterfeiting: In both dark and bright situation",
+      "link": "https://doi.org/10.1111/cote.70115",
+      "published": "2026-10-15",
+      "description": ""
+    },
+    {
       "title": "Chitosan‐assisted dyeing of cotton with sodium copper chlorophyllin: Effects of process parameters on colour yield and fastness",
       "link": "https://doi.org/10.1111/cote.70113",
       "published": "2026-10-09",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70104",
       "published": "2026-09-29",
       "description": ""
-    },
-    {
-      "title": "Determination of the source of strength losses in denim washing",
-      "link": "https://doi.org/10.1111/cote.70106",
-      "published": "2026-09-28",
-      "description": ""
     }
   ],
-  "updated": "2026-10-15T13:46:50Z"
+  "updated": "2026-10-16T13:37:04Z"
 }
