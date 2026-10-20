@@ -8,6 +8,18 @@
       "description": ""
     },
     {
+      "title": "<scp>ChromaTokenNet</scp>\n                    : Log‐Chromaticity Token Transformer With Confidence Pooling for Robust Camera Color Constancy",
+      "link": "https://doi.org/10.1002/col.70138",
+      "published": "2026-10-19",
+      "description": ""
+    },
+    {
+      "title": "Physically‐Constrained Diagonal Manifolds for Cross‐Sensor Color Constancy",
+      "link": "https://doi.org/10.1002/col.70137",
+      "published": "2026-10-19",
+      "description": ""
+    },
+    {
       "title": "Chanel's Lipsticks Color Trend Evolution From 1960 Until Today",
       "link": "https://doi.org/10.1002/col.70139",
       "published": "2026-10-16",
@@ -48,19 +60,7 @@
       "link": "https://doi.org/10.1002/col.70133",
       "published": "2026-10-04",
       "description": ""
-    },
-    {
-      "title": "Predicting Post‐Foundation Skin Color With a Coverage‐Dependent Optical Mixing Model Beyond the Continuous‐Film Assumption",
-      "link": "https://doi.org/10.1002/col.70130",
-      "published": "2026-09-29",
-      "description": ""
-    },
-    {
-      "title": "Issue Information",
-      "link": "https://doi.org/10.1002/col.70094",
-      "published": "2026-09-29",
-      "description": ""
     }
   ],
-  "updated": "2026-10-19T16:00:21Z"
+  "updated": "2026-10-20T13:57:34Z"
 }
