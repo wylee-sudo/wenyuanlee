@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Color Idioms Quiz 多人版｜色彩都不色彩了 · 2–6 人同場對戰</title>
+  <style>
+    :root{
+      --bg:#f7f7fb;--card:#ffffff;--text:#222;--muted:#6b7280;--primary:#3b82f6;--ring:rgba(59,130,246,.3)
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;background:var(--bg);color:var(--text);}
+    .wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+    .card{background:var(--card);padding:24px;border-radius:18px;box-shadow:0 6px 24px rgba(0,0,0,.08);max-width:720px;width:100%}
+    h1{font-size: clamp(14px, 2.2vw, 18px); margin-bottom: 8px; text-align: center;}
+    .progress{text-align:center;color:var(--muted);margin-bottom:16px}
+    .question{font-size: clamp(28px, 6vw, 44px); font-weight: 800; text-align: center; margin-bottom: 16px;}
+    form{display:grid;gap:10px}
+    label{border:1px solid #e5e7eb;padding:12px;border-radius:12px;background:#fff;cursor:pointer;transition:box-shadow .15s,border-color .15s}
+    label:hover{box-shadow:0 0 0 4px var(--ring)}
+    input{margin-right:8px}
+    button{margin-top:20px;width:100%;padding:12px;border:none;border-radius:12px;background:var(--primary);color:#fff;font-weight:700;cursor:pointer}
+    .result{text-align:center;margin-top:20px}
+    .bigscore{font-size:clamp(56px,8vw,72px);font-weight:900;margin-bottom:12px}
+    .eval{font-size:clamp(20px,4.5vw,28px);font-weight:800;margin:4px 0 14px;color:#111827;text-align:center}
+.again-btn{
+  margin-top:16px;
+  width:100%;
+  padding:12px 16px;
+  border:none;
+  border-radius:12px;
+  background:#111827;
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+.again-btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+    ol{line-height:1.6;text-align:left}
+    .sumlist{line-height:1.6;text-align:left;margin-top:10px}
+  
+    .hidden{display:none!important}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .row > *{flex:1}
+    .txt{width:100%;padding:12px;border:1px solid #e5e7eb;border-radius:12px;font-size:16px;margin-top:10px}
+    .code{font-size:clamp(40px,10vw,64px);font-weight:900;letter-spacing:.2em;text-align:center;margin:8px 0}
+    .plist{list-style:none;padding:0;margin:10px 0}
+    .plist li{padding:8px 12px;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between}
+    .off{opacity:.45}
+    .msg{text-align:center;color:var(--muted);margin-top:12px;min-height:1.4em}
+    .err{color:#dc2626}
+    .timer{text-align:center;font-weight:700;color:var(--primary)}
+    label.correct{border-color:#16a34a;background:#dcfce7}
+    label.wrong{border-color:#dc2626;background:#fee2e2}
+    label.locked{cursor:default}
+    .verdict{font-size:clamp(22px,5vw,30px);font-weight:900;text-align:center;margin-top:14px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{padding:8px;border-bottom:1px solid #e5e7eb;text-align:center}
+    .leave{background:#9ca3af}
+  </style>
+  <!-- Google tag (gtag.js)，沿用原檔設定 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N8QWS5JKZD"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N8QWS5JKZD');
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Color Idioms Quiz 多人版</h1>
+
+      <!-- 首頁 -->
+      <section id="vHome">
+        <div class="question">色彩都不色彩了</div>
+        <div class="progress">2–6 人同場對戰，每局 5 題</div>
+        <input id="nameIn" class="txt" maxlength="12" placeholder="你的暱稱" />
+        <button id="createBtn">開新房間（我當房主）</button>
+        <input id="codeIn" class="txt" maxlength="4" inputmode="numeric" placeholder="輸入 4 位數房號" />
+        <button id="joinBtn" class="again-btn">加入房間</button>
+        <div class="msg" id="homeMsg"></div>
+      </section>
+
+      <!-- 等候室 -->
+      <section id="vLobby" class="hidden">
+        <div class="progress">房號（請其他人輸入）</div>
+        <div class="code" id="lobbyCode"></div>
+        <div class="progress" id="lobbyCount"></div>
+        <ul class="plist" id="lobbyList"></ul>
+        <button id="startBtn" class="hidden">開始</button>
+        <div class="msg" id="lobbyMsg"></div>
+        <button id="leaveBtn1" class="again-btn leave">離開房間</button>
+      </section>
+
+      <!-- 遊戲 -->
+      <section id="vGame" class="hidden">
+        <div class="progress" id="progress"></div>
+        <div class="timer" id="timer"></div>
+        <div class="question" id="qPhrase"></div>
+        <form id="options"></form>
+        <button id="submitBtn" disabled>送出答案</button>
+        <div class="verdict" id="verdict"></div>
+        <div class="msg" id="gameMsg"></div>
+      </section>
+
+      <!-- 結果 -->
+      <section id="vFinal" class="hidden">
+        <div class="result" id="final"></div>
+        <button id="leaveBtn2" class="again-btn">回到首頁</button>
+        <div style="margin-top:12px; text-align:center;">
+          <a class="back-btn" href="https://wylee-sudo.github.io/wenyuanlee/" target="_blank" rel="noopener">返回 Color &amp; Design Research Lab</a>
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, get, set, update, onValue, off, onDisconnect,
+         serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* =====================================================================
+   ★★★ Firebase 設定（請換成您自己的專案設定，見《多人版設定說明》）★★★
+   ===================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyA3I7_lphOcCNS0XnzuAAouyNF9sBf2PAs",
+  authDomain: "modular-sorter-472406-g8.firebaseapp.com",
+  databaseURL: "https://modular-sorter-472406-g8-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "modular-sorter-472406-g8",
+  storageBucket: "modular-sorter-472406-g8.firebasestorage.app",
+  messagingSenderId: "792905827916",
+  appId: "1:792905827916:web:20f5274ea286e13a4dd6e9"
+};
+/* ===================================================================== */
+
+// 題庫（與單人版完全相同）
+const BANK = [
+  {p:"out of the blue", m:"出乎意料"},
+  {p:"once in a blue moon", m:"千載難逢"},
+  {p:"have the blues", m:"情緒低落"},
+  {p:"blue blood", m:"貴族血統"},
+  {p:"blue-collar worker", m:"藍領階層（工人階級）"},
+  {p:"true blue", m:"忠誠的、真誠的"},
+  {p:"blue movie / blue joke", m:"色情影片／不雅笑話"},
+  {p:"blue ribbon", m:"最高榮譽、第一名"},
+  {p:"between the devil and the deep blue sea", m:"進退兩難"},
+
+  {p:"red tape", m:"繁文縟節"},
+  {p:"see red", m:"大發雷霆"},
+  {p:"in the red", m:"虧損中"},
+  {p:"catch someone red-handed", m:"人贓俱獲"},
+  {p:"red herring", m:"假線索、轉移注意"},
+  {p:"red-letter day", m:"值得紀念的日子"},
+  {p:"paint the town red", m:"狂歡作樂"},
+  {p:"red carpet treatment", m:"隆重接待"},
+  {p:"not worth a red cent", m:"一文不值"},
+
+  {p:"yellow-bellied", m:"膽小的、懦弱的"},
+  {p:"yellow journalism", m:"聳動報導、八卦新聞"},
+  {p:"yellow card", m:"黃牌警告"},
+  {p:"green house", m:"溫室"},
+
+  {p:"green with envy", m:"妒火中燒"},
+  {p:"green thumb / green fingers", m:"園藝天份"},
+  {p:"the grass is greener on the other side", m:"別人的看起來更好"},
+  {p:"greenhorn", m:"新手、生手"},
+  {p:"give the green light", m:"准許、放行"},
+  {p:"green room", m:"（演出者）等候室"},
+  {p:"greenback", m:"美鈔"},
+
+  {p:"black sheep", m:"害群之馬"},
+  {p:"blackmail", m:"勒索"},
+  {p:"black market", m:"黑市"},
+  {p:"black out", m:"昏倒／停電／封鎖訊息"},
+  {p:"blacklist", m:"黑名單"},
+  {p:"black comedy", m:"黑色幽默"},
+  {p:"black tie", m:"正式晚宴服（禮服）"},
+  {p:"black magic", m:"邪術、巫術"},
+  {p:"black and blue", m:"遍體鱗傷（瘀青）"},
+
+  {p:"white lie", m:"善意的謊言"},
+  {p:"white elephant", m:"昂貴卻無用的東西"},
+  {p:"white-collar worker", m:"白領階層"},
+  {p:"raise a white flag", m:"投降"},
+  {p:"white knight", m:"白馬騎士（救星／善意收購者）"},
+  {p:"whitewash", m:"粉飾、掩蓋錯誤"},
+  {p:"white paper", m:"白皮書（政策文件）"},
+  {p:"white noise", m:"白噪音"},
+  {p:"white night", m:"不眠之夜／夜晚仍亮如白晝"},
+
+  {p:"born to the purple", m:"出身高貴"},
+  {p:"purple prose", m:"辭藻華麗（帶貶義）的文風"},
+  {p:"purple patch", m:"順遂的時期、走運期"},
+
+  {p:"brown-bag lunch", m:"自備簡餐／便當"},
+  {p:"brown-nose", m:"拍馬屁"},
+  {p:"browned off", m:"厭煩、惱火（英式）"},
+
+  {p:"grey area", m:"模糊地帶"},
+  {p:"grey matter", m:"腦子、智慧"},
+  {p:"grey market", m:"灰色市場"},
+  {p:"grey eminence", m:"幕後權力者"},
+
+  {p:"tickled pink", m:"欣喜若狂"},
+  {p:"in the pink (of health)", m:"身體狀況極佳"},
+  {p:"pink slip", m:"解雇通知"},
+  {p:"pink elephant", m:"醉酒幻覺"},
+
+  {p:"golden opportunity", m:"黃金機會、絕佳時機"},
+  {p:"golden age", m:"黃金時代"},
+  {p:"golden handshake", m:"優退金、遣散費"},
+  {p:"golden boy / golden girl", m:"備受矚目的成功者"},
+  {p:"silver lining", m:"烏雲背後的一線希望"},
+  {p:"born with a silver spoon in one's mouth", m:"含著金湯匙出生"},
+  {p:"silver bullet", m:"特效解方、靈丹妙藥"},
+  {p:"silver screen", m:"電影業、銀幕"},
+
+  {p:"in black and white", m:"白紙黑字（書面證明）"},
+  {p:"show one's true colors", m:"露出真面目"}
+];
+
+const TOTAL_QUIZ = 5;        // 每局 5 題
+const MAX_P = 6, MIN_P = 2;  // 人數
+const Q_TIMEOUT = 30000;     // 每題最長 30 秒
+const REVEAL_MS = 4000;      // 公布答案停留 4 秒
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function shuffle(a){ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+let db, offset = 0;
+const configured = !firebaseConfig.apiKey.startsWith('請貼上');
+if (configured) {
+  db = getDatabase(initializeApp(firebaseConfig));
+  onValue(ref(db, '.info/serverTimeOffset'), s => { offset = s.val() || 0; });
+} else {
+  $('homeMsg').innerHTML = '<span class="err">尚未設定 Firebase：請依說明文件把 firebaseConfig 貼進本檔。</span>';
+}
+const now = () => Date.now() + offset;   // 估計的伺服器時間
+
+// 每個分頁一個玩家 id（重新整理可回到原房間）
+let pid = sessionStorage.getItem('ciq_pid');
+if (!pid) { pid = 'p' + Math.random().toString(36).slice(2, 10); sessionStorage.setItem('ciq_pid', pid); }
+let code = null, room = null, roomRef = null, connUnsub = null, tick = null, renderedKey = '';
+
+function show(v){ ['vHome','vLobby','vGame','vFinal'].forEach(x => $(x).classList.toggle('hidden', x !== v)); }
+function getName(){
+  const n = $('nameIn').value.trim();
+  if (!n) { $('homeMsg').textContent = '請先輸入暱稱'; return null; }
+  localStorage.setItem('ciq_name', n); return n.slice(0, 12);
+}
+$('nameIn').value = localStorage.getItem('ciq_name') || '';
+
+/* ---------- 建立房間 ---------- */
+$('createBtn').onclick = async () => {
+  if (!configured) return;
+  const name = getName(); if (!name) return;
+  for (let k = 0; k < 10; k++) {
+    const c = String(Math.floor(1000 + Math.random() * 9000));
+    const r = ref(db, 'rooms/' + c);
+    const res = await runTransaction(r, cur => {
+      if (cur && cur.created && now() - cur.created < 6 * 3600e3) return; // 房號使用中
+      return { host: pid, status: 'lobby', created: serverTimestamp(), cur: 0,
+               players: { [pid]: { name, online: true, joined: serverTimestamp() } } };
+    });
+    if (res.committed) return enterRoom(c);
+  }
+  $('homeMsg').textContent = '無法產生房號，請再試一次';
+};
+
+/* ---------- 加入房間 ---------- */
+$('joinBtn').onclick = async () => {
+  if (!configured) return;
+  const name = getName(); if (!name) return;
+  const c = $('codeIn').value.trim();
+  if (!/^\d{4}$/.test(c)) { $('homeMsg').textContent = '房號是 4 位數字'; return; }
+  const snap = await get(ref(db, 'rooms/' + c));
+  const r = snap.val();
+  if (!r) { $('homeMsg').textContent = '找不到這個房間'; return; }
+  const ps = r.players || {};
+  if (!ps[pid]) {
+    if (r.status !== 'lobby') { $('homeMsg').textContent = '這個房間已經開始了'; return; }
+    if (Object.values(ps).filter(p => p.online).length >= MAX_P) { $('homeMsg').textContent = '房間已滿（最多 6 人）'; return; }
+    await set(ref(db, `rooms/${c}/players/${pid}`), { name, online: true, joined: serverTimestamp() });
+  }
+  enterRoom(c);
+};
+
+/* ---------- 進房：在線狀態 + 監聽 ---------- */
+function enterRoom(c){
+  code = c; sessionStorage.setItem('ciq_code', c);
+  roomRef = ref(db, 'rooms/' + c);
+  const meOnline = ref(db, `rooms/${c}/players/${pid}/online`);
+  connUnsub = onValue(ref(db, '.info/connected'), s => {
+    if (s.val() === true) {
+      onDisconnect(meOnline).set(false);   // 斷線（關分頁、沒網路）時自動標記離線
+      set(meOnline, true);
+    }
+  });
+  onValue(roomRef, s => { room = s.val(); render(); });
+  clearInterval(tick); tick = setInterval(() => { hostDuty(); updateTimer(); }, 500);
+}
+
+async function leaveRoom(){
+  if (code) {
+    try {
+      await update(ref(db, `rooms/${code}/players/${pid}`), { online: false, left: true });
+      await onDisconnect(ref(db, `rooms/${code}/players/${pid}/online`)).cancel();
+    } catch(e){}
+    off(roomRef); if (connUnsub) connUnsub();
+  }
+  clearInterval(tick); code = null; room = null; renderedKey = '';
+  sessionStorage.removeItem('ciq_code'); show('vHome');
+}
+$('leaveBtn1').onclick = leaveRoom;
+$('leaveBtn2').onclick = leaveRoom;
+
+/* ---------- 工具 ---------- */
+function players(){ return Object.entries(room?.players || {}).map(([id, p]) => ({ id, ...p })).sort((a,b)=>(a.joined||0)-(b.joined||0)); }
+function onlinePlayers(){ return players().filter(p => p.online && !p.left); }
+// 實際房主：原房主在線就是他，否則由最早加入且在線的玩家接手
+function effectiveHost(){
+  const on = onlinePlayers();
+  if (on.some(p => p.id === room.host)) return room.host;
+  return on[0]?.id || null;
+}
+const amHost = () => room && effectiveHost() === pid;
+
+/* ---------- 房主的工作（任何人接手都會執行） ---------- */
+let busy = false;
+async function hostDuty(){
+  if (!room || !amHost() || busy) return;
+  busy = true;
+  try {
+    if (room.host !== pid) await update(roomRef, { host: pid });   // 房主交接
+    const t = now();
+    if (room.status === 'playing') {
+      const ans = room.answers?.[room.cur] || {};
+      const allDone = onlinePlayers().every(p => ans[p.id]);
+      if (allDone || t - (room.qStart || t) >= Q_TIMEOUT)
+        await update(roomRef, { status: 'reveal', revealAt: serverTimestamp() });
+    } else if (room.status === 'reveal' && t - (room.revealAt || t) >= REVEAL_MS) {
+      if (room.cur + 1 >= TOTAL_QUIZ) await update(roomRef, { status: 'done' });
+      else await update(roomRef, { status: 'playing', cur: room.cur + 1, qStart: serverTimestamp(), ['starts/' + (room.cur + 1)]: serverTimestamp() });
+    }
+  } catch(e){ console.warn(e); }
+  busy = false;
+}
+
+/* ---------- 開始：房主抽題並寫入 ---------- */
+$('startBtn').onclick = async () => {
+  if (!amHost()) return;
+  if (onlinePlayers().length < MIN_P) { $('lobbyMsg').textContent = '至少要 2 人才能開始'; return; }
+  const order = shuffle([...Array(BANK.length).keys()]).slice(0, TOTAL_QUIZ);
+  const qs = order.map(qi => {
+    const wrong = shuffle(BANK.map((_,i)=>i).filter(i => i !== qi)).slice(0, 3);
+    const opts = shuffle([qi, ...wrong]);              // 選項存成題庫索引
+    return { q: qi, opts, ans: opts.indexOf(qi) };
+  });
+  await update(roomRef, { qs, cur: 0, status: 'playing', qStart: serverTimestamp(), starts: { 0: serverTimestamp() }, answers: null });
+};
+
+/* ---------- 送出答案 ---------- */
+$('submitBtn').onclick = async e => {
+  e.preventDefault();
+  const chosen = $('options').querySelector('input[name="opt"]:checked');
+  if (!chosen || room.status !== 'playing') return;
+  $('submitBtn').disabled = true;
+  $('options').querySelectorAll('input').forEach(i => i.disabled = true);
+  await set(ref(db, `rooms/${code}/answers/${room.cur}/${pid}`), { c: Number(chosen.value), t: serverTimestamp() });
+};
+
+/* ---------- 計算 ---------- */
+function speedRanks(qn){
+  const ans = room.answers?.[qn] || {};
+  const list = Object.entries(ans).map(([id, a]) => ({ id, ms: Math.max(0, a.t - room._qs[qn]) }));
+  list.sort((a,b)=>a.ms-b.ms);
+  return list;
+}
+
+function updateTimer(){
+  if (!room || room.status !== 'playing') { $('timer').textContent = ''; return; }
+  const left = Math.max(0, Math.ceil((Q_TIMEOUT - (now() - room.qStart)) / 1000));
+  $('timer').textContent = `剩餘 ${left} 秒`;
+}
+
+/* ---------- 畫面 ---------- */
+function render(){
+  if (!room) { $('homeMsg').textContent = '房間已不存在'; leaveRoom(); return; }
+  room._qs = room.starts || {};   // 每題開始的伺服器時間（房主寫入）
+
+  if (room.status === 'lobby') return renderLobby();
+  if (room.status === 'done') return renderFinal();
+  renderGame();
+}
+
+function renderLobby(){
+  show('vLobby');
+  $('lobbyCode').textContent = code;
+  const on = onlinePlayers();
+  $('lobbyCount').textContent = `目前 ${on.length} / ${MAX_P} 人`;
+  $('lobbyList').innerHTML = on.map(p =>
+    `<li><span>${esc(p.name)}${p.id===pid?'（我）':''}</span><span>${p.id===effectiveHost()?'房主':''}</span></li>`).join('');
+  $('startBtn').classList.toggle('hidden', !amHost());
+  $('lobbyMsg').textContent = amHost() ? (on.length < MIN_P ? '等待其他人加入…（至少 2 人）' : '人到齊了就按「開始」') : '等待房主開始…';
+}
+
+function renderGame(){
+  show('vGame');
+  const qn = room.cur, Q = room.qs[qn];
+  const mine = room.answers?.[qn]?.[pid];
+  $('progress').textContent = `第 ${qn+1} / ${TOTAL_QUIZ} 題　房號 ${code}`;
+  $('qPhrase').textContent = BANK[Q.q].p;
+
+  if (renderedKey !== qn + '') {           // 新題目才重建選項
+    renderedKey = qn + '';
+    $('options').innerHTML = '';
+    Q.opts.forEach((bi, i) => {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'radio'; input.name = 'opt'; input.value = i;
+      input.addEventListener('change', () => $('submitBtn').disabled = false);
+      label.appendChild(input); label.append(BANK[bi].m);
+      $('options').append(label);
+    });
+    $('submitBtn').disabled = true;
+    $('verdict').textContent = '';
+  }
+  const inputs = [...$('options').querySelectorAll('input')];
+  if (mine) { inputs.forEach(i => { i.disabled = true; i.checked = Number(i.value) === mine.c; }); $('submitBtn').disabled = true; }
+
+  const on = onlinePlayers(), ans = room.answers?.[qn] || {};
+  const done = on.filter(p => ans[p.id]).length;
+
+  if (room.status === 'playing') {
+    $('submitBtn').classList.remove('hidden');
+    $('verdict').textContent = '';
+    $('gameMsg').textContent = mine ? `已送出，等待其他人作答…（${done} / ${on.length}）` : `已作答 ${done} / ${on.length} 人`;
+  } else { // reveal
+    $('submitBtn').classList.add('hidden');
+    inputs.forEach((i, k) => {
+      const lb = i.parentElement; i.disabled = true; lb.classList.add('locked');
+      if (k === Q.ans) lb.classList.add('correct');
+      else if (mine && k === mine.c) lb.classList.add('wrong');
+    });
+    const ranks = speedRanks(qn);
+    const r = ranks.findIndex(x => x.id === pid);
+    if (!mine) $('verdict').textContent = '⏰ 時間到，未作答';
+    else $('verdict').innerHTML = (mine.c === Q.ans ? '⭕ 答對了！' : '❌ 答錯了') +
+      `<div class="progress" style="margin:6px 0 0">本題速度第 ${r+1} 名（${(ranks[r].ms/1000).toFixed(2)} 秒，共 ${ranks.length} 人作答）</div>`;
+    $('gameMsg').textContent = qn + 1 >= TOTAL_QUIZ ? '即將公布總成績…' : '下一題即將開始…';
+  }
+}
+
+function renderFinal(){
+  show('vFinal');
+  const ps = players().filter(p => !p.left || Object.values(room.answers || {}).some(a => a[p.id]));
+  const rows = ps.map(p => {
+    let score = 0, tot = 0;
+    for (let qn = 0; qn < TOTAL_QUIZ; qn++) {
+      const a = room.answers?.[qn]?.[p.id];
+      if (a) { if (a.c === room.qs[qn].ans) score++; tot += Math.max(0, a.t - room._qs[qn]); }
+      else tot += Q_TIMEOUT;               // 未作答以 30 秒計
+    }
+    return { ...p, score, avg: tot / TOTAL_QUIZ };
+  });
+  const bySpeed = [...rows].sort((a,b)=>a.avg-b.avg);
+  rows.sort((a,b)=> b.score - a.score || a.avg - b.avg);
+  const me = rows.find(r => r.id === pid);
+  const evalText = !me ? '' : (me.score===5) ? '太厲害了' : (me.score===4) ? '啊~~差一題' : (me.score===3||me.score===2) ? '要加油了啦' : '你真的不懂色名';
+  const list = room.qs.map(Q => `<li><code>${esc(BANK[Q.q].p)}</code> — ${esc(BANK[Q.q].m)}</li>`).join('');
+  $('final').innerHTML = `
+    ${me ? `<div class="bigscore">分數：${me.score} / ${TOTAL_QUIZ}</div><div class="eval">${evalText}</div>` : ''}
+    <table><tr><th>玩家</th><th>總分</th><th>平均速度</th><th>速度名次</th></tr>
+    ${rows.map(r => `<tr${r.id===pid?' style="font-weight:800"':''}${r.online?'':' class="off"'}>
+      <td>${esc(r.name)}${r.id===pid?'（我）':''}${r.online?'':'（離線）'}</td><td>${r.score}</td>
+      <td>${(r.avg/1000).toFixed(2)} 秒</td><td>第 ${bySpeed.findIndex(x=>x.id===r.id)+1} 名</td></tr>`).join('')}
+    </table>
+    <div class="progress" style="margin-top:8px">平均速度＝5 題作答時間平均，未作答以 30 秒計</div>
+    <div>本次題目與正解：</div><ol class="sumlist">${list}</ol>`;
+  clearInterval(tick);
+}
+
+// 重新整理後自動回到原房間
+const saved = sessionStorage.getItem('ciq_code');
+if (configured && saved) get(ref(db, 'rooms/' + saved)).then(s => {
+  if (s.val()?.players?.[pid]) enterRoom(saved); else sessionStorage.removeItem('ciq_code');
+});
+</script>
+</body>
+</html>
