@@ -2,6 +2,12 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "Colour transfer framework and modular back‐propagation neural network prediction system constructed for full‐colour‐gamut colour spinning",
+      "link": "https://doi.org/10.1111/cote.70117",
+      "published": "2026-10-21",
+      "description": ""
+    },
+    {
       "title": "Ultrasonication and non‐ionic surfactant modification of\n                    <i>Moringa oleifera</i>\n                    leaf powder for methylene blue adsorption",
       "link": "https://doi.org/10.1111/cote.70114",
       "published": "2026-10-18",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70108",
       "published": "2026-09-30",
       "description": ""
-    },
-    {
-      "title": "Plant‐based natural colorants for leather footwear: Dyeing performance, antibacterial activity and color fastness",
-      "link": "https://doi.org/10.1111/cote.70107",
-      "published": "2026-09-29",
-      "description": ""
     }
   ],
-  "updated": "2026-10-21T14:13:16Z"
+  "updated": "2026-10-22T14:13:09Z"
 }
