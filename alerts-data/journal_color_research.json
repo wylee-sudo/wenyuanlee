@@ -8,6 +8,12 @@
       "description": ""
     },
     {
+      "title": "Effect of the Absorption Pigment Hue on Sparkle and Graininess Perception",
+      "link": "https://doi.org/10.1002/col.70140",
+      "published": "2026-10-27",
+      "description": ""
+    },
+    {
       "title": "<scp>ChromaTokenNet</scp>\n                    : Log‐Chromaticity Token Transformer With Confidence Pooling for Robust Camera Color Constancy",
       "link": "https://doi.org/10.1002/col.70138",
       "published": "2026-10-19",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1002/col.70132",
       "published": "2026-10-06",
       "description": ""
-    },
-    {
-      "title": "Semantic Perception of Color Schemes Across Contrasting Semi‐Public Study Environments",
-      "link": "https://doi.org/10.1002/col.70133",
-      "published": "2026-10-04",
-      "description": ""
     }
   ],
-  "updated": "2026-10-27T15:00:34Z"
+  "updated": "2026-10-28T15:36:31Z"
 }
