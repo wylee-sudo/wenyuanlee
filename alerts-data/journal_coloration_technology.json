@@ -2,6 +2,12 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "Route‐dependent ozone bleaching of cotton/elastane denim: Colour removal, mechanical retention and surface morphology compared with hypochlorite treatment",
+      "link": "https://doi.org/10.1111/cote.70121",
+      "published": "2026-10-28",
+      "description": ""
+    },
+    {
       "title": "Colour transfer framework and modular back‐propagation neural network prediction system constructed for full‐colour‐gamut colour spinning",
       "link": "https://doi.org/10.1111/cote.70117",
       "published": "2026-10-21",
@@ -54,13 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70110",
       "published": "2026-09-30",
       "description": ""
-    },
-    {
-      "title": "Natural dyeing of bacterial cellulose membranes with cochineal insect–derived pigment",
-      "link": "https://doi.org/10.1111/cote.70108",
-      "published": "2026-09-30",
-      "description": ""
     }
   ],
-  "updated": "2026-10-28T15:36:33Z"
+  "updated": "2026-10-29T15:43:25Z"
 }
