@@ -63,15 +63,6 @@ ul.chk{max-width:900px;padding:0;list-style:none}ul.chk li{border-left:6px solid
 </header>
 <nav id="tabs"></nav>
 <main>
-<section id="keys" data-t="按鍵測試"><h2>按鍵測試</h2><p class="note">按住時對應按鍵會亮起（也可直接用滑鼠點）。</p>
- <div class="grid board">
-  <div class="arrows"><div></div><div class="key" data-k="ArrowUp">↑<small>上</small></div><div></div><div class="key" data-k="ArrowLeft">←<small>左</small></div><div class="key" data-k="ArrowDown">↓<small>下</small></div><div class="key" data-k="ArrowRight">→<small>右</small></div></div>
-  <div class="key" data-k=" " style="grid-column:span 2">SPACE<small>空白鍵</small></div><div class="key" data-k="click">CLICK<small>左鍵</small></div>
-  <div class="key" data-k="w">W</div><div class="key" data-k="a">A</div><div class="key" data-k="s">S</div><div class="key" data-k="d">D</div><div class="key" data-k="f">F</div><div class="key" data-k="g">G</div>
- </div>
- <div class="info">event.key：<b id="ek">—</b>　event.code：<b id="ec">—</b></div>
- <table><thead><tr><th>時間</th><th>key</th><th>code</th></tr></thead><tbody id="log"></tbody></table>
-</section>
 <section id="wire" data-t="連接教學"><h2>連接教學</h2><p class="note">以經典版 Makey Makey 為例。Makey Makey Go 等其他型號的接點不同，請以你手上板子的標示為準。</p>
 <svg viewBox="0 0 900 330" style="width:100%;max-width:900px;border:1px solid #BDBDBD" role="img" aria-label="Makey Makey 正面與背面接點示意圖">
  <text x="20" y="30" font-size="18" font-weight="700">正面（鱷魚夾夾在圓形接點上）</text>
@@ -107,15 +98,15 @@ ul.chk{max-width:900px;padding:0;list-style:none}ul.chk li{border-left:6px solid
  <li><b>5. 測試：</b>一手握 EARTH，另一手碰導體，到「按鍵測試」頁看對應的按鍵有沒有亮起。</li>
  <li><b>小提醒：</b>線越短越穩定；不同按鍵的線、導體不要互相碰到，也不要碰到 EARTH 的線。</li>
 </ul></section>
-<section id="piano" data-t="鋼琴"><h2>鋼琴</h2><p class="note">用上 Makey Makey 全部 12 個輸入：正面 ↑ ↓ ← → SPACE CLICK，背面 W A S D F G，剛好一個八度（C 到 B，12 個半音）。琴鍵上標示要接的 Makey 按鍵，也可以直接用滑鼠／手指按。CLICK：滑鼠游標停在本區塊空白處（琴鍵以外）時觸發，會彈 A。</p>
- <div class="pwrap" id="pk"></div>
- <table id="pmap"><thead><tr><th>Makey 按鍵</th><th>音名</th><th>位置</th></tr></thead><tbody></tbody></table></section>
-<section id="drum" data-t="鼓組"><h2>鼓組</h2><p class="note">← 大鼓、→ 小鼓、↑ 腳踏鈸、↓ 拍手（空白鍵＝大鼓）。</p><div class="grid drums" id="dk"></div></section>
-<section id="react" data-t="反應速度"><h2>反應速度</h2><p class="note">按「開始」，畫面變橘色時立刻觸碰任何 Makey Makey 按鍵。</p>
- <div id="rt">按下方「開始」</div><p><button class="btn" id="rstart">開始</button>　最佳：<b id="rbest">—</b></p></section>
-<section id="tap" data-t="連點計數"><h2>連點計數</h2><p class="note">按「開始」後 10 秒內，盡量快速連續觸碰，各鍵分別計數。</p>
- <p><button class="btn" id="tstart">開始 10 秒</button>　剩餘：<b id="tleft">10.0</b> 秒　總計：<span class="big" id="ttotal">0</span></p>
- <table><thead><tr><th>按鍵</th><th>次數</th></tr></thead><tbody id="tlog"></tbody></table></section>
+<section id="keys" data-t="按鍵測試"><h2>按鍵測試</h2><p class="note">按住時對應按鍵會亮起（也可直接用滑鼠點）。</p>
+ <div class="grid board">
+  <div class="arrows"><div></div><div class="key" data-k="ArrowUp">↑<small>上</small></div><div></div><div class="key" data-k="ArrowLeft">←<small>左</small></div><div class="key" data-k="ArrowDown">↓<small>下</small></div><div class="key" data-k="ArrowRight">→<small>右</small></div></div>
+  <div class="key" data-k=" " style="grid-column:span 2">SPACE<small>空白鍵</small></div><div class="key" data-k="click">CLICK<small>左鍵</small></div>
+  <div class="key" data-k="w">W</div><div class="key" data-k="a">A</div><div class="key" data-k="s">S</div><div class="key" data-k="d">D</div><div class="key" data-k="f">F</div><div class="key" data-k="g">G</div>
+ </div>
+ <div class="info">event.key：<b id="ek">—</b>　event.code：<b id="ec">—</b></div>
+ <table><thead><tr><th>時間</th><th>key</th><th>code</th></tr></thead><tbody id="log"></tbody></table>
+</section>
 <section id="diag" data-t="診斷提示"><h2>診斷提示</h2><p class="note">沒反應時，依序檢查：</p><ul class="chk">
  <li><b>沒有接地：</b>手要確實握住或夾住接 Earth 的鱷魚夾，另一手才去碰導體。</li>
  <li><b>導體太乾或不導電：</b>手太乾可稍微沾濕；紙、塑膠、乾木頭不導電；鉛筆石墨要塗厚、塗滿且連續。</li>
@@ -124,6 +115,15 @@ ul.chk{max-width:900px;padding:0;list-style:none}ul.chk li{border-left:6px solid
  <li><b>USB 連接埠：</b>換一個 USB 孔或換一條線；接上時板上燈號應亮起。</li>
  <li><b>按鍵卡住、一直觸發：</b>可能兩條線互碰、導體碰到桌面或同時碰到 Earth；拔掉 USB 重插即可重設。</li>
  <li><b>頁面沒反應：</b>先用滑鼠點一下本頁，讓瀏覽器視窗取得焦點。</li></ul></section>
+<section id="piano" data-t="鋼琴"><h2>鋼琴</h2><p class="note">用上 Makey Makey 全部 12 個輸入：正面 ↑ ↓ ← → SPACE CLICK，背面 W A S D F G，剛好一個八度（C 到 B，12 個半音）。琴鍵上標示要接的 Makey 按鍵，也可以直接用滑鼠／手指按。CLICK：滑鼠游標停在本區塊空白處（琴鍵以外）時觸發，會彈 A。</p>
+ <div class="pwrap" id="pk"></div>
+ <table id="pmap"><thead><tr><th>Makey 按鍵</th><th>音名</th><th>位置</th></tr></thead><tbody></tbody></table></section>
+<section id="drum" data-t="鼓組"><h2>鼓組</h2><p class="note">← 大鼓、→ 小鼓、↑ 腳踏鈸、↓ 拍手（空白鍵＝大鼓）。</p><div class="grid drums" id="dk"></div></section>
+<section id="react" data-t="反應速度"><h2>反應速度</h2><p class="note">按「開始」或觸碰 Makey Makey 的 SPACE 開始；畫面變橘色時立刻觸碰任何 Makey Makey 按鍵。再按一次 SPACE 可重來。</p>
+ <div id="rt">按「開始」或按 Makey Makey 的 SPACE</div><p><button class="btn" id="rstart">開始</button>　最佳：<b id="rbest">—</b></p></section>
+<section id="tap" data-t="連點計數"><h2>連點計數</h2><p class="note">按「開始 10 秒」或觸碰 Makey Makey 的 SPACE 開始，10 秒內盡量快速連續觸碰，各鍵分別計數（開始後 SPACE 也會被計入）。</p>
+ <p><button class="btn" id="tstart">開始 10 秒</button>　剩餘：<b id="tleft">10.0</b> 秒　總計：<span class="big" id="ttotal">0</span></p>
+ <table><thead><tr><th>按鍵</th><th>次數</th></tr></thead><tbody id="tlog"></tbody></table></section>
 <section id="ext" data-t="外部測試頁"><h2>外部測試頁</h2><p class="note">Joylabz 官方頁面（另開新分頁）。</p><ul class="chk">
  <li><a href="https://makeymakey.com/pages/plug-and-play-makey-makey-apps" target="_blank" rel="noopener">Plug and Play Makey Makey Apps（官方即插即用應用）</a></li>
  <li><a href="https://makeymakey.com/" target="_blank" rel="noopener">Makey Makey 官方網站</a></li></ul></section>
@@ -131,11 +131,11 @@ ul.chk{max-width:900px;padding:0;list-style:none}ul.chk li{border-left:6px solid
 <script>
 (function(){
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
-let cur='keys';
+let cur='wire';
 const nav=$('#tabs');
 $$('section').forEach(s=>{const b=document.createElement('button');b.textContent=s.dataset.t;b.onclick=()=>show(s.id);b.dataset.id=s.id;nav.appendChild(b);});
 function show(id){cur=id;$$('section').forEach(s=>s.classList.toggle('on',s.id===id));$$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.id===id));}
-show('keys');
+show('wire');
 const norm=k=>k.length===1?k.toLowerCase():k;
 const lbl=k=>({ArrowUp:'↑',ArrowDown:'↓',ArrowLeft:'←',ArrowRight:'→',' ':'空白'})[k]||k.toUpperCase();
 // audio
@@ -191,6 +191,8 @@ $('#rstart').onclick=()=>{rstate='wait';rt.style.background='#111';rt.style.colo
 let tOn=false,tEnd=0,counts={},total=0,ti;
 $('#tstart').onclick=()=>{tOn=true;counts={};total=0;$('#ttotal').textContent=0;$('#tlog').innerHTML='';tEnd=performance.now()+10000;clearInterval(ti);ti=setInterval(()=>{const l=Math.max(0,(tEnd-performance.now())/1000);$('#tleft').textContent=l.toFixed(1);if(l<=0){tOn=false;clearInterval(ti);}},50);};
 function input(k){
+ if(cur==='react'&&rstate==='idle'&&k===' '){$('#rstart').onclick();return;}
+ if(cur==='tap'&&!tOn&&k===' '){$('#tstart').onclick();return;}
  if(cur==='react'){if(rstate==='wait'){clearTimeout(rto);rstate='idle';rt.style.background='#eee';rt.style.color='#111';rt.textContent='太早了！再按「開始」';}
   else if(rstate==='go'){const ms=Math.round(performance.now()-rs);rstate='idle';rt.style.background='#fff';rt.style.color='#111';rt.textContent=ms+' ms（'+lbl(k)+'）';if(best===null||ms<best){best=ms;$('#rbest').textContent=ms+' ms';}}}
  if(cur==='tap'&&tOn){counts[k]=(counts[k]||0)+1;total++;$('#ttotal').textContent=total;$('#tlog').innerHTML=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([a,b])=>'<tr><td>'+lbl(a)+'</td><td>'+b+'</td></tr>').join('');}
