@@ -2,6 +2,24 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "Spectral reflectance reconstruction via extreme learning machine: Cross‐dataset evaluation and generalisation analysis",
+      "link": "https://doi.org/10.1111/cote.70123",
+      "published": "2026-11-02",
+      "description": ""
+    },
+    {
+      "title": "Ostwald color solid constructed by blending eight primary‐color fibres and its color prediction system",
+      "link": "https://doi.org/10.1111/cote.70116",
+      "published": "2026-11-02",
+      "description": ""
+    },
+    {
+      "title": "Influence of raw material quality and the spinning process on the physicochemical properties and dyeability of polyester filaments",
+      "link": "https://doi.org/10.1111/cote.70122",
+      "published": "2026-11-02",
+      "description": ""
+    },
+    {
       "title": "Route‐dependent ozone bleaching of cotton/elastane denim: Colour removal, mechanical retention and surface morphology compared with hypochlorite treatment",
       "link": "https://doi.org/10.1111/cote.70121",
       "published": "2026-10-28",
@@ -42,25 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70109",
       "published": "2026-10-07",
       "description": ""
-    },
-    {
-      "title": "Chitosan pre‐ and post‐treatments for improving the fastness and\n                    <scp>UV</scp>\n                    protection of wool fabrics dyed with\n                    <i>Datisca cannabina</i>\n                    <scp>L</scp>\n                    . via sonication",
-      "link": "https://doi.org/10.1111/cote.70112",
-      "published": "2026-10-02",
-      "description": ""
-    },
-    {
-      "title": "No title",
-      "link": "https://doi.org/10.1111/cote.v142.5",
-      "published": "2026-10",
-      "description": ""
-    },
-    {
-      "title": "Effect of ultra‐fine bubbles on capillary‐driven dye solution penetration in polyester–cotton fabrics",
-      "link": "https://doi.org/10.1111/cote.70110",
-      "published": "2026-09-30",
-      "description": ""
     }
   ],
-  "updated": "2026-11-02T18:57:50Z"
+  "updated": "2026-11-03T16:43:05Z"
 }
