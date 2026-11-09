@@ -2,6 +2,18 @@
   "journal": "Coloration Technology",
   "items": [
     {
+      "title": "No title",
+      "link": "https://doi.org/10.1111/cote.v142.6",
+      "published": "2026-12",
+      "description": ""
+    },
+    {
+      "title": "Issue Information",
+      "link": "https://doi.org/10.1111/cote.70084",
+      "published": "2026-11-08",
+      "description": ""
+    },
+    {
       "title": "Spectral reflectance reconstruction via extreme learning machine: Cross‐dataset evaluation and generalisation analysis",
       "link": "https://doi.org/10.1111/cote.70123",
       "published": "2026-11-02",
@@ -48,19 +60,7 @@
       "link": "https://doi.org/10.1111/cote.70113",
       "published": "2026-10-09",
       "description": ""
-    },
-    {
-      "title": "Towards predictive and sustainable indigo dyeing of denim: Linking redox chemistry, dye transport and yarn architecture",
-      "link": "https://doi.org/10.1111/cote.70111",
-      "published": "2026-10-08",
-      "description": ""
-    },
-    {
-      "title": "Environmentally friendly pre‐treatments for sustainable coloration: Enhancing natural dyeing of polyester fabric via\n                    <scp>ultraviolet</scp>\n                    rays and\n                    <scp>ozone</scp>\n                    modification",
-      "link": "https://doi.org/10.1111/cote.70109",
-      "published": "2026-10-07",
-      "description": ""
     }
   ],
-  "updated": "2026-11-08T15:39:37Z"
+  "updated": "2026-11-09T19:19:20Z"
 }
