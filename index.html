@@ -191,6 +191,189 @@
   <div class="wrap">
     <!-- Left column: profile & info -->
     <aside>
+      <!--
+        Compact Taipei weather card
+        Paste as the first child of <aside>, immediately ABOVE
+        the "Color Roundup" section (#roundup-section).
+        Self-contained: scoped CSS (.wx-*) + vanilla JS IIFE. Open-Meteo, no API key.
+      -->
+      <style>
+        #wx-card.wx-card{ padding:16px 22px; }
+        #wx-card .wx-title{ margin:0 0 8px; }
+        #wx-card .wx-status{ margin:0; color:#777; font-size:14px; }
+        #wx-card .wx-now{ display:flex; align-items:center; gap:10px; margin:0 0 2px; }
+        #wx-card .wx-now-icon{ font-size:32px; line-height:1; flex-shrink:0; }
+        #wx-card .wx-now-line{
+          margin:0; font-size:18px; font-weight:700; letter-spacing:.2px;
+          color:var(--text,#333); line-height:1.35;
+        }
+        #wx-card .wx-today{ margin:0 0 8px; color:#777; font-size:13px; line-height:1.45; }
+        #wx-card .wx-attr{ margin:0; color:#777; font-size:11px; line-height:1.4; }
+        #wx-card .wx-attr a{ color:var(--link,#0d60ff); }
+        @media (max-width:420px){ #wx-card .wx-now-line{ font-size:16px; } }
+      </style>
+      <section class="card wx-card" id="wx-card" aria-label="Taipei weather">
+        <h2 class="wx-title">Taipei</h2>
+        <div class="wx-body" data-wx-body>
+          <p class="wx-status">Loading Taipei weather…</p>
+        </div>
+        <p class="wx-attr">
+          Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>
+        </p>
+      </section>
+      <script>
+      (function () {
+        "use strict";
+
+        var card = document.getElementById("wx-card");
+        if (!card || card.getAttribute("data-wx-bound") === "1") return;
+        card.setAttribute("data-wx-bound", "1");
+
+        // Tatung University area, Taipei
+        var LAT = 25.06;
+        var LON = 121.52;
+        var TZ = "Asia/Taipei";
+        var CACHE_KEY = "wx-taipei-cache-v3";
+        var CACHE_MS = 30 * 60 * 1000; // refresh no more often than every 30 minutes
+        var URL =
+          "https://api.open-meteo.com/v1/forecast" +
+          "?latitude=" + LAT +
+          "&longitude=" + LON +
+          "&current=temperature_2m,weather_code" +
+          "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
+          "&timezone=" + encodeURIComponent(TZ) +
+          "&forecast_days=2";
+
+        // WMO Weather interpretation codes → English label + emoji
+        // https://open-meteo.com/en/docs
+        var WMO = {
+          0: ["Sunny", "☀️"], 1: ["Mainly clear", "🌤️"], 2: ["Partly cloudy", "⛅"], 3: ["Overcast", "☁️"],
+          45: ["Fog", "🌫️"], 48: ["Rime fog", "🌫️"],
+          51: ["Light drizzle", "🌦️"], 53: ["Drizzle", "🌦️"], 55: ["Dense drizzle", "🌦️"],
+          56: ["Freezing drizzle", "🌧️"], 57: ["Freezing drizzle", "🌧️"],
+          61: ["Slight rain", "🌧️"], 63: ["Rain", "🌧️"], 65: ["Heavy rain", "🌧️"],
+          66: ["Freezing rain", "🌧️"], 67: ["Heavy freezing rain", "🌧️"],
+          71: ["Slight snow", "🌨️"], 73: ["Snow", "🌨️"], 75: ["Heavy snow", "❄️"], 77: ["Snow grains", "🌨️"],
+          80: ["Rain showers", "🌦️"], 81: ["Rain showers", "🌧️"], 82: ["Heavy rain showers", "🌧️"],
+          85: ["Snow showers", "🌨️"], 86: ["Heavy snow showers", "❄️"],
+          95: ["Thunderstorm", "⛈️"], 96: ["Thunderstorm & hail", "⛈️"], 99: ["Thunderstorm & hail", "⛈️"]
+        };
+
+        function wmo(code) {
+          return WMO[Number(code)] || ["Unknown", "🌡️"];
+        }
+
+        function round(n) {
+          return Math.round(Number(n));
+        }
+
+        function todayISO() {
+          return new Date().toLocaleDateString("en-CA", { timeZone: TZ });
+        }
+
+        function el(tag, className, text) {
+          var node = document.createElement(tag);
+          if (className) node.className = className;
+          if (text != null) node.textContent = text;
+          return node;
+        }
+
+        function dayBit(label, daily, i) {
+          if (!daily || !daily.time || daily.time[i] == null) return "";
+          var bits = [];
+          var hi = daily.temperature_2m_max && daily.temperature_2m_max[i];
+          var lo = daily.temperature_2m_min && daily.temperature_2m_min[i];
+          var rain = daily.precipitation_probability_max && daily.precipitation_probability_max[i];
+          if (hi != null && lo != null) bits.push(label + " " + round(hi) + "° / " + round(lo) + "°");
+          if (rain != null) bits.push("Rain " + round(rain) + "%");
+          return bits.join(" · ");
+        }
+
+        function renderError() {
+          var body = card.querySelector("[data-wx-body]");
+          body.replaceChildren(el("p", "wx-status", "Taipei weather is temporarily unavailable. Please try again later."));
+        }
+
+        function render(forecast) {
+          var current = forecast.current || {};
+          var daily = forecast.daily || {};
+          var info = wmo(current.weather_code);
+          var body = card.querySelector("[data-wx-body]");
+          var frag = document.createDocumentFragment();
+
+          var now = el("div", "wx-now");
+          var icon = el("span", "wx-now-icon", info[1]);
+          icon.setAttribute("aria-hidden", "true");
+          now.appendChild(icon);
+          now.appendChild(el("p", "wx-now-line", "Taipei now " + round(current.temperature_2m) + "°C, " + info[0]));
+          frag.appendChild(now);
+
+          var line = [dayBit("Today", daily, 0), dayBit("Tomorrow", daily, 1)].filter(Boolean).join(" · ");
+          if (line) frag.appendChild(el("p", "wx-today", line));
+          body.replaceChildren(frag);
+        }
+
+        function readCache() {
+          try {
+            var cached = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+            if (!cached || !cached.forecast || !cached.fetchedAt) return null;
+            var firstDay = cached.forecast.daily && cached.forecast.daily.time && cached.forecast.daily.time[0];
+            if (firstDay !== todayISO()) return null;
+            if (Date.now() - cached.fetchedAt >= CACHE_MS) return null;
+            return cached;
+          } catch (e) {
+            return null;
+          }
+        }
+
+        function writeCache(payload) {
+          try { localStorage.setItem(CACHE_KEY, JSON.stringify(payload)); } catch (e) {}
+        }
+
+        function loadFresh() {
+          var ctrl = new AbortController();
+          var timer = setTimeout(function () { ctrl.abort(); }, 10000);
+          return fetch(URL, { signal: ctrl.signal, cache: "no-store" })
+            .then(function (res) {
+              if (!res.ok) throw new Error("HTTP " + res.status);
+              return res.json();
+            })
+            .then(function (forecast) {
+              var payload = { forecast: forecast, fetchedAt: Date.now() };
+              writeCache(payload);
+              return payload;
+            })
+            .finally(function () { clearTimeout(timer); });
+        }
+
+        function show() {
+          var cached = readCache();
+          if (cached) {
+            render(cached.forecast);
+            return Promise.resolve();
+          }
+          return loadFresh().then(function (payload) {
+            render(payload.forecast);
+          });
+        }
+
+        function init() {
+          show().catch(renderError);
+          setInterval(function () {
+            if (!readCache()) {
+              loadFresh().then(function (payload) { render(payload.forecast); }).catch(function () {});
+            }
+          }, CACHE_MS);
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+        } else {
+          init();
+        }
+      })();
+      </script>
+
       <!-- Color Roundup -->
       <section class="card roundup-card" id="roundup-section" aria-hidden="false">
         <div class="roundup-head">
